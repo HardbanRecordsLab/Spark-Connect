@@ -1,0 +1,285 @@
+import { useState, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
+import { Heart, X, Star, Filter, MapPin, Shield, Info, Eye, Ghost } from 'lucide-react';
+import { useAppStore } from '@/store/appStore';
+import type { Profile } from '@/store/appStore';
+import { StoriesBar, mockUserStories } from '@/components/StoriesSystem';
+import VibeCheck from '@/components/VibeCheck';
+import AdBanner from '@/components/AdBanner';
+import FilterPanel, { type DiscoverFilters, DEFAULT_FILTERS } from '@/components/FilterPanel';
+import { AvailableNowSection } from '@/components/AvailableNow';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
+import { SuperSwipeModal } from '@/components/SuperSwipe';
+import { WhisperModal } from '@/components/WhisperMessage';
+
+const db = supabase as any;
+
+function activeFilterCount(f: DiscoverFilters) {
+  return [f.ageMin !== 18 || f.ageMax !== 50, f.distanceMax !== 50, f.gender.length > 0, f.moodStatus.length > 0, f.verifiedOnly].filter(Boolean).length;
+}
+
+function SwipeCard({ profile, onSwipeLeft, onSwipeRight, onSuperLike, isTop }: {
+  profile: Profile; onSwipeLeft: () => void; onSwipeRight: () => void; onSuperLike: () => void; isTop: boolean;
+}) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+  const likeOpacity = useTransform(x, [20, 100], [0, 1]);
+  const passOpacity = useTransform(x, [-100, -20], [1, 0]);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [showInfo, setShowInfo] = useState(false);
+  const controls = useAnimation();
+
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x > 120) { controls.start({ x: 400, opacity: 0, transition: { duration: 0.3 } }); setTimeout(onSwipeRight, 200); }
+    else if (info.offset.x < -120) { controls.start({ x: -400, opacity: 0, transition: { duration: 0.3 } }); setTimeout(onSwipeLeft, 200); }
+    else controls.start({ x: 0, rotate: 0, transition: { type: 'spring', bounce: 0.4 } });
+  };
+
+  const moodColors: Record<string, string> = { 'Looking for fun': 'text-primary', 'Just chatting': 'text-accent', 'Serious only': 'text-blue-400' };
+  const photos = profile.photos.filter(p => !p.startsWith('video:'));
+
+  return (
+    <motion.div className="absolute inset-0 swipe-card" style={{ x, rotate, zIndex: isTop ? 10 : 1 }}
+      drag={isTop ? 'x' : false} dragConstraints={{ left: 0, right: 0 }} onDragEnd={handleDragEnd} animate={controls} whileDrag={{ scale: 1.02 }}>
+      <motion.div className="absolute top-10 left-6 z-20 border-4 border-primary/80 rounded-xl px-4 py-2 rotate-[-12deg]" style={{ opacity: likeOpacity }}>
+        <span className="text-primary font-black text-2xl">LIKE 💚</span>
+      </motion.div>
+      <motion.div className="absolute top-10 right-6 z-20 border-4 border-destructive rounded-xl px-4 py-2 rotate-[12deg]" style={{ opacity: passOpacity }}>
+        <span className="text-destructive font-black text-2xl">NOPE ❌</span>
+      </motion.div>
+      <div className="h-full rounded-3xl overflow-hidden card-shadow relative">
+        <img src={photos[photoIndex] || profile.photos[0]} alt={profile.displayName} className="w-full h-full object-cover" draggable={false} />
+        <div className="absolute inset-0 flex">
+          <div className="flex-1" onClick={() => setPhotoIndex(Math.max(0, photoIndex - 1))} />
+          <div className="flex-1" onClick={() => setPhotoIndex(Math.min(photos.length - 1, photoIndex + 1))} />
+        </div>
+        {photos.length > 1 && (
+          <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+            {photos.map((_, i) => <div key={i} className={`h-1 rounded-full transition-all ${i === photoIndex ? 'w-6 bg-primary-foreground' : 'w-1.5 bg-primary-foreground/40'}`} />)}
+          </div>
+        )}
+        <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-card-overlay" />
+        <button onClick={() => setShowInfo(!showInfo)} className="absolute top-4 right-4 z-20 w-9 h-9 glass rounded-full flex items-center justify-center">
+          <Info className="w-4 h-4 text-foreground" />
+        </button>
+        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-3xl font-bold">{profile.displayName}, {profile.age}</h2>
+            {profile.isVerified && <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-primary" /></div>}
+          </div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-1 text-muted-foreground text-sm"><MapPin className="w-3.5 h-3.5" /><span>{profile.city}{profile.distance ? ` · ${profile.distance} km` : ''}</span></div>
+            <span className={`text-sm font-medium ${moodColors[profile.moodStatus] || 'text-muted-foreground'}`}>{profile.moodStatus}</span>
+          </div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 h-1.5 bg-primary-foreground/10 rounded-full overflow-hidden">
+              <motion.div className="h-full gradient-fire rounded-full" initial={{ width: 0 }} animate={{ width: `${profile.chemistryScore}%` }} transition={{ delay: 0.3, duration: 0.8 }} />
+            </div>
+            <span className="text-sm font-bold gradient-text">{profile.chemistryScore}% match</span>
+          </div>
+          {showInfo && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <p className="text-sm text-foreground/80 mb-2">{profile.bio}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.interests.map(tag => <span key={tag} className="text-xs glass px-2.5 py-1 rounded-full text-foreground/70">{tag}</span>)}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function DiscoverPage() {
+  const { discoverProfiles: mockProfiles, swipeLeft: storeSwipeLeft, swipeRight: storeSwipeRight, superLike } = useAppStore();
+  const [showFilters, setShowFilters] = useState(false);
+  const [showVibeCheck, setShowVibeCheck] = useState(false);
+  const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
+  const { user } = useAuth();
+  const { profiles: dbProfiles, loading: loadingProfiles, refetch, fetchMoreIfNeeded } = useDiscoverProfiles(user?.id ?? null);
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
+  const [cardIndex, setCardIndex] = useState(0);
+  const [showSuperSwipe, setShowSuperSwipe] = useState(false);
+  const [showWhisper, setShowWhisper] = useState(false);
+  const [superSwipeDailyUsed, setSuperSwipeDailyUsed] = useState(false);
+
+  useEffect(() => {
+    if (dbProfiles.length > 0) { setAllProfiles(dbProfiles); setCardIndex(0); }
+    else if (!loadingProfiles) { setAllProfiles(mockProfiles); setCardIndex(0); }
+  }, [dbProfiles, loadingProfiles, mockProfiles]);
+
+  // Prefetch next page as user swipes
+  useEffect(() => {
+    const remaining = allProfiles.length - cardIndex;
+    fetchMoreIfNeeded(remaining);
+  }, [cardIndex, allProfiles.length, fetchMoreIfNeeded]);
+
+  const profiles = allProfiles.filter(p => {
+    if (p.age < filters.ageMin || p.age > filters.ageMax) return false;
+    if (filters.distanceMax < 200 && p.distance && p.distance > filters.distanceMax) return false;
+    if (filters.gender.length > 0 && !filters.gender.map(g => g.toLowerCase()).includes((p.gender ?? '').toLowerCase())) return false;
+    if (filters.moodStatus.length > 0 && !filters.moodStatus.includes(p.moodStatus)) return false;
+    if (filters.verifiedOnly && !p.isVerified) return false;
+    return true;
+  });
+
+  const currentProfile = profiles[cardIndex] ?? null;
+
+  const handleSwipeRight = async () => {
+    const profile = profiles[cardIndex];
+    setCardIndex(i => i + 1);
+    if (!user || !profile) { storeSwipeRight(); return; }
+    await db.from('swipes').insert({ swiper_id: user.id, swiped_id: profile.id, direction: 'right' });
+    const { data: mutual } = await db.from('swipes').select('id').eq('swiper_id', profile.id).eq('swiped_id', user.id).eq('direction', 'right').maybeSingle();
+    if (mutual) {
+      const { data: match } = await db.from('matches').insert({ user1_id: user.id, user2_id: profile.id }).select('id').single();
+      if (match) { await db.from('conversations').insert({ match_id: match.id }); storeSwipeRight(); }
+    }
+  };
+
+  const handleSwipeLeft = async () => {
+    const profile = profiles[cardIndex];
+    setCardIndex(i => i + 1);
+    storeSwipeLeft();
+    if (user && profile) await db.from('swipes').insert({ swiper_id: user.id, swiped_id: profile.id, direction: 'left' });
+  };
+
+  const visibleProfiles = profiles.slice(cardIndex, cardIndex + 3);
+  const isEmpty = cardIndex >= profiles.length;
+  const topProfile = visibleProfiles[0];
+  const filterCount = activeFilterCount(filters);
+
+  return (
+    <div className="h-full flex flex-col px-4 pb-4 pt-2 bg-radial-glow overflow-y-auto scrollbar-hidden">
+      <div className="mb-2"><StoriesBar userStories={mockUserStories} showAddButton={true} /></div>
+
+      {/* Available Now strip */}
+      <AvailableNowSection onSelectProfile={(id) => console.log('open profile', id)} />
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h1 className="text-xl font-bold">Discover</h1>
+          <p className="text-xs text-muted-foreground">Warsaw · {filters.distanceMax} km</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {topProfile && (
+            <button onClick={() => setShowVibeCheck(true)} className="glass px-3 py-2 rounded-xl flex items-center gap-2 text-sm border border-primary/30">
+              <Eye className="w-4 h-4 text-primary" /><span className="text-sm text-primary font-medium">Vibe</span>
+            </button>
+          )}
+          <button onClick={() => setShowFilters(true)}
+            className={`px-3 py-2 rounded-xl flex items-center gap-2 text-sm transition-all relative ${filterCount > 0 ? 'bg-primary/20 border border-primary/40 text-primary' : 'glass'}`}>
+            <Filter className="w-4 h-4 text-primary" />
+            <span className="text-sm">Filtry</span>
+            {filterCount > 0 && <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">{filterCount}</span>}
+          </button>
+        </div>
+      </div>
+
+      {loadingProfiles && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <div className="w-16 h-16 rounded-full gradient-fire flex items-center justify-center text-3xl animate-pulse">🔥</div>
+          <p className="text-muted-foreground text-sm">Szukam osób w pobliżu...</p>
+        </div>
+      )}
+
+      {!loadingProfiles && (
+        <div className="flex-1 relative min-h-[380px]">
+          {isEmpty ? (
+            <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
+              <div className="text-6xl">🔥</div>
+              <h3 className="text-xl font-bold">Widziałeś wszystkich!</h3>
+              <p className="text-muted-foreground text-sm max-w-xs">{filterCount > 0 ? 'Rozszerz filtry lub odśwież' : 'Zwiększ zasięg lub sprawdź za chwilę'}</p>
+              <div className="flex gap-3">
+                {filterCount > 0 && <button onClick={() => { setFilters(DEFAULT_FILTERS); setCardIndex(0); }} className="glass text-foreground px-5 py-3 rounded-2xl font-semibold border border-border">Resetuj filtry</button>}
+                <button onClick={() => { refetch(); setCardIndex(0); }} className="gradient-fire text-primary-foreground px-6 py-3 rounded-2xl font-semibold">Odśwież 🔄</button>
+              </div>
+            </div>
+          ) : (
+            [...visibleProfiles].reverse().map((profile, i) => {
+              const reverseIndex = visibleProfiles.length - 1 - i;
+              return (
+                <motion.div key={profile.id} className="absolute inset-0" style={{ zIndex: reverseIndex === 0 ? 10 : reverseIndex }}
+                  animate={{ scale: reverseIndex === 0 ? 1 : 1 - (reverseIndex * 0.04), y: reverseIndex === 0 ? 0 : reverseIndex * 10 }}
+                  transition={{ type: 'spring', bounce: 0.3 }}>
+                  <SwipeCard profile={profile} isTop={reverseIndex === 0} onSwipeLeft={handleSwipeLeft} onSwipeRight={handleSwipeRight} onSuperLike={superLike} />
+                </motion.div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {!loadingProfiles && !isEmpty && (
+        <div className="flex flex-col gap-3">
+          <AdBanner placement="discover" />
+          <div className="flex items-center justify-center gap-4 py-2">
+            {/* Dislike */}
+            <button onClick={handleSwipeLeft} className="w-14 h-14 glass rounded-full flex items-center justify-center border border-destructive/30 active:scale-90 transition-transform">
+              <X className="w-6 h-6 text-destructive" />
+            </button>
+            {/* Whisper */}
+            <button
+              onClick={() => currentProfile && setShowWhisper(true)}
+              className="w-11 h-11 glass rounded-full flex items-center justify-center border border-primary/30 active:scale-90 transition-transform"
+              title="Wyślij szept 👻"
+            >
+              <Ghost className="w-4 h-4 text-primary" />
+            </button>
+            {/* Super Swipe */}
+            <button
+              onClick={() => currentProfile && setShowSuperSwipe(true)}
+              className="w-11 h-11 glass rounded-full flex items-center justify-center border border-accent/30 active:scale-90 transition-transform"
+              title="Super Swipe ⭐"
+            >
+              <Star className="w-4 h-4 text-accent" />
+            </button>
+            {/* Like */}
+            <button onClick={handleSwipeRight} className="w-14 h-14 gradient-fire rounded-full flex items-center justify-center glow-red active:scale-90 transition-transform">
+              <Heart className="w-6 h-6 text-primary-foreground" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showFilters && <FilterPanel filters={filters} onApply={f => { setFilters(f); setCardIndex(0); }} onClose={() => setShowFilters(false)} />}
+      </AnimatePresence>
+
+      {/* SuperSwipe modal */}
+      <AnimatePresence>
+        {showSuperSwipe && currentProfile && (
+          <SuperSwipeModal
+            profile={currentProfile}
+            dailyUsed={superSwipeDailyUsed}
+            onSend={(msg) => {
+              superLike();
+              setSuperSwipeDailyUsed(true);
+              setShowSuperSwipe(false);
+            }}
+            onClose={() => setShowSuperSwipe(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Whisper modal */}
+      <AnimatePresence>
+        {showWhisper && currentProfile && (
+          <WhisperModal
+            targetProfile={currentProfile}
+            onClose={() => setShowWhisper(false)}
+            onSent={() => setShowWhisper(false)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showVibeCheck && topProfile && (
+          <VibeCheck profileName={topProfile.displayName} profilePhoto={topProfile.photos[0]}
+            onMatch={() => { setShowVibeCheck(false); handleSwipeRight(); }} onSkip={() => { setShowVibeCheck(false); handleSwipeLeft(); }} onClose={() => setShowVibeCheck(false)} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
