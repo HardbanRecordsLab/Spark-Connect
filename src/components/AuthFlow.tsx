@@ -81,7 +81,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
 
         <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 text-center py-20">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }} className="mb-6">
-            <div className="w-20 h-20 gradient-fire rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 glow-red">🔥</div>
+            <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-24 h-24 object-contain mx-auto mb-4 drop-shadow-[0_0_15px_rgba(255,26,78,0.5)]" />
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <h1 className="text-6xl font-black mb-3 gradient-text">Spark Connect</h1>
@@ -183,7 +183,7 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
   return (
     <div className="min-h-screen flex flex-col bg-radial-glow px-6 pt-12 pb-8">
       <div className="flex items-center gap-2 mb-8">
-        <div className="w-8 h-8 gradient-fire rounded-xl flex items-center justify-center">🔥</div>
+        <img src="/spark-connect-logo.png" alt="Logo" className="w-8 h-8 object-contain" />
         <span className="font-bold text-xl gradient-text">Spark Connect</span>
       </div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -313,7 +313,7 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
   return (
     <div className="min-h-screen flex flex-col bg-radial-glow px-6 pt-12 pb-8">
       <div className="flex items-center gap-2 mb-8">
-        <div className="w-8 h-8 gradient-fire rounded-xl flex items-center justify-center">🔥</div>
+        <img src="/spark-connect-logo.png" alt="Logo" className="w-8 h-8 object-contain" />
         <span className="font-bold text-xl gradient-text">Spark Connect</span>
       </div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -649,7 +649,7 @@ export default function AuthFlow() {
     return (
       <div className="min-h-screen bg-radial-glow flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 gradient-fire rounded-3xl flex items-center justify-center text-3xl mx-auto mb-4 glow-red">🔥</div>
+          <img src="/spark-connect-logo.png" alt="Logo" className="w-16 h-16 object-contain mx-auto mb-6 drop-shadow-[0_0_15px_rgba(255,26,78,0.5)]" />
           <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
         </div>
       </div>

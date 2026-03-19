@@ -62,7 +62,7 @@ export default function AppLayout() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-3 glass-strong sticky top-0 z-40">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl gradient-fire flex items-center justify-center text-sm">🔥</div>
+          <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-8 h-8 object-contain" />
           <span className="font-bold text-lg gradient-text">Spark Connect</span>
         </div>
         <div className="flex items-center gap-2">
