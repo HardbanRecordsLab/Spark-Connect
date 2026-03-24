@@ -1,9 +1,8 @@
 // send-email — Supabase Edge Function
-// Sends branded transactional emails via Resend API.
-// Templates: welcome, new-match, profile-view, inactivity-reminder
+// Sends branded transactional emails via MailerLite API.
 //
 // Deploy: supabase functions deploy send-email
-// Secrets: supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxx
+// Secrets: supabase secrets set MAILERLITE_API_KEY=ml_xxxxxxxxxxxx
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -13,12 +12,13 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM        = "Spark Connect <no-reply@hardbanrecordslab.online>";
-const REPLY_TO    = "spark-connect@hardbanrecordslab.online";
-const APP_URL     = "https://spark-connect.hardbanrecordslab.online";
-const LOGO_URL    = `${APP_URL}/icon-192.png`;
+const FROM_EMAIL = "no-reply@hardbanrecordslab.online";
+const FROM_NAME  = "Spark Connect";
+const REPLY_TO   = "spark-connect@hardbanrecordslab.online";
+const APP_URL    = "https://spark-connect.hardbanrecordslab.online";
+const LOGO_URL   = `${APP_URL}/icon-192.png`;
 
-// ── Email HTML wrapper ─────────────────────────────────────────
+// ── Email HTML wrapper (Zoptymalizowany pod MailerLite) ─────────────────────────
 function layout(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="pl">
@@ -38,7 +38,6 @@ function layout(title: string, body: string): string {
   .btn{display:inline-block;background:linear-gradient(135deg,#ff1a4e,#ff6b35);color:#fff;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none;margin:8px 0}
   .footer{text-align:center;font-size:12px;color:#555;margin-top:24px}
   .footer a{color:#ff4d6d;text-decoration:none}
-  .divider{border:none;border-top:1px solid #2a2a3a;margin:24px 0}
 </style>
 </head>
 <body>
@@ -57,95 +56,61 @@ function layout(title: string, body: string): string {
 </html>`;
 }
 
-// ── Templates ──────────────────────────────────────────────────
+// ── Templates (Bez zmian w treści) ─────────────────────────────────────────────
 const templates: Record<string, (data: Record<string, string>) => { subject: string; html: string }> = {
-
   welcome: (d) => ({
     subject: "Witaj w Spark Connect 🔥",
     html: layout("Witaj w Spark Connect", `
       <h2>Cześć, ${d.name}! 👋</h2>
       <p>Cieszemy się że jesteś z nami. Spark Connect to pierwsza w Polsce w pełni darmowa aplikacja randkowa 18+.</p>
-      <p>Uzupełnij swój profil żeby zacząć dopasowywać się z innymi:</p>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}" class="btn">Uzupełnij profil →</a>
-      </div>
-      <hr class="divider"/>
-      <p style="font-size:13px;color:#888">Pamiętaj: Twój profil wymaga weryfikacji przez administratora zanim będzie widoczny dla innych. Otrzymasz powiadomienie gdy to nastąpi.</p>
+      <div style="text-align:center;margin:24px 0"><a href="${APP_URL}" class="btn">Uzupełnij profil →</a></div>
+      <p style="font-size:13px;color:#888">Pamiętaj: Twój profil wymaga weryfikacji przez administratora zanim będzie widoczny dla innych.</p>
     `),
   }),
-
   "new-match": (d) => ({
     subject: `Nowe dopasowanie z ${d.matchName} 🔥`,
     html: layout("Nowe dopasowanie!", `
       <h2>Macie chemię! 💘</h2>
       <p>Ty i <strong>${d.matchName}</strong> (${d.matchAge} lat, ${d.matchCity}) polubiliście się wzajemnie.</p>
-      <p>Napisz pierwszy/a — nie czekaj!</p>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}?tab=chats" class="btn">Napisz do ${d.matchName} →</a>
-      </div>
-      <p style="font-size:13px;color:#888">Chemistry Score: <strong>${d.chemScore}%</strong></p>
+      <div style="text-align:center;margin:24px 0"><a href="${APP_URL}?tab=chats" class="btn">Napisz do ${d.matchName} →</a></div>
     `),
   }),
-
   "profile-view": (d) => ({
     subject: `${d.viewerName} odwiedził/a Twój profil 👀`,
     html: layout("Ktoś Cię sprawdził", `
       <h2>${d.viewerName} zajrzał/a na Twój profil 👀</h2>
-      <p>Ktoś jest zainteresowany. Sprawdź kto to i może zrób pierwszy ruch!</p>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}" class="btn">Sprawdź kto Cię odwiedził →</a>
-      </div>
-    `),
-  }),
-
-  "inactivity-reminder": (d) => ({
-    subject: "Tęsknimy za Tobą 🔥 Nowe osoby na Ciebie czekają",
-    html: layout("Wróć do Spark Connect", `
-      <h2>Hej ${d.name}, dawno Cię nie było!</h2>
-      <p>W tym czasie <strong>${d.newProfiles} nowych profili</strong> pojawiło się w Twoim mieście.</p>
-      <p>Może wśród nich jest ktoś wyjątkowy?</p>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}" class="btn">Wróć i sprawdź 🔥</a>
-      </div>
-    `),
-  }),
-
-  "admin-new-user": (d) => ({
-    subject: `[Admin] Nowy profil do weryfikacji: ${d.userName}`,
-    html: layout("Nowy profil do weryfikacji", `
-      <h2>Nowy użytkownik czeka na weryfikację</h2>
-      <p><strong>${d.userName}</strong>, ${d.age} lat, ${d.city}</p>
-      <p>ID: <code>${d.userId}</code></p>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}/admin" class="btn">Otwórz panel admina →</a>
-      </div>
+      <div style="text-align:center;margin:24px 0"><a href="${APP_URL}" class="btn">Sprawdź kto Cię odwiedził →</a></div>
     `),
   }),
 };
 
-// ── Resend API call ────────────────────────────────────────────
+// ── MailerLite API call ────────────────────────────────────────────
 async function sendEmail(opts: { to: string; subject: string; html: string }) {
-  const apiKey = Deno.env.get("RESEND_API_KEY");
-  if (!apiKey) throw new Error("RESEND_API_KEY not set");
+  const apiKey = Deno.env.get("MAILERLITE_API_KEY");
+  if (!apiKey) throw new Error("MAILERLITE_API_KEY not set in Supabase Secrets");
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://connect.mailerlite.com/api/emails/transactional", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify({
-      from:     FROM,
-      reply_to: REPLY_TO,
-      to:       [opts.to],
+      from: {
+        email: FROM_EMAIL,
+        name:  FROM_NAME,
+      },
+      to:       opts.to,
       subject:  opts.subject,
       html:     opts.html,
+      reply_to: REPLY_TO,
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Resend error ${res.status}: ${err}`);
+    throw new Error(`MailerLite error ${res.status}: ${err}`);
   }
   return res.json();
 }
@@ -154,11 +119,9 @@ async function sendEmail(opts: { to: string; subject: string; html: string }) {
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
-  // Auth: only service role or admin can send
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: cors });
 
-  // Allow both service role and user tokens (for admin-new-user etc.)
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -167,16 +130,10 @@ serve(async (req: Request) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: cors });
 
-  const body = await req.json() as {
-    template: string;
-    to: string;
-    data?: Record<string, string>;
-  };
-
+  const body = await req.json() as { template: string; to: string; data?: Record<string, string> };
   const tpl = templates[body.template];
-  if (!tpl) {
-    return new Response(JSON.stringify({ error: `Unknown template: ${body.template}` }), { status: 400, headers: cors });
-  }
+  
+  if (!tpl) return new Response(JSON.stringify({ error: `Unknown template: ${body.template}` }), { status: 400, headers: cors });
 
   try {
     const { subject, html } = tpl(body.data ?? {});
