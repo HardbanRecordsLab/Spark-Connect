@@ -102,20 +102,31 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             </button>
           </motion.div>
           
-          {/* Studio HRL Adult Branding */}
+          {/* Studio HRL Adult Branding - Luxury 4K HD Style */}
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             transition={{ delay: 0.8 }}
-            className="mt-12 flex flex-col items-center gap-3"
+            className="mt-12 flex flex-col items-center gap-5"
           >
-            <div className="w-16 h-16 rounded-full gradient-fire flex items-center justify-center p-3 shadow-2xl relative">
-              <div className="absolute inset-0 rounded-full bg-white/10 blur-sm animate-pulse" />
-              <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain relative z-10 rounded-full" />
+            <div className="relative group">
+              {/* Ultra-contrast animated glow background */}
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#FF1A4E] via-[#FFD700] to-[#FF1A4E] opacity-100 blur-md animate-pulse" />
+              
+              <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center p-0 shadow-[0_0_60px_rgba(255,215,0,0.4)] relative border-[3px] border-white overflow-hidden">
+                <img 
+                  src="/studio hrl adult.jpeg" 
+                  alt="Studio HRL Adult" 
+                  className="w-full h-full object-contain relative z-10 rounded-full mix-blend-multiply scale-125" 
+                />
+              </div>
             </div>
+            
             <div className="text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black italic">Owned by</p>
-              <p className="text-sm font-black gradient-text uppercase tracking-tighter italic">Studio HRL Adult</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-[0.5em] font-black italic opacity-80 mb-1">Owned by</p>
+              <h2 className="text-2xl font-black gradient-luxury-text uppercase tracking-tighter italic drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                Studio HRL Adult
+              </h2>
             </div>
           </motion.div>
 

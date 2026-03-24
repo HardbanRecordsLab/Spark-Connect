@@ -26,8 +26,8 @@ export default function TermsOfService() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full gradient-fire flex items-center justify-center p-1.5 shadow-lg">
-            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain rounded-full" />
+          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center p-0.5 shadow-lg border-2 border-primary/40 overflow-hidden">
+            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125" />
           </div>
           <h1 className="font-bold text-lg">Regulamin Serwisu</h1>
         </div>
@@ -39,11 +39,12 @@ export default function TermsOfService() {
         className="max-w-2xl mx-auto px-5 py-8 space-y-8 text-sm leading-relaxed"
       >
         <div className="text-center mb-10">
-          <div className="w-24 h-24 rounded-full gradient-fire mx-auto flex items-center justify-center p-5 shadow-2xl mb-4">
-            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult Logo" className="w-full h-full object-contain rounded-full" />
+          <div className="w-40 h-40 rounded-full bg-white mx-auto flex items-center justify-center p-0 shadow-[0_0_50px_rgba(255,215,0,0.3)] mb-6 border-4 border-white relative overflow-hidden group">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 animate-pulse" />
+            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125 relative z-10" />
           </div>
-          <h2 className="text-xl font-black gradient-text uppercase tracking-tighter italic">{OWNER}</h2>
-          <p className="text-xs text-muted-foreground mt-1 tracking-widest">OFFICIAL DOCUMENTATION</p>
+          <h2 className="text-3xl font-black gradient-luxury-text uppercase tracking-tighter italic drop-shadow-md">{OWNER}</h2>
+          <p className="text-xs text-muted-foreground mt-1 tracking-[0.5em] font-black opacity-70 uppercase">Official Documentation</p>
         </div>
 
         <div className="glass rounded-2xl p-4 border border-border/50">
