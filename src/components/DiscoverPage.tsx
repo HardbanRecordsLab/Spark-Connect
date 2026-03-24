@@ -123,8 +123,37 @@ export default function DiscoverPage() {
   const [cardIndex, setCardIndex] = useState(0);
   const [showSuperSwipe, setShowSuperSwipe] = useState(false);
   const [showWhisper, setShowWhisper] = useState(false);
+  const [whisperTarget, setWhisperModal] = useState<Profile | null>(null);
+  const [adReward, setAdReward] = useState<string | null>(null);
   const { notify } = usePushNotifications(user?.id ?? null);
   const [superSwipeDailyUsed, setSuperSwipeDailyUsed] = useState(false);
+  
+  // Bonus timers (visual only for now, can be persisted in DB later)
+  const [boostTimeLeft, setBoostTimeLeft] = useState<number>(0);
+  const [incognitoTimeLeft, setIncognitoTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBoostTimeLeft(prev => Math.max(0, prev - 1));
+      setIncognitoTimeLeft(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h > 0 ? h + ':' : ''}${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+  };
+
+  const handleRewardComplete = (reward: string) => {
+    if (reward === 'boost_24h') setBoostTimeLeft(24 * 3600);
+    if (reward === 'incognito_1h') setIncognitoTimeLeft(3600);
+    setAdReward(null);
+    setShowRewardedAd(false);
+    // In real app: call API to update profile/settings in DB
+  };
 
   useEffect(() => {
     if (dbProfiles.length > 0) { setAllProfiles(dbProfiles); setCardIndex(0); }
@@ -278,8 +307,26 @@ export default function DiscoverPage() {
       {/* Available Now strip */}
       <AvailableNowSection onSelectProfile={(id) => console.log('open profile', id)} />
       <div className="flex items-center justify-between mb-3">
-        <div>
-          <h1 className="text-xl font-bold">Discover</h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold">Discover</h1>
+            
+            {/* Active Bonuses Timers */}
+            <div className="flex gap-2">
+              {boostTimeLeft > 0 && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1.5 glass px-2 py-0.5 rounded-full border border-primary/30">
+                  <span className="text-[10px]">🚀</span>
+                  <span className="text-[9px] font-black text-primary">{formatTime(boostTimeLeft)}</span>
+                </motion.div>
+              )}
+              {incognitoTimeLeft > 0 && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1.5 glass px-2 py-0.5 rounded-full border border-blue-400/30">
+                  <span className="text-[10px]">👻</span>
+                  <span className="text-[9px] font-black text-blue-400">{formatTime(incognitoTimeLeft)}</span>
+                </motion.div>
+              )}
+            </div>
+          </div>
           <p className="text-xs text-muted-foreground">Warsaw · {filters.distanceMax} km</p>
         </div>
         <div className="flex items-center gap-2">
