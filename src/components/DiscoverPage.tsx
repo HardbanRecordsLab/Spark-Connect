@@ -188,11 +188,15 @@ export default function DiscoverPage() {
     if (filters.verifiedOnly && !p.isVerified) return false;
     if (filters.onlineOnly && !p.lastOnlineAt) return false; 
     if (filters.withPhotosOnly && (!p.photos || p.photos.length === 0)) return false;
-    if (filters.bodyType.length > 0 && p.bodyType && !filters.bodyType.includes(p.bodyType)) return false;
-    if (filters.eyeColor.length > 0 && p.eyeColor && !filters.eyeColor.includes(p.eyeColor)) return false;
-    if (filters.hairColor.length > 0 && p.hairColor && !filters.hairColor.includes(p.hairColor)) return false;
+    if (filters.bodyType.length > 0 && p.body_type && !filters.bodyType.includes(p.body_type)) return false;
+    if (filters.breastSize.length > 0 && p.breast_size && !filters.breastSize.includes(p.breast_size)) return false;
+    if (filters.pubicHair.length > 0 && p.pubic_hair && !filters.pubicHair.includes(p.pubic_hair)) return false;
+    if (filters.eyeColor.length > 0 && p.eye_color && !filters.eyeColor.includes(p.eye_color)) return false;
+    if (filters.hairColor.length > 0 && p.hair_color && !filters.hairColor.includes(p.hair_color)) return false;
     if (filters.smoking.length > 0 && p.smoking && !filters.smoking.includes(p.smoking)) return false;
     if (filters.drinking.length > 0 && p.drinking && !filters.drinking.includes(p.drinking)) return false;
+    if (filters.sexualRole.length > 0 && p.sexual_role && !filters.sexualRole.includes(p.sexual_role)) return false;
+    if (filters.safeSex.length > 0 && p.safe_sex && !filters.safeSex.includes(p.safe_sex)) return false;
     return true;
   });
 

@@ -15,10 +15,17 @@ export interface DiscoverFilters {
   heightMin?: number;
   heightMax?: number;
   bodyType: string[];
+  breastSize: string[];
+  pubicHair: string[];
   eyeColor: string[];
   hairColor: string[];
   smoking: string[];
   drinking: string[];
+  relationshipGoal: string[];
+  sexualRole: string[];
+  safeSex: string[];
+  likes: string[];
+  dislikes: string[];
 }
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
@@ -32,19 +39,39 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   onlineOnly: false,
   withPhotosOnly: true,
   bodyType: [],
+  breastSize: [],
+  pubicHair: [],
   eyeColor: [],
   hairColor: [],
   smoking: [],
   drinking: [],
+  relationshipGoal: [],
+  sexualRole: [],
+  safeSex: [],
+  likes: [],
+  dislikes: [],
 };
 
-const GENDERS = ['Female', 'Male', 'Non-binary', 'Other'];
-const MOODS = ['Looking for fun', 'Just chatting', 'Serious only'];
-const BODY_TYPES = ['Slim', 'Average', 'Athletic', 'Curvy', 'Muscular'];
-const EYE_COLORS = ['Blue', 'Brown', 'Green', 'Grey', 'Hazel'];
-const HAIR_COLORS = ['Black', 'Blonde', 'Brown', 'Red', 'Grey', 'Bald'];
-const SMOKING = ['Never', 'Socially', 'Regularly'];
-const DRINKING = ['Never', 'Socially', 'Regularly'];
+const GENDERS = ['Kobieta', 'Mężczyzna', 'Para (KM)', 'Para (KK)', 'Para (MM)', 'Trans/CD'];
+const MOODS = ['Zabawa i seks 🔥', 'Randki bez zobowiązań 🌙', 'Szukam miłości 💍', 'Przyjaźń 🤝', 'Trójkąty/Poliamoria 🌈'];
+const BODY_TYPES = ['Szczupła', 'Normalna', 'Atletyczna', 'Krągła', 'Muskularna', 'Puszysta', 'Kulturysta'];
+const BREAST_SIZE = ['A', 'B', 'C', 'D', 'E', 'F', 'G+', 'Brak danych'];
+const PUBIC_HAIR = ['Całkowicie ogolone', 'Przystrzyżone', 'Naturalne', 'Pasek'];
+const EYE_COLORS = ['Niebieskie', 'Brązowe', 'Zielone', 'Szare', 'Piwne', 'Czarne'];
+const HAIR_COLORS = ['Czarne', 'Blond', 'Brązowe', 'Rude', 'Siwe', 'Łysy', 'Kolorowe'];
+const SMOKING = ['Nigdy', 'Okazyjnie', 'Regularnie', 'Tylko e-papierosy'];
+const DRINKING = ['Nigdy', 'Okazyjnie', 'W weekendy', 'Regularnie'];
+
+const SEXUAL_PREFERENCES = [
+  'Dominujący/a 👑', 'Uległy/a ⛓️', 'Switch 🔄', 'Vanilla 🍦', 'Kinky 👅', 'Voyeur 👁️', 'Exhibitionist 🍑', 'Swinger 🍍'
+];
+
+const SAFE_SEX = ['Zawsze', 'Zależy od osoby', 'Nie używam', 'Tylko z partnerem'];
+
+const LIKES_DISLIKES = {
+  likes: ['Seks oralny', 'Seks analny', 'BDSM', 'Fetysz stóp', 'Roleplay', 'Szybki numerek', 'Długie sesje', 'Seks w miejscu publicznym', 'Zabawki', 'Lekkie wiązanie'],
+  dislikes: ['Brak higieny', 'Palenie przy seksie', 'Zbyt szybkie tempo', 'Brak zabezpieczeń', 'Nuda w łóżku', 'Agresja']
+};
 
 interface FilterPanelProps {
   filters: DiscoverFilters;
@@ -93,10 +120,17 @@ export default function FilterPanel({ filters, onApply, onClose }: FilterPanelPr
     draft.onlineOnly,
     !draft.withPhotosOnly,
     draft.bodyType.length > 0,
+    draft.breastSize.length > 0,
+    draft.pubicHair.length > 0,
     draft.eyeColor.length > 0,
     draft.hairColor.length > 0,
     draft.smoking.length > 0,
     draft.drinking.length > 0,
+    draft.relationshipGoal.length > 0,
+    draft.sexualRole.length > 0,
+    draft.safeSex.length > 0,
+    draft.likes.length > 0,
+    draft.dislikes.length > 0,
   ].filter(Boolean).length;
 
   return (
@@ -194,11 +228,25 @@ export default function FilterPanel({ filters, onApply, onClose }: FilterPanelPr
 
           {/* New Advanced Filters */}
           <div className="border-t border-border pt-6 mb-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Zaawansowane</h3>
-            
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary mb-6 italic">Budowa Ciała 💎</h3>
             {renderTagGroup('Sylwetka', 'bodyType', BODY_TYPES)}
+            {renderTagGroup('Biust', 'breastSize', BREAST_SIZE)}
+            {renderTagGroup('Włosy łonowe', 'pubicHair', PUBIC_HAIR)}
             {renderTagGroup('Kolor oczu', 'eyeColor', EYE_COLORS)}
             {renderTagGroup('Kolor włosów', 'hairColor', HAIR_COLORS)}
+          </div>
+
+          <div className="border-t border-border pt-6 mb-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary mb-6 italic">Upodobania 18+ 🔥</h3>
+            {renderTagGroup('Nastawienie', 'moodStatus', MOODS)}
+            {renderTagGroup('Rola w łóżku', 'sexualRole', SEXUAL_PREFERENCES)}
+            {renderTagGroup('Bezpieczny seks', 'safeSex', SAFE_SEX)}
+            {renderTagGroup('To co uwielbia 👅', 'likes', LIKES_DISLIKES.likes)}
+            {renderTagGroup('Tego nie lubi 🚫', 'dislikes', LIKES_DISLIKES.dislikes)}
+          </div>
+
+          <div className="border-t border-border pt-6 mb-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Styl Życia</h3>
             {renderTagGroup('Palenie', 'smoking', SMOKING)}
             {renderTagGroup('Alkohol', 'drinking', DRINKING)}
           </div>

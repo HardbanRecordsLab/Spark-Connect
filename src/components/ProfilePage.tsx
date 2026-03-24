@@ -30,6 +30,8 @@ const INTEREST_SUGGESTIONS = [
 ];
 
 const BODY_TYPES = ['Szczupła', 'Normalna', 'Atletyczna', 'Krągła', 'Muskularna', 'Puszysta', 'Kulturysta'];
+const BREAST_SIZE = ['A', 'B', 'C', 'D', 'E', 'F', 'G+', 'Brak danych'];
+const PUBIC_HAIR = ['Całkowicie ogolone', 'Przystrzyżone', 'Naturalne', 'Pasek'];
 const EYE_COLORS = ['Niebieskie', 'Brązowe', 'Zielone', 'Szare', 'Piwne', 'Czarne'];
 const HAIR_COLORS = ['Czarne', 'Blond', 'Brązowe', 'Rude', 'Siwe', 'Łysy', 'Kolorowe'];
 const SMOKING = ['Nigdy', 'Okazyjnie', 'Regularnie', 'Tylko e-papierosy'];
@@ -40,7 +42,17 @@ const PIERCING = ['Brak', 'Mało widoczny', 'Wiele'];
 const RELATIONSHIP_GOALS = ['Zabawa i seks 🔥', 'Randki bez zobowiązań 🌙', 'Szukam miłości 💍', 'Przyjaźń 🤝', 'Trójkąty/Poliamoria 🌈'];
 const SEXUAL_ORIENTATION = ['Hetero', 'Bi', 'Homo', 'Panseksualny', 'Ciekawski'];
 const LOOKING_FOR = ['Kobieta', 'Mężczyzna', 'Para (KM)', 'Para (KK)', 'Para (MM)', 'Trans/CD'];
-const INTERESTS_18 = ['BDSM', 'Swinger', 'Roleplay', 'Kink', 'Vanilla', 'Fetish', 'Tantra', 'Nudyzm'];
+
+const LIKES_DISLIKES = {
+  likes: ['Seks oralny', 'Seks analny', 'BDSM', 'Fetysz stóp', 'Roleplay', 'Szybki numerek', 'Długie sesje', 'Seks w miejscu publicznym', 'Zabawki', 'Lekkie wiązanie'],
+  dislikes: ['Brak higieny', 'Palenie przy seksie', 'Zbyt szybkie tempo', 'Brak zabezpieczeń', 'Nuda w łóżku', 'Agresja']
+};
+
+const SEXUAL_PREFERENCES = [
+  'Dominujący/a 👑', 'Uległy/a ⛓️', 'Switch 🔄', 'Vanilla 🍦', 'Kinky 👅', 'Voyeur 👁️', 'Exhibitionist 🍑', 'Swinger 🍍'
+];
+
+const SAFE_SEX = ['Zawsze', 'Zależy od osoby', 'Nie używam', 'Tylko z partnerem'];
 
 function SelectField({ label, value, options, onSave }: {
   label: string; value: string; options: string[]; onSave: (v: string) => Promise<void>;
@@ -469,6 +481,10 @@ export default function ProfilePage() {
             <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => updateProfile({ body_type: v })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
+            <SelectField label="Biust" value={profile?.breast_size || ''} options={BREAST_SIZE} onSave={async v => updateProfile({ breast_size: v })} />
+            <SelectField label="Włosy łonowe" value={profile?.pubic_hair || ''} options={PUBIC_HAIR} onSave={async v => updateProfile({ pubic_hair: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => updateProfile({ eye_color: v })} />
             <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => updateProfile({ hair_color: v })} />
           </div>
@@ -480,10 +496,54 @@ export default function ProfilePage() {
             <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => updateProfile({ tattoos: v })} />
             <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => updateProfile({ piercing: v })} />
           </div>
-          <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => updateProfile({ relationship_goal: v })} />
-          <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => updateProfile({ orientation: v })} />
-          <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => updateProfile({ looking_for_gender: v })} />
-          <SelectField label="Styl życia (18+)" value={profile?.lifestyle_18 || ''} options={INTERESTS_18} onSave={async v => updateProfile({ lifestyle_18: v })} />
+          
+          <div className="space-y-4 py-4 border-t border-border/50">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary px-1">Upodobania Seksualne 18+ 🔥</h3>
+            <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => updateProfile({ relationship_goal: v })} />
+            <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => updateProfile({ orientation: v })} />
+            <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => updateProfile({ looking_for_gender: v })} />
+            <SelectField label="Rola w łóżku" value={profile?.sexual_role || ''} options={SEXUAL_PREFERENCES} onSave={async v => updateProfile({ sexual_role: v })} />
+            <SelectField label="Bezpieczny seks" value={profile?.safe_sex || ''} options={SAFE_SEX} onSave={async v => updateProfile({ safe_sex: v })} />
+            
+            <div className="glass rounded-2xl p-4">
+              <p className="text-sm font-semibold mb-3">To co uwielbiam 👅</p>
+              <div className="flex flex-wrap gap-2">
+                {LIKES_DISLIKES.likes.map(tag => {
+                  const sel = (profile?.likes || []).includes(tag);
+                  return (
+                    <button key={tag} onClick={async () => {
+                      const prev = profile?.likes || [];
+                      const next = sel ? prev.filter((t: string) => t !== tag) : [...prev, tag];
+                      await updateProfile({ likes: next });
+                    }}
+                    className={`text-[10px] px-3 py-1.5 rounded-full border transition-all ${sel ? 'gradient-fire text-primary-foreground border-transparent' : 'glass border-border text-muted-foreground'}`}>
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="glass rounded-2xl p-4">
+              <p className="text-sm font-semibold mb-3">Tego nie lubię 🚫</p>
+              <div className="flex flex-wrap gap-2">
+                {LIKES_DISLIKES.dislikes.map(tag => {
+                  const sel = (profile?.dislikes || []).includes(tag);
+                  return (
+                    <button key={tag} onClick={async () => {
+                      const prev = profile?.dislikes || [];
+                      const next = sel ? prev.filter((t: string) => t !== tag) : [...prev, tag];
+                      await updateProfile({ dislikes: next });
+                    }}
+                    className={`text-[10px] px-3 py-1.5 rounded-full border transition-all ${sel ? 'bg-destructive text-destructive-foreground border-transparent' : 'glass border-border text-muted-foreground'}`}>
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => updateProfile({ education: v })} />
           <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => updateProfile({ occupation: v })} />
         </div>
