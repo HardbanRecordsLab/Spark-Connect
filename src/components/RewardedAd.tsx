@@ -18,8 +18,8 @@ const REWARD_LABELS: Record<RewardType, { title: string; desc: string; icon: str
   unlock_blur:       { title: 'Odblokuj zdjęcie',                  desc: 'Zobacz kto Cię polubił',                icon: '🔓', durationS: 15 },
 };
 
-// Adsterra Direct Link (Smartlink) — replace with your real URL from Adsterra panel
-const ADSTERRA_DIRECT_LINK = `https://wayfarerorthodox.com/dnn2hkn8?key=${ADSTERRA_KEY}`;
+// Adsterra Direct Link (Smartlink) for spark-connect.hardbanrecordslab.online
+const ADSTERRA_DIRECT_LINK = `https://deductpursue.com/j5zvn6q8x8?key=5182b7f4b4521755690210440a0f4a83`;
 
 interface RewardedAdProps {
   reward: RewardType;

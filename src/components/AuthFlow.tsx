@@ -422,31 +422,53 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
   const db = supabase as any;
 
   const handleComplete = async () => {
+    console.log('Starting onboarding completion...', { step, data, avatarFile: !!avatarFile });
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    try {
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+      if (!user) throw new Error('No user session found');
+
       let avatarUrl = '';
       if (avatarFile) {
         try {
+          console.log('Uploading avatar...');
           const { publicUrl } = await uploadToR2({ bucket: 'avatars', file: avatarFile, filename: avatarFile.name });
           avatarUrl = publicUrl;
+          console.log('Avatar uploaded:', avatarUrl);
         } catch (uploadErr) {
           console.error('Avatar upload failed:', uploadErr);
+          // Don't block completion if only upload failed
         }
       }
-      await db.from('profiles').update({
-        display_name: data.display_name,
+
+      console.log('Updating profile in database...');
+      const updateData = {
+        display_name: data.display_name || user.email?.split('@')[0] || 'User',
         age: parseInt(data.age) || null,
-        gender: data.gender,
-        orientation: data.orientation,
+        gender: data.gender || null,
+        orientation: data.orientation || null,
         relationship_type: data.relationship_type,
         interests: (data as any).interests || [],
         profile_complete: !!(data.display_name && data.age && data.gender && data.orientation),
         ...(avatarUrl && { avatar_url: avatarUrl, photos: [avatarUrl] }),
-      }).eq('id', user.id);
+      };
+      
+      const { error: updateErr } = await db.from('profiles').update(updateData).eq('id', user.id);
+      
+      if (updateErr) {
+        console.error('Profile update error:', updateErr);
+        throw updateErr;
+      }
+
+      console.log('Profile updated successfully');
+      onComplete();
+    } catch (err: any) {
+      console.error('Onboarding error:', err);
+      alert(`Wystąpił błąd podczas zapisywania profilu: ${err.message || 'Nieznany błąd'}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    onComplete();
   };
 
   // ── 4 mandatory steps ─────────────────────────────────────

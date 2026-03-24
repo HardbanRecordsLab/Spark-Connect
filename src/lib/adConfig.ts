@@ -31,7 +31,7 @@ export const ADSENSE_SLOTS: Record<string, AdSlot> = {
 };
 
 // ── AdSterra ─────────────────────────────────────────────────
-export const ADSTERRA_KEY = '8770435084a76ca11da21362ffa12626'; // ← Anti-Adblock Popunder Key
+export const ADSTERRA_KEY = '5182b7f4b4521755690210440a0f4a83'; // ← Updated from Smartlink
 export const ADSTERRA_SLOTS: Record<string, AdSlot> = {
   discover_strip:   { platform: 'adsterra', slotId: 'YOUR_BANNER_ID',       format: 'banner',    width: 320, height: 50  },
   chats_card:       { platform: 'adsterra', slotId: 'YOUR_RECTANGLE_ID',    format: 'rectangle', width: 300, height: 100 },
