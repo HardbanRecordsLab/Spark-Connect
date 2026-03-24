@@ -111,7 +111,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
           >
             <div className="w-16 h-16 rounded-full gradient-fire flex items-center justify-center p-3 shadow-2xl relative">
               <div className="absolute inset-0 rounded-full bg-white/10 blur-sm animate-pulse" />
-              <img src="/hrl-logo.png" alt="Studio HRL Adult" className="w-full h-full object-contain relative z-10" />
+              <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain relative z-10 rounded-full" />
             </div>
             <div className="text-center">
               <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black italic">Owned by</p>

@@ -27,7 +27,7 @@ export default function TermsOfService() {
         </button>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full gradient-fire flex items-center justify-center p-1.5 shadow-lg">
-            <img src="/hrl-logo.png" alt="Studio HRL Adult" className="w-full h-full object-contain" />
+            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain rounded-full" />
           </div>
           <h1 className="font-bold text-lg">Regulamin Serwisu</h1>
         </div>
@@ -40,7 +40,7 @@ export default function TermsOfService() {
       >
         <div className="text-center mb-10">
           <div className="w-24 h-24 rounded-full gradient-fire mx-auto flex items-center justify-center p-5 shadow-2xl mb-4">
-            <img src="/hrl-logo.png" alt="Studio HRL Adult Logo" className="w-full h-full object-contain" />
+            <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult Logo" className="w-full h-full object-contain rounded-full" />
           </div>
           <h2 className="text-xl font-black gradient-text uppercase tracking-tighter italic">{OWNER}</h2>
           <p className="text-xs text-muted-foreground mt-1 tracking-widest">OFFICIAL DOCUMENTATION</p>
