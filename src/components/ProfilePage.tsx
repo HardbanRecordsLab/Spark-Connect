@@ -29,12 +29,18 @@ const INTEREST_SUGGESTIONS = [
   'Movies', 'Reading', 'Yoga', 'Hiking', 'Photography', 'Dancing',
 ];
 
-const BODY_TYPES = ['Szczupła', 'Normalna', 'Atletyczna', 'Krągła', 'Muskularna'];
-const EYE_COLORS = ['Niebieskie', 'Brązowe', 'Zielone', 'Szare', 'Piwne'];
-const HAIR_COLORS = ['Czarne', 'Blond', 'Brązowe', 'Rude', 'Siwe', 'Łysy'];
-const SMOKING = ['Nigdy', 'Okazyjnie', 'Regularnie'];
-const DRINKING = ['Nigdy', 'Okazyjnie', 'Regularnie'];
-const EDUCATION = ['Podstawowe', 'Średnie', 'Wyższe', 'Student'];
+const BODY_TYPES = ['Szczupła', 'Normalna', 'Atletyczna', 'Krągła', 'Muskularna', 'Puszysta', 'Kulturysta'];
+const EYE_COLORS = ['Niebieskie', 'Brązowe', 'Zielone', 'Szare', 'Piwne', 'Czarne'];
+const HAIR_COLORS = ['Czarne', 'Blond', 'Brązowe', 'Rude', 'Siwe', 'Łysy', 'Kolorowe'];
+const SMOKING = ['Nigdy', 'Okazyjnie', 'Regularnie', 'Tylko e-papierosy'];
+const DRINKING = ['Nigdy', 'Okazyjnie', 'W weekendy', 'Regularnie'];
+const EDUCATION = ['Podstawowe', 'Średnie', 'Wyższe', 'Student', 'Doktorat'];
+const TATTOOS = ['Brak', 'Kilka małych', 'Wiele dużych', 'Całe ciało'];
+const PIERCING = ['Brak', 'Mało widoczny', 'Wiele'];
+const RELATIONSHIP_GOALS = ['Zabawa i seks 🔥', 'Randki bez zobowiązań 🌙', 'Szukam miłości 💍', 'Przyjaźń 🤝', 'Trójkąty/Poliamoria 🌈'];
+const SEXUAL_ORIENTATION = ['Hetero', 'Bi', 'Homo', 'Panseksualny', 'Ciekawski'];
+const LOOKING_FOR = ['Kobieta', 'Mężczyzna', 'Para (KM)', 'Para (KK)', 'Para (MM)', 'Trans/CD'];
+const INTERESTS_18 = ['BDSM', 'Swinger', 'Roleplay', 'Kink', 'Vanilla', 'Fetish', 'Tantra', 'Nudyzm'];
 
 function SelectField({ label, value, options, onSave }: {
   label: string; value: string; options: string[]; onSave: (v: string) => Promise<void>;
@@ -470,6 +476,14 @@ export default function ProfilePage() {
             <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => updateProfile({ smoking: v })} />
             <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => updateProfile({ drinking: v })} />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => updateProfile({ tattoos: v })} />
+            <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => updateProfile({ piercing: v })} />
+          </div>
+          <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => updateProfile({ relationship_goal: v })} />
+          <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => updateProfile({ orientation: v })} />
+          <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => updateProfile({ looking_for_gender: v })} />
+          <SelectField label="Styl życia (18+)" value={profile?.lifestyle_18 || ''} options={INTERESTS_18} onSave={async v => updateProfile({ lifestyle_18: v })} />
           <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => updateProfile({ education: v })} />
           <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => updateProfile({ occupation: v })} />
         </div>
