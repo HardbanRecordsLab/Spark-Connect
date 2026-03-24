@@ -37,6 +37,15 @@ export interface User {
   totalLikes?: number;
   verificationVideoUrl?: string;
   stealthMode?: boolean;
+  breastSize?: string;
+  pubicHair?: string;
+  sexualRole?: string;
+  safeSex?: string;
+  likes?: string[];
+  dislikes?: string[];
+  relationshipGoal?: string;
+  lookingForGender?: string;
+  lifestyle18?: string;
 }
 
 export interface Profile {
@@ -72,6 +81,15 @@ export interface Profile {
   totalLikes?: number;
   verificationVideoUrl?: string;
   stealthMode?: boolean;
+  breastSize?: string;
+  pubicHair?: string;
+  sexualRole?: string;
+  safeSex?: string;
+  likes?: string[];
+  dislikes?: string[];
+  relationshipGoal?: string;
+  lookingForGender?: string;
+  lifestyle18?: string;
 }
 
 export interface Message {

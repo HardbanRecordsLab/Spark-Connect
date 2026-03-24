@@ -37,6 +37,15 @@ export interface Profile {
   total_likes?: number;
   verification_video_url?: string;
   stealth_mode?: boolean;
+  breast_size?: string;
+  pubic_hair?: string;
+  sexual_role?: string;
+  safe_sex?: string;
+  likes?: string[];
+  dislikes?: string[];
+  relationship_goal?: string;
+  looking_for_gender?: string;
+  lifestyle_18?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

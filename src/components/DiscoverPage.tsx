@@ -29,10 +29,17 @@ function activeFilterCount(f: DiscoverFilters) {
     f.onlineOnly,
     !f.withPhotosOnly,
     f.bodyType.length > 0,
+    f.breastSize.length > 0,
+    f.pubicHair.length > 0,
     f.eyeColor.length > 0,
     f.hairColor.length > 0,
     f.smoking.length > 0,
     f.drinking.length > 0,
+    f.relationshipGoal.length > 0,
+    f.sexualRole.length > 0,
+    f.safeSex.length > 0,
+    f.likes.length > 0,
+    f.dislikes.length > 0,
   ].filter(Boolean).length;
 }
 
