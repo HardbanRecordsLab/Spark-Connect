@@ -46,6 +46,8 @@ export interface User {
   relationshipGoal?: string;
   lookingForGender?: string;
   lifestyle18?: string;
+  tattoos?: string;
+  piercing?: string;
 }
 
 export interface Profile {
@@ -90,6 +92,8 @@ export interface Profile {
   relationshipGoal?: string;
   lookingForGender?: string;
   lifestyle18?: string;
+  tattoos?: string;
+  piercing?: string;
 }
 
 export interface Message {

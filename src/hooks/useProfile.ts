@@ -46,6 +46,8 @@ export interface Profile {
   relationship_goal?: string;
   looking_for_gender?: string;
   lifestyle_18?: string;
+  tattoos?: string;
+  piercing?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

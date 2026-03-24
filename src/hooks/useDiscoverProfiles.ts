@@ -42,6 +42,17 @@ function mapRow(p: Record<string, unknown>): Profile {
     lastOnlineAt: (p.last_online_at as string) ?? undefined,
     profileViews: (p.profile_views as number) ?? 0,
     totalLikes: (p.total_likes as number) ?? 0,
+    breastSize: (p.breast_size as string) ?? undefined,
+    pubicHair: (p.pubic_hair as string) ?? undefined,
+    sexualRole: (p.sexual_role as string) ?? undefined,
+    safeSex: (p.safe_sex as string) ?? undefined,
+    likes: (p.likes as string[]) ?? undefined,
+    dislikes: (p.dislikes as string[]) ?? undefined,
+    relationshipGoal: (p.relationship_goal as string) ?? undefined,
+    lookingForGender: (p.looking_for_gender as string) ?? undefined,
+    lifestyle18: (p.lifestyle_18 as string) ?? undefined,
+    tattoos: (p.tattoos as string) ?? undefined,
+    piercing: (p.piercing as string) ?? undefined,
   };
 }
 
@@ -125,7 +136,8 @@ export function useDiscoverProfiles(userId: string | null) {
       setProfiles(prev => reset ? mapped : [...prev, ...mapped]);
 
       // Update cursor to last item's created_at for next page
-      cursorRef.current = rows[rows.length - 1].created_at ?? null;
+      const lastRow = rows[rows.length - 1] as { created_at?: string };
+      cursorRef.current = lastRow.created_at ?? null;
       setHasMore(rows.length === PAGE_SIZE);
     } catch (err) {
       console.error('fetchPage error:', err);

@@ -86,8 +86,12 @@ async function cacheFirst(request, cacheName) {
   if (cached) return cached;
   const response = await fetch(request);
   if (response.ok && response.url.startsWith('http')) {
-    const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
+    try {
+      const cache = await caches.open(cacheName);
+      await cache.put(request, response.clone());
+    } catch (err) {
+      console.warn('SW: Cache put failed', err);
+    }
   }
   return response;
 }
@@ -96,8 +100,12 @@ async function networkFirstImage(request) {
   try {
     const response = await fetch(request);
     if (response.ok && response.url.startsWith('http')) {
-      const cache = await caches.open(IMAGE_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(IMAGE_CACHE);
+        await cache.put(request, response.clone());
+      } catch (err) {
+        console.warn('SW: Image cache put failed', err);
+      }
     }
     return response;
   } catch {

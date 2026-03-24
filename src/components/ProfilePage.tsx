@@ -444,11 +444,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <EditableField label="Imię" value={displayName} maxLength={40} onSave={async v => updateProfile({ display_name: v })} />
+        <EditableField label="Imię" value={displayName} maxLength={40} onSave={async v => { await updateProfile({ display_name: v }); }} />
         <EditableField label="Wiek" value={String(age)} type="number" onSave={async v => { const n = parseInt(v, 10); if (n >= 18 && n <= 99) await updateProfile({ age: n }); }} />
         <div className="flex gap-2 items-stretch">
           <div className="flex-1">
-            <EditableField label="Miasto" value={city} maxLength={60} onSave={async v => updateProfile({ city: v })} />
+            <EditableField label="Miasto" value={city} maxLength={60} onSave={async v => { await updateProfile({ city: v }); }} />
           </div>
           <button onClick={handleDetectLocation} disabled={geoLoading} title="Wykryj automatycznie"
             className="glass rounded-2xl px-3 flex items-center justify-center border border-border hover:border-primary/40 transition-colors">
@@ -468,7 +468,7 @@ export default function ProfilePage() {
               value={bio} 
               multiline 
               maxLength={2500} 
-              onSave={async v => updateProfile({ bio: v })} 
+              onSave={async v => { await updateProfile({ bio: v }); }} 
             />
           </div>
         </div>
@@ -477,33 +477,33 @@ export default function ProfilePage() {
         <div className="space-y-4 pt-4 border-t border-border/50">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">O mnie</h3>
           <div className="grid grid-cols-2 gap-3">
-            <EditableField label="Wzrost (cm)" value={String(profile?.height || '')} type="number" onSave={async v => updateProfile({ height: parseInt(v, 10) })} />
-            <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => updateProfile({ body_type: v })} />
+            <EditableField label="Wzrost (cm)" value={String(profile?.height || '')} type="number" onSave={async v => { await updateProfile({ height: parseInt(v, 10) }); }} />
+            <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => { await updateProfile({ body_type: v }); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Biust" value={profile?.breast_size || ''} options={BREAST_SIZE} onSave={async v => updateProfile({ breast_size: v })} />
-            <SelectField label="Włosy łonowe" value={profile?.pubic_hair || ''} options={PUBIC_HAIR} onSave={async v => updateProfile({ pubic_hair: v })} />
+            <SelectField label="Biust" value={profile?.breast_size || ''} options={BREAST_SIZE} onSave={async v => { await updateProfile({ breast_size: v }); }} />
+            <SelectField label="Włosy łonowe" value={profile?.pubic_hair || ''} options={PUBIC_HAIR} onSave={async v => { await updateProfile({ pubic_hair: v }); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => updateProfile({ eye_color: v })} />
-            <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => updateProfile({ hair_color: v })} />
+            <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => { await updateProfile({ eye_color: v }); }} />
+            <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => { await updateProfile({ hair_color: v }); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => updateProfile({ smoking: v })} />
-            <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => updateProfile({ drinking: v })} />
+            <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => { await updateProfile({ smoking: v }); }} />
+            <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => { await updateProfile({ drinking: v }); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => updateProfile({ tattoos: v })} />
-            <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => updateProfile({ piercing: v })} />
+            <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => { await updateProfile({ tattoos: v }); }} />
+            <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => { await updateProfile({ piercing: v }); }} />
           </div>
           
           <div className="space-y-4 py-4 border-t border-border/50">
             <h3 className="text-sm font-bold uppercase tracking-wider text-primary px-1">Upodobania Seksualne 18+ 🔥</h3>
-            <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => updateProfile({ relationship_goal: v })} />
-            <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => updateProfile({ orientation: v })} />
-            <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => updateProfile({ looking_for_gender: v })} />
-            <SelectField label="Rola w łóżku" value={profile?.sexual_role || ''} options={SEXUAL_PREFERENCES} onSave={async v => updateProfile({ sexual_role: v })} />
-            <SelectField label="Bezpieczny seks" value={profile?.safe_sex || ''} options={SAFE_SEX} onSave={async v => updateProfile({ safe_sex: v })} />
+            <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => { await updateProfile({ relationship_goal: v }); }} />
+            <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => { await updateProfile({ orientation: v }); }} />
+            <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => { await updateProfile({ looking_for_gender: v }); }} />
+            <SelectField label="Rola w łóżku" value={profile?.sexual_role || ''} options={SEXUAL_PREFERENCES} onSave={async v => { await updateProfile({ sexual_role: v }); }} />
+            <SelectField label="Bezpieczny seks" value={profile?.safe_sex || ''} options={SAFE_SEX} onSave={async v => { await updateProfile({ safe_sex: v }); }} />
             
             <div className="glass rounded-2xl p-4">
               <p className="text-sm font-semibold mb-3">To co uwielbiam 👅</p>
@@ -544,11 +544,11 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => updateProfile({ education: v })} />
-          <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => updateProfile({ occupation: v })} />
+          <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => { await updateProfile({ education: v }); }} />
+          <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => { await updateProfile({ occupation: v }); }} />
         </div>
 
-        <InterestsEditor interests={interests} onSave={async tags => updateProfile({ interests: tags })} />
+        <InterestsEditor interests={interests} onSave={async tags => { await updateProfile({ interests: tags }); }} />
 
         {/* Dostępny teraz — tryb spontaniczny */}
         <AvailableNowToggle />
@@ -650,11 +650,13 @@ export default function ProfilePage() {
 
       <AnimatePresence>
         {showFaceVerify && <FaceVerify onVerified={handleVerified} onClose={() => setShowFaceVerify(false)} />}
-      <AnimatePresence>
         {showRewardedAd && (
-          <RewardedAd reward={rewardType} onComplete={() => { setShowRewardedAd(false); setIsBoosted(true); }} onClose={() => setShowRewardedAd(false)} />
+          <RewardedAd 
+            reward={rewardType} 
+            onComplete={() => { setShowRewardedAd(false); setIsBoosted(true); }} 
+            onSkip={() => setShowRewardedAd(false)} 
+          />
         )}
-      </AnimatePresence>
       </AnimatePresence>
     </div>
   );

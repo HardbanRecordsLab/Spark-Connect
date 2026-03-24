@@ -25,9 +25,10 @@ interface RewardedAdProps {
   reward: RewardType;
   onComplete: (reward: RewardType) => void;
   onSkip: () => void;
+  onClose?: () => void;
 }
 
-export default function RewardedAd({ reward, onComplete, onSkip }: RewardedAdProps) {
+export default function RewardedAd({ reward, onComplete, onSkip, onClose }: RewardedAdProps) {
   const [phase, setPhase] = useState<'intro' | 'watching' | 'done'>('intro');
   const [countdown, setCountdown] = useState(0);
   const [progress, setProgress] = useState(0);
