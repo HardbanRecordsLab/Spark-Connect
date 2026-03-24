@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useUserSettings } from '@/hooks/useUserSettings';
 import { SuperSwipeModal } from '@/components/SuperSwipe';
 import RewardedAd from '@/components/RewardedAd';
 import { WhisperModal } from '@/components/WhisperMessage';

@@ -437,7 +437,23 @@ export default function ProfilePage() {
             {geoLoading ? <Loader2 className="w-4 h-4 text-primary animate-spin" /> : <LocateFixed className="w-4 h-4 text-primary" />}
           </button>
         </div>
-        <EditableField label="Bio" value={bio} multiline maxLength={300} onSave={async v => updateProfile({ bio: v })} />
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">O mnie ✨</h3>
+            <span className="text-[10px] text-primary font-black italic uppercase">Luxury Profile</span>
+          </div>
+          <div className="relative group">
+            <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-20 blur group-focus-within:opacity-100 transition-opacity" />
+            <EditableField 
+              label="Opis profilu" 
+              value={bio} 
+              multiline 
+              maxLength={2500} 
+              onSave={async v => updateProfile({ bio: v })} 
+            />
+          </div>
+        </div>
         
         {/* Enhanced Profile Attributes */}
         <div className="space-y-4 pt-4 border-t border-border/50">

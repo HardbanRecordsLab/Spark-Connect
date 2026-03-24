@@ -415,6 +415,7 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
   const [data, setData] = useState({
     display_name: '', age: '', gender: '', orientation: '',
     relationship_type: 'both',
+    bio: '',
   });
 
   const { upload: uploadToR2 } = useR2Upload();
@@ -452,6 +453,7 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
         gender: data.gender || null,
         orientation: data.orientation || null,
         relationship_type: data.relationship_type,
+        bio: data.bio || '',
         interests: (data as any).interests || [],
         profile_complete: !!(data.display_name && data.age && data.gender && data.orientation),
         ...(avatarUrl && { avatar_url: avatarUrl, photos: [avatarUrl] }),
@@ -615,6 +617,46 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
               </button>
             );
           })}
+        </div>
+      ),
+    },
+    {
+      title: 'O mnie... ✨',
+      subtitle: 'Opisz siebie "na bogato" — masz aż 500 słów! 💎',
+      valid: data.bio?.trim().split(/\s+/).length >= 5,
+      content: (
+        <div className="space-y-4">
+          <div className="relative group">
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-40 blur-lg group-focus-within:opacity-100 transition-opacity" />
+            <textarea
+              value={data.bio}
+              onChange={e => setData({ ...data, bio: e.target.value })}
+              placeholder="Napisz coś wyjątkowego o sobie... Co Cię kręci? Czego szukasz? Twoje pasje i fantazje... 🔥"
+              className="w-full glass rounded-3xl px-5 py-5 text-sm outline-none border border-white/10 focus:border-primary/50 transition-all min-h-[200px] relative z-10 resize-none leading-relaxed"
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-between items-center px-2">
+            <div className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${data.bio?.trim().split(/\s+/).length >= 5 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-amber-500'}`} />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                {data.bio?.trim().split(/\s+/).filter(Boolean).length || 0} / 500 słów
+              </span>
+            </div>
+            <p className="text-[10px] text-primary/60 font-black italic uppercase tracking-tighter">Luxury Profile Status</p>
+          </div>
+          
+          <div className="glass p-4 rounded-2xl border border-primary/10 bg-primary/5">
+            <p className="text-[10px] text-muted-foreground uppercase font-black mb-2 opacity-60">💡 Podpowiedzi</p>
+            <div className="flex flex-wrap gap-1.5">
+              {['Moje pasje...', 'Szukam kogoś kto...', 'Mój idealny wieczór...', 'Nie lubię...'].map(hint => (
+                <button key={hint} onClick={() => setData({ ...data, bio: (data.bio ? data.bio + '\n' : '') + hint })}
+                  className="text-[10px] px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+                  {hint}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ),
     },
