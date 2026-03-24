@@ -94,17 +94,38 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             ))}
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full max-w-xs space-y-3">
-            <button onClick={onRegister} className="w-full gradient-fire text-primary-foreground font-bold text-lg py-4 rounded-2xl glow-red flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <button onClick={onRegister} className="w-full gradient-fire text-primary-foreground font-bold text-lg py-4 rounded-2xl glow-red flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_8px_25px_-5px_rgba(255,26,78,0.5)]">
               Dołącz za darmo <ArrowRight className="w-5 h-5" />
             </button>
-            <button onClick={onLogin} className="w-full glass text-foreground font-semibold py-4 rounded-2xl active:scale-95 transition-transform">
+            <button onClick={onLogin} className="w-full glass text-foreground font-semibold py-4 rounded-2xl active:scale-95 transition-transform border border-white/10">
               Mam już konto
             </button>
           </motion.div>
-          <p className="text-xs text-muted-foreground mt-4">Dołączając, akceptujesz nasz{' '}
-            <button onClick={() => navigate('/terms')} className="text-primary underline">Regulamin</button>
-            {' i '}
-            <button onClick={() => navigate('/privacy')} className="text-primary underline">Politykę Prywatności</button>
+          
+          {/* Studio HRL Adult Branding */}
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ delay: 0.8 }}
+            className="mt-12 flex flex-col items-center gap-3"
+          >
+            <div className="w-16 h-16 rounded-full gradient-fire flex items-center justify-center p-3 shadow-2xl relative">
+              <div className="absolute inset-0 rounded-full bg-white/10 blur-sm animate-pulse" />
+              <img src="/hrl-logo.png" alt="Studio HRL Adult" className="w-full h-full object-contain relative z-10" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black italic">Owned by</p>
+              <p className="text-sm font-black gradient-text uppercase tracking-tighter italic">Studio HRL Adult</p>
+            </div>
+          </motion.div>
+
+          <p className="text-[10px] text-muted-foreground/60 mt-8 max-w-[250px] mx-auto leading-relaxed">
+            Korzystając z serwisu akceptujesz nasz{' '}
+            <button onClick={() => navigate('/terms')} className="text-primary/80 underline font-medium">Regulamin</button>
+            {' oraz '}
+            <button onClick={() => navigate('/privacy')} className="text-primary/80 underline font-medium">Politykę Prywatności</button>
+            <br />
+            Wszelkie prawa zastrzeżone © 2026 Studio HRL Adult
           </p>
         </div>
       </div>
@@ -133,13 +154,15 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [agreedAdult, setAgreedAdult] = useState(false);
+  const [agreedMarketing, setAgreedMarketing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'form' | 'verify'>('form');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreed) { setError('Musisz zaakceptować Regulamin'); return; }
+    if (!agreed || !agreedAdult) { setError('Zaakceptuj wymagane zgody'); return; }
     setLoading(true); setError('');
     const { error: err } = await supabase.auth.signUp({
       email, password,
@@ -213,19 +236,39 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
               </button>
             </div>
           </div>
-          <button type="button" onClick={() => setAgreed(v => !v)}
-            className={`w-full flex items-start gap-3 glass rounded-xl p-3 text-left transition-all ${agreed ? 'border border-primary/40' : 'border border-border'}`}>
-            <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${agreed ? 'gradient-fire' : 'border border-border'}`}>
-              {agreed && <Check className="w-3 h-3 text-primary-foreground" />}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Mam 18+ lat i akceptuję{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline" onClick={e => e.stopPropagation()}>Regulamin</a>
-              {' oraz '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline" onClick={e => e.stopPropagation()}>Politykę Prywatności</a>
-            </p>
-          </button>
-          <button type="submit" disabled={loading} className="w-full gradient-fire text-primary-foreground font-bold py-4 rounded-2xl glow-red text-lg disabled:opacity-50 flex items-center justify-center gap-2">
+          <div className="space-y-3">
+            <button type="button" onClick={() => setAgreed(v => !v)}
+              className={`w-full flex items-start gap-3 glass rounded-xl p-3 text-left transition-all ${agreed ? 'border border-primary/40 bg-primary/5' : 'border border-border'}`}>
+              <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${agreed ? 'gradient-fire' : 'border border-border'}`}>
+                {agreed && <Check className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Akceptuję <a href="/terms" target="_blank" className="text-primary underline">Regulamin</a> i <a href="/privacy" target="_blank" className="text-primary underline">Politykę Prywatności</a>
+              </p>
+            </button>
+
+            <button type="button" onClick={() => setAgreedAdult(v => !v)}
+              className={`w-full flex items-start gap-3 glass rounded-xl p-3 text-left transition-all ${agreedAdult ? 'border border-primary/40 bg-primary/5' : 'border border-border'}`}>
+              <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${agreedAdult ? 'gradient-fire' : 'border border-border'}`}>
+                {agreedAdult && <Check className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <p className="text-xs text-muted-foreground font-bold">
+                Oświadczam, że mam ukończone 18 lat i chcę oglądać treści dla dorosłych 🔞
+              </p>
+            </button>
+
+            <button type="button" onClick={() => setAgreedMarketing(v => !v)}
+              className={`w-full flex items-start gap-3 glass rounded-xl p-3 text-left transition-all ${agreedMarketing ? 'border border-primary/40 bg-primary/5' : 'border border-border'}`}>
+              <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${agreedMarketing ? 'gradient-fire' : 'border border-border'}`}>
+                {agreedMarketing && <Check className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <p className="text-[10px] text-muted-foreground/70">
+                (Opcjonalnie) Zgadzam się na otrzymywanie powiadomień o nowych dopasowaniach i promocjach od Studio HRL Adult.
+              </p>
+            </button>
+          </div>
+
+          <button type="submit" disabled={loading} className="w-full gradient-fire text-primary-foreground font-bold py-4 rounded-2xl glow-red text-lg disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Utwórz konto za darmo'}
           </button>
         </form>

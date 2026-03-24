@@ -29,6 +29,56 @@ const INTEREST_SUGGESTIONS = [
   'Movies', 'Reading', 'Yoga', 'Hiking', 'Photography', 'Dancing',
 ];
 
+const BODY_TYPES = ['Szczupła', 'Normalna', 'Atletyczna', 'Krągła', 'Muskularna'];
+const EYE_COLORS = ['Niebieskie', 'Brązowe', 'Zielone', 'Szare', 'Piwne'];
+const HAIR_COLORS = ['Czarne', 'Blond', 'Brązowe', 'Rude', 'Siwe', 'Łysy'];
+const SMOKING = ['Nigdy', 'Okazyjnie', 'Regularnie'];
+const DRINKING = ['Nigdy', 'Okazyjnie', 'Regularnie'];
+const EDUCATION = ['Podstawowe', 'Średnie', 'Wyższe', 'Student'];
+
+function SelectField({ label, value, options, onSave }: {
+  label: string; value: string; options: string[]; onSave: (v: string) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <div className="glass rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold">{label}</p>
+        <button onClick={() => setEditing(!editing)} className="w-7 h-7 glass rounded-full flex items-center justify-center hover:bg-primary/10 transition-colors">
+          <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+      </div>
+      <AnimatePresence mode="wait">
+        {editing ? (
+          <motion.div key="edit" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="flex flex-wrap gap-2">
+            {options.map(opt => (
+              <button
+                key={opt}
+                disabled={saving}
+                onClick={async () => {
+                  setSaving(true);
+                  await onSave(opt);
+                  setSaving(false);
+                  setEditing(false);
+                }}
+                className={`text-xs px-3 py-1.5 rounded-full transition-all border ${value === opt ? 'gradient-fire text-primary-foreground border-transparent' : 'glass border-border text-muted-foreground'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.p key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground leading-relaxed">
+            {value || <span className="italic opacity-50">Kliknij ✏️ aby wybrać {label.toLowerCase()}</span>}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function EditableField({ label, value, onSave, multiline = false, type = 'text', maxLength }: {
   label: string; value: string; onSave: (v: string) => Promise<void>;
   multiline?: boolean; type?: string; maxLength?: number;
@@ -289,6 +339,49 @@ export default function ProfilePage() {
           ))}
         </div>
 
+        {/* Profile Strength & Gamification */}
+        <div className="glass rounded-3xl p-5 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg gradient-fire flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Poziom Profilu</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spark Level 4</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-black gradient-text">850 XP</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-medium">
+              <span className="text-muted-foreground">Do następnego poziomu</span>
+              <span className="text-primary">150 XP</span>
+            </div>
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: '85%' }} 
+                className="h-full gradient-fire rounded-full" 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center text-xs">✅</div>
+              <span className="text-[10px] font-medium">Profil 90%</span>
+            </div>
+            <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">💬</div>
+              <span className="text-[10px] font-medium">Top Chatter</span>
+            </div>
+          </div>
+        </div>
+
         {/* Profile Boost — free, ad-based */}
         <div className="glass rounded-2xl p-4 border border-primary/20">
           <div className="flex items-center justify-between">
@@ -345,6 +438,26 @@ export default function ProfilePage() {
           </button>
         </div>
         <EditableField label="Bio" value={bio} multiline maxLength={300} onSave={async v => updateProfile({ bio: v })} />
+        
+        {/* Enhanced Profile Attributes */}
+        <div className="space-y-4 pt-4 border-t border-border/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">O mnie</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <EditableField label="Wzrost (cm)" value={String(profile?.height || '')} type="number" onSave={async v => updateProfile({ height: parseInt(v, 10) })} />
+            <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => updateProfile({ body_type: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => updateProfile({ eye_color: v })} />
+            <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => updateProfile({ hair_color: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => updateProfile({ smoking: v })} />
+            <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => updateProfile({ drinking: v })} />
+          </div>
+          <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => updateProfile({ education: v })} />
+          <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => updateProfile({ occupation: v })} />
+        </div>
+
         <InterestsEditor interests={interests} onSave={async tags => updateProfile({ interests: tags })} />
 
         {/* Dostępny teraz — tryb spontaniczny */}

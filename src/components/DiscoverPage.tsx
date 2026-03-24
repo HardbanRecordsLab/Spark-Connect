@@ -19,7 +19,20 @@ import { WhisperModal } from '@/components/WhisperMessage';
 const db = supabase as any;
 
 function activeFilterCount(f: DiscoverFilters) {
-  return [f.ageMin !== 18 || f.ageMax !== 50, f.distanceMax !== 50, f.gender.length > 0, f.moodStatus.length > 0, f.verifiedOnly].filter(Boolean).length;
+  return [
+    f.ageMin !== DEFAULT_FILTERS.ageMin || f.ageMax !== DEFAULT_FILTERS.ageMax,
+    f.distanceMax !== DEFAULT_FILTERS.distanceMax,
+    f.gender.length > 0,
+    f.moodStatus.length > 0,
+    f.verifiedOnly,
+    f.onlineOnly,
+    !f.withPhotosOnly,
+    f.bodyType.length > 0,
+    f.eyeColor.length > 0,
+    f.hairColor.length > 0,
+    f.smoking.length > 0,
+    f.drinking.length > 0,
+  ].filter(Boolean).length;
 }
 
 function SwipeCard({ profile, onSwipeLeft, onSwipeRight, onSuperLike, isTop }: {
@@ -130,6 +143,13 @@ export default function DiscoverPage() {
     if (filters.gender.length > 0 && !filters.gender.map(g => g.toLowerCase()).includes((p.gender ?? '').toLowerCase())) return false;
     if (filters.moodStatus.length > 0 && !filters.moodStatus.includes(p.moodStatus)) return false;
     if (filters.verifiedOnly && !p.isVerified) return false;
+    if (filters.onlineOnly && !p.lastOnlineAt) return false; // Simple check for now
+    if (filters.withPhotosOnly && (!p.photos || p.photos.length === 0)) return false;
+    if (filters.bodyType.length > 0 && p.bodyType && !filters.bodyType.includes(p.bodyType)) return false;
+    if (filters.eyeColor.length > 0 && p.eyeColor && !filters.eyeColor.includes(p.eyeColor)) return false;
+    if (filters.hairColor.length > 0 && p.hairColor && !filters.hairColor.includes(p.hairColor)) return false;
+    if (filters.smoking.length > 0 && p.smoking && !filters.smoking.includes(p.smoking)) return false;
+    if (filters.drinking.length > 0 && p.drinking && !filters.drinking.includes(p.drinking)) return false;
     return true;
   });
 
@@ -197,6 +217,63 @@ export default function DiscoverPage() {
         </div>
       )}
       <div className="mb-2"><StoriesBar userStories={mockUserStories} showAddButton={true} /></div>
+
+      {/* Popular Profiles Section */}
+      <div className="mb-4 overflow-hidden">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Star className="w-3.5 h-3.5 text-accent" />
+            Popularne dzisiaj
+          </h2>
+          <button className="text-xs text-primary font-medium">Więcej</button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hidden pb-1 px-1">
+          {allProfiles.sort((a, b) => (b.profileViews || 0) - (a.profileViews || 0)).slice(0, 5).map(p => (
+            <div key={p.id} className="flex-shrink-0 w-24 relative group" onClick={() => console.log('open profile', p.id)}>
+              <div className="aspect-[3/4] rounded-2xl overflow-hidden border border-border group-active:scale-95 transition-transform">
+                <img src={p.photos[0]} alt={p.displayName} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-2 left-2 right-2">
+                  <p className="text-[10px] font-bold text-white truncate">{p.displayName}, {p.age}</p>
+                  <div className="flex items-center gap-0.5 text-[8px] text-white/70">
+                    <Eye className="w-2 h-2" />
+                    {p.profileViews ? (p.profileViews > 1000 ? `${(p.profileViews/1000).toFixed(1)}k` : p.profileViews) : 0}
+                  </div>
+                </div>
+              </div>
+              {p.isVerified && (
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background">
+                  <Shield className="w-2 h-2 text-white" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* New Users Section */}
+      <div className="mb-4 overflow-hidden">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            Nowe twarze
+          </h2>
+          <button className="text-xs text-primary font-medium">Więcej</button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hidden pb-1 px-1">
+          {allProfiles.sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5).map(p => (
+            <div key={p.id} className="flex-shrink-0 w-20 relative group" onClick={() => console.log('open profile', p.id)}>
+              <div className="aspect-square rounded-full overflow-hidden border-2 border-primary/20 p-0.5 group-active:scale-95 transition-transform">
+                <img src={p.photos[0]} alt={p.displayName} className="w-full h-full object-cover rounded-full" />
+              </div>
+              <div className="mt-1 text-center">
+                <p className="text-[9px] font-medium truncate">{p.displayName}</p>
+              </div>
+              <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Available Now strip */}
       <AvailableNowSection onSelectProfile={(id) => console.log('open profile', id)} />

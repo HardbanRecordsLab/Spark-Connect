@@ -89,8 +89,10 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
     showOnline:     settings.show_online,
     showDistance:   settings.show_distance,
     readReceipts:   settings.read_receipts,
-    invisibleMode:  settings.invisible_mode,
+    ghostMode:      settings.invisible_mode,
     hideFromSearch: settings.hide_from_search,
+    blurPhotos:     settings.blur_for_unverified,
+    securedMode:    settings.secured_mode,
   };
 
   const notifKeyMap: Record<string, keyof typeof settings> = {
@@ -99,7 +101,8 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
   };
   const privacyKeyMap: Record<string, keyof typeof settings> = {
     showLastSeen: 'show_last_seen', showOnline: 'show_online', showDistance: 'show_distance',
-    readReceipts: 'read_receipts', invisibleMode: 'invisible_mode', hideFromSearch: 'hide_from_search',
+    readReceipts: 'read_receipts', ghostMode: 'invisible_mode', hideFromSearch: 'hide_from_search',
+    blurPhotos: 'blur_for_unverified', securedMode: 'secured_mode',
   };
 
   const handleDelete = async () => {
@@ -165,8 +168,10 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
               showOnline:     { label: 'Status online',      desc: 'Zielona kropka gdy jesteś online',           emoji: '🟢' },
               showDistance:   { label: 'Odległość',          desc: 'Pokaż km na Twoim profilu',                  emoji: '📍' },
               readReceipts:   { label: 'Potwierdzenia',      desc: 'Pokaż gdy przeczytałeś/aś wiadomości',       emoji: '✓✓' },
-              invisibleMode:  { label: 'Tryb niewidzialny',  desc: 'Przeglądaj bez pojawiania się online',       emoji: '👻' },
-              hideFromSearch: { label: 'Ukryj w Discover',   desc: 'Tylko dopasowania mogą Ci napisać',          emoji: '🙈' },
+              ghostMode:      { label: 'Ghost Mode',         desc: 'Odwiedzaj profile bez śladu (Wizyty)',       emoji: '👻' },
+              hideFromSearch: { label: 'Ukryj profil',       desc: 'Tylko dopasowania mogą Cię zobaczyć',        emoji: '🙈' },
+              blurPhotos:     { label: 'Chroń zdjęcia',      desc: 'Zamaż zdjęcia dla niezweryfikowanych',       emoji: '🌫️' },
+              securedMode:    { label: 'Secured Profile',    desc: 'Ostrzeżenie przed screenshotami',            emoji: '🛡️' },
             };
             const info = labels[key];
             return (

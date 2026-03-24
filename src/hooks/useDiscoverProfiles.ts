@@ -27,6 +27,21 @@ function mapRow(p: Record<string, unknown>): Profile {
     chemistryScore: (p.chemistry_score as number) ?? Math.floor(Math.random() * 30) + 70,
     gender: (p.gender as string) ?? '',
     orientation: (p.orientation as string) ?? '',
+    // Enhanced attributes
+    height: (p.height as number) ?? undefined,
+    bodyType: (p.body_type as string) ?? undefined,
+    eyeColor: (p.eye_color as string) ?? undefined,
+    hairColor: (p.hair_color as string) ?? undefined,
+    smoking: (p.smoking as string) ?? undefined,
+    drinking: (p.drinking as string) ?? undefined,
+    children: (p.children as string) ?? undefined,
+    education: (p.education as string) ?? undefined,
+    occupation: (p.occupation as string) ?? undefined,
+    languages: (p.languages as string[]) ?? undefined,
+    lookingFor: (p.looking_for as string[]) ?? undefined,
+    lastOnlineAt: (p.last_online_at as string) ?? undefined,
+    profileViews: (p.profile_views as number) ?? 0,
+    totalLikes: (p.total_likes as number) ?? 0,
   };
 }
 
@@ -85,7 +100,7 @@ export function useDiscoverProfiles(userId: string | null) {
       if (!rows) {
         let query = db
           .from('profiles')
-          .select('id, display_name, age, city, bio, photos, interests, relationship_type, mood_status, is_verified, gender, orientation, avatar_url, lat, lng, chemistry_score')
+          .select('*, chemistry_score')
           .not('id', 'in', filterStr)
           .eq('profile_complete', true)
           .eq('admin_approved', true)

@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 
 const CONTACT = 'spark-connect@hardbanrecordslab.online';
 const APP = 'Spark Connect';
+const OWNER = 'Studio HRL Adult';
 const DOMAIN = 'spark-connect.hardbanrecordslab.online';
-const DATE = '18 marca 2026';
+const DATE = '24 marca 2026';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -33,7 +34,12 @@ export default function PrivacyPolicy() {
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-accent transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-bold text-lg">Polityka Prywatności</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full gradient-fire flex items-center justify-center p-1.5 shadow-lg">
+            <img src="/hrl-logo.png" alt="Studio HRL Adult" className="w-full h-full object-contain" />
+          </div>
+          <h1 className="font-bold text-lg">Polityka Prywatności</h1>
+        </div>
       </div>
 
       <motion.div
@@ -41,18 +47,26 @@ export default function PrivacyPolicy() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl mx-auto px-5 py-8 space-y-8 text-sm leading-relaxed"
       >
+        <div className="text-center mb-10">
+          <div className="w-24 h-24 rounded-full gradient-fire mx-auto flex items-center justify-center p-5 shadow-2xl mb-4">
+            <img src="/hrl-logo.png" alt="Studio HRL Adult Logo" className="w-full h-full object-contain" />
+          </div>
+          <h2 className="text-xl font-black gradient-text uppercase tracking-tighter italic">{OWNER}</h2>
+          <p className="text-xs text-muted-foreground mt-1 tracking-widest">PRIVACY & DATA PROTECTION</p>
+        </div>
+
         <div className="glass rounded-2xl p-4 border border-border/50">
           <p className="text-xs text-muted-foreground">Ostatnia aktualizacja: <strong>{DATE}</strong></p>
           <p className="text-xs text-muted-foreground mt-1">
-            Niniejsza Polityka Prywatności opisuje sposób, w jaki {APP} zbiera, przetwarza
-            i chroni Twoje dane osobowe zgodnie z Rozporządzeniem (UE) 2016/679 (RODO).
+            Niniejsza Polityka Prywatności opisuje sposób, w jaki <strong>{OWNER}</strong> zbiera, przetwarza
+            i chroni Twoje dane osobowe w ramach aplikacji {APP} zgodnie z Rozporządzeniem (UE) 2016/679 (RODO).
           </p>
         </div>
 
         {/* ─── 1 ─── */}
         <Section title="1. Administrator danych osobowych">
           <p>
-            Administratorem Twoich danych osobowych jest operator Serwisu {APP},
+            Administratorem Twoich danych osobowych jest <strong>{OWNER}</strong>,
             dostępny pod adresem: <span className="text-primary">{CONTACT}</span>
           </p>
           <p>

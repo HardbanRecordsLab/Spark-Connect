@@ -17,6 +17,8 @@ export interface UserSettings {
   read_receipts: boolean;
   invisible_mode: boolean;
   hide_from_search: boolean;
+  blur_for_unverified: boolean;
+  secured_mode: boolean;
 }
 
 const DEFAULTS: UserSettings = {
@@ -32,6 +34,8 @@ const DEFAULTS: UserSettings = {
   read_receipts: true,
   invisible_mode: false,
   hide_from_search: false,
+  blur_for_unverified: false,
+  secured_mode: false,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

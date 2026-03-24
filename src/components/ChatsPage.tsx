@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } f
 import {
   Send, Video, ArrowLeft, Image, Smile, Mic, CheckCheck,
   MoreVertical, Clock, Ghost, Eye, Timer, X, Play, Film,
-  Upload, Pause, MicOff, CornerUpLeft, Reply, Search
+  Upload, Pause, MicOff, CornerUpLeft, Reply, Search, Wand2
 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { Conversation } from '@/store/appStore';
@@ -11,6 +11,7 @@ import { GiftPicker, GiftReveal, GiftBubble, type GiftItem } from '@/components/
 import AdBanner from '@/components/AdBanner';
 import EmojiPicker from '@/components/EmojiPicker';
 import ChatContextMenu from '@/components/ChatContextMenu';
+import IcebreakerModal from '@/components/IcebreakerModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useAuth } from '@/hooks/useAuth';
@@ -612,6 +613,7 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   // Context menu (MoreVertical)
   const [showContextMenu, setShowContextMenu] = useState(false);
+  const [showIcebreaker, setShowIcebreaker] = useState(false);
 
   const { startVideoCall } = useAppStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1208,6 +1210,13 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
           <button onClick={() => setShowGiftPicker(true)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary transition-colors">
             <GiftIcon className="w-5 h-5 text-accent" />
           </button>
+          <button 
+            onClick={() => setShowIcebreaker(true)} 
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary transition-colors group"
+            title="AI Spark Icebreaker"
+          >
+            <Wand2 className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+          </button>
           <div className="flex-1 flex items-center bg-secondary rounded-2xl px-4 py-2.5 gap-2">
             <input
               ref={inputRef}
@@ -1268,6 +1277,15 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
       </AnimatePresence>
       <AnimatePresence>
         {revealGift && <GiftReveal gift={revealGift} senderName="You" onDismiss={() => setRevealGift(null)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showIcebreaker && (
+          <IcebreakerModal 
+            profile={conv.user} 
+            onSelect={(text) => { setText(text); setShowIcebreaker(false); handleSend(); }} 
+            onClose={() => setShowIcebreaker(false)} 
+          />
+        )}
       </AnimatePresence>
     </div>
   );

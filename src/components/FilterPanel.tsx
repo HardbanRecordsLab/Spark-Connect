@@ -10,6 +10,15 @@ export interface DiscoverFilters {
   orientation: string[];
   moodStatus: string[];
   verifiedOnly: boolean;
+  onlineOnly: boolean;
+  withPhotosOnly: boolean;
+  heightMin?: number;
+  heightMax?: number;
+  bodyType: string[];
+  eyeColor: string[];
+  hairColor: string[];
+  smoking: string[];
+  drinking: string[];
 }
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
@@ -20,10 +29,22 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   orientation: [],
   moodStatus: [],
   verifiedOnly: false,
+  onlineOnly: false,
+  withPhotosOnly: true,
+  bodyType: [],
+  eyeColor: [],
+  hairColor: [],
+  smoking: [],
+  drinking: [],
 };
 
 const GENDERS = ['Female', 'Male', 'Non-binary', 'Other'];
 const MOODS = ['Looking for fun', 'Just chatting', 'Serious only'];
+const BODY_TYPES = ['Slim', 'Average', 'Athletic', 'Curvy', 'Muscular'];
+const EYE_COLORS = ['Blue', 'Brown', 'Green', 'Grey', 'Hazel'];
+const HAIR_COLORS = ['Black', 'Blonde', 'Brown', 'Red', 'Grey', 'Bald'];
+const SMOKING = ['Never', 'Socially', 'Regularly'];
+const DRINKING = ['Never', 'Socially', 'Regularly'];
 
 interface FilterPanelProps {
   filters: DiscoverFilters;
@@ -34,19 +55,48 @@ interface FilterPanelProps {
 export default function FilterPanel({ filters, onApply, onClose }: FilterPanelProps) {
   const [draft, setDraft] = useState<DiscoverFilters>({ ...filters });
 
-  const toggleArr = (key: keyof Pick<DiscoverFilters, 'gender' | 'orientation' | 'moodStatus'>, val: string) => {
+  const toggleArr = (key: keyof Pick<DiscoverFilters, 'gender' | 'orientation' | 'moodStatus' | 'bodyType' | 'eyeColor' | 'hairColor' | 'smoking' | 'drinking'>, val: string) => {
     setDraft(prev => {
       const arr = prev[key] as string[];
       return { ...prev, [key]: arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val] };
     });
   };
 
+  const renderTagGroup = (title: string, key: keyof DiscoverFilters, options: string[]) => (
+    <div className="mb-6">
+      <p className="text-sm font-semibold mb-3">{title}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => (
+          <button
+            key={opt}
+            onClick={() => toggleArr(key as any, opt)}
+            className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl transition-all border ${
+              (draft[key] as string[]).includes(opt)
+                ? 'gradient-fire text-primary-foreground border-transparent'
+                : 'glass border-border text-muted-foreground'
+            }`}
+          >
+            {(draft[key] as string[]).includes(opt) && <Check className="w-3 h-3" />}
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   const activeCount = [
-    draft.ageMin !== 18 || draft.ageMax !== 50,
-    draft.distanceMax !== 50,
+    draft.ageMin !== DEFAULT_FILTERS.ageMin || draft.ageMax !== DEFAULT_FILTERS.ageMax,
+    draft.distanceMax !== DEFAULT_FILTERS.distanceMax,
     draft.gender.length > 0,
     draft.moodStatus.length > 0,
     draft.verifiedOnly,
+    draft.onlineOnly,
+    !draft.withPhotosOnly,
+    draft.bodyType.length > 0,
+    draft.eyeColor.length > 0,
+    draft.hairColor.length > 0,
+    draft.smoking.length > 0,
+    draft.drinking.length > 0,
   ].filter(Boolean).length;
 
   return (
@@ -137,53 +187,28 @@ export default function FilterPanel({ filters, onApply, onClose }: FilterPanelPr
           </div>
 
           {/* Gender */}
-          <div className="mb-6">
-            <p className="text-sm font-semibold mb-3">Płeć</p>
-            <div className="flex flex-wrap gap-2">
-              {GENDERS.map(g => (
-                <button
-                  key={g}
-                  onClick={() => toggleArr('gender', g)}
-                  className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl transition-all border ${
-                    draft.gender.includes(g)
-                      ? 'gradient-fire text-primary-foreground border-transparent'
-                      : 'glass border-border text-muted-foreground'
-                  }`}
-                >
-                  {draft.gender.includes(g) && <Check className="w-3 h-3" />}
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
+          {renderTagGroup('Płeć', 'gender', GENDERS)}
 
           {/* Mood */}
-          <div className="mb-6">
-            <p className="text-sm font-semibold mb-3">Nastawienie</p>
-            <div className="flex flex-wrap gap-2">
-              {MOODS.map(m => (
-                <button
-                  key={m}
-                  onClick={() => toggleArr('moodStatus', m)}
-                  className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl transition-all border ${
-                    draft.moodStatus.includes(m)
-                      ? 'gradient-fire text-primary-foreground border-transparent'
-                      : 'glass border-border text-muted-foreground'
-                  }`}
-                >
-                  {draft.moodStatus.includes(m) && <Check className="w-3 h-3" />}
-                  {m}
-                </button>
-              ))}
-            </div>
+          {renderTagGroup('Nastawienie', 'moodStatus', MOODS)}
+
+          {/* New Advanced Filters */}
+          <div className="border-t border-border pt-6 mb-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Zaawansowane</h3>
+            
+            {renderTagGroup('Sylwetka', 'bodyType', BODY_TYPES)}
+            {renderTagGroup('Kolor oczu', 'eyeColor', EYE_COLORS)}
+            {renderTagGroup('Kolor włosów', 'hairColor', HAIR_COLORS)}
+            {renderTagGroup('Palenie', 'smoking', SMOKING)}
+            {renderTagGroup('Alkohol', 'drinking', DRINKING)}
           </div>
 
           {/* Verified only */}
-          <div className="mb-8">
+          <div className="mb-4">
             <div className="glass rounded-2xl px-4 py-3.5 flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Tylko zweryfikowani</p>
-                <p className="text-xs text-muted-foreground">Pokaż tylko profile z niebieskim badge'em</p>
+                <p className="text-xs text-muted-foreground">Profile z niebieskim badge'em</p>
               </div>
               <button
                 onClick={() => setDraft(p => ({ ...p, verifiedOnly: !p.verifiedOnly }))}
@@ -191,6 +216,46 @@ export default function FilterPanel({ filters, onApply, onClose }: FilterPanelPr
               >
                 <motion.div
                   animate={{ x: draft.verifiedOnly ? 22 : 2 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                  className="absolute top-0.5 w-5 h-5 bg-primary-foreground rounded-full shadow"
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Online now */}
+          <div className="mb-4">
+            <div className="glass rounded-2xl px-4 py-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Teraz online</p>
+                <p className="text-xs text-muted-foreground">Pokaż tylko aktywnych użytkowników</p>
+              </div>
+              <button
+                onClick={() => setDraft(p => ({ ...p, onlineOnly: !p.onlineOnly }))}
+                className={`relative w-11 h-6 rounded-full transition-colors ${draft.onlineOnly ? 'bg-green-500' : 'bg-secondary'}`}
+              >
+                <motion.div
+                  animate={{ x: draft.onlineOnly ? 22 : 2 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                  className="absolute top-0.5 w-5 h-5 bg-primary-foreground rounded-full shadow"
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* With photos */}
+          <div className="mb-8">
+            <div className="glass rounded-2xl px-4 py-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Tylko ze zdjęciami</p>
+                <p className="text-xs text-muted-foreground">Ukryj profile bez zdjęć</p>
+              </div>
+              <button
+                onClick={() => setDraft(p => ({ ...p, withPhotosOnly: !p.withPhotosOnly }))}
+                className={`relative w-11 h-6 rounded-full transition-colors ${draft.withPhotosOnly ? 'bg-primary' : 'bg-secondary'}`}
+              >
+                <motion.div
+                  animate={{ x: draft.withPhotosOnly ? 22 : 2 }}
                   transition={{ type: 'spring', damping: 20, stiffness: 300 }}
                   className="absolute top-0.5 w-5 h-5 bg-primary-foreground rounded-full shadow"
                 />

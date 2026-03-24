@@ -20,6 +20,21 @@ export interface Profile {
   relationship_type: string;
   profile_complete: boolean;
   created_at: string;
+  // Enhanced attributes
+  height?: number;
+  body_type?: string;
+  eye_color?: string;
+  hair_color?: string;
+  smoking?: string;
+  drinking?: string;
+  children?: string;
+  education?: string;
+  occupation?: string;
+  languages?: string[];
+  looking_for?: string[];
+  last_online_at?: string;
+  profile_views?: number;
+  total_likes?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

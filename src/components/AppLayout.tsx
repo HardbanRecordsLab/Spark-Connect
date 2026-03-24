@@ -3,6 +3,7 @@ import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon } f
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, useEffect } from 'react';
 import DiscoverPage from './DiscoverPage';
+import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
 import LivePage from './LivePage';
 import ProfilePage from './ProfilePage';
@@ -25,10 +26,10 @@ import { useConversations } from '@/hooks/useConversations';
 
 const tabs: { id: AppTab; label: string; emoji: string; badge?: number }[] = [
   { id: 'discover', label: 'Odkryj', emoji: '🔍' },
+  { id: 'feed', label: 'Feed', emoji: '🎞️' },
   { id: 'chats', label: 'Czaty', emoji: '💬' },
-  { id: 'groups', label: 'Grupy', emoji: '✦' },
   { id: 'map', label: 'Mapa', emoji: '📍' },
-  { id: 'visitors', label: 'Wizyty', emoji: '👁️' },
+  { id: 'profile', label: 'Profil', emoji: '👤' },
 ];
 
 const NOTIFICATIONS = [
@@ -132,6 +133,7 @@ export default function AppLayout() {
   const [groupChat, setGroupChat] = useState<{ name: string; emoji: string } | null>(null);
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const { permission, subscribed, subscribe } = usePushNotifications(user?.id ?? null);
+  const { settings } = useUserSettings(user);
 
   const unreadNotifs = notifsSeen ? 0 : NOTIFICATIONS.filter(n => n.unread).length;
   const currentStreak = 7;
@@ -185,6 +187,11 @@ export default function AppLayout() {
             className="flex items-center gap-1 glass px-2 py-1.5 rounded-full text-xs">
             🔥<span className="font-semibold text-accent">{currentStreak}</span>
           </button>
+          {settings.invisible_mode && (
+            <div className="w-8 h-8 glass rounded-full flex items-center justify-center border border-primary/30 animate-pulse" title="Ghost Mode Active">
+              <Ghost className="w-4 h-4 text-primary" />
+            </div>
+          )}
           <div className="relative">
             <button onClick={() => { setShowNotifs(v => !v); setNotifsSeen(true); }}
               className="relative w-8 h-8 glass rounded-full flex items-center justify-center border border-border">
@@ -230,6 +237,7 @@ export default function AppLayout() {
             exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
             className="h-full">
             {activeTab === 'discover' && <DiscoverPage />}
+            {activeTab === 'feed' && <FeedPage />}
             {activeTab === 'roulette' && <RoulettePage />}
             {activeTab === 'chats' && <ChatsPage />}
             {activeTab === 'live' && <LivePage />}

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type AppView = 'landing' | 'login' | 'register' | 'onboarding' | 'app';
-export type AppTab = 'discover' | 'roulette' | 'chats' | 'live' | 'profile' | 'groups' | 'map' | 'visitors' | 'hotnot';
+export type AppTab = 'discover' | 'feed' | 'roulette' | 'chats' | 'live' | 'profile' | 'groups' | 'map' | 'visitors' | 'hotnot';
 
 export interface User {
   id: string;
@@ -20,6 +20,21 @@ export interface User {
   photos: string[];
   relationshipType: string;
   profileComplete: boolean;
+  // Enhanced attributes
+  height?: number;
+  bodyType?: string;
+  eyeColor?: string;
+  hairColor?: string;
+  smoking?: string;
+  drinking?: string;
+  children?: string;
+  education?: string;
+  occupation?: string;
+  languages?: string[];
+  lookingFor?: string[];
+  lastOnlineAt?: string;
+  profileViews?: number;
+  totalLikes?: number;
 }
 
 export interface Profile {
@@ -38,6 +53,21 @@ export interface Profile {
   chemistryScore: number;
   gender: string;
   orientation: string;
+  // Enhanced attributes
+  height?: number;
+  bodyType?: string;
+  eyeColor?: string;
+  hairColor?: string;
+  smoking?: string;
+  drinking?: string;
+  children?: string;
+  education?: string;
+  occupation?: string;
+  languages?: string[];
+  lookingFor?: string[];
+  lastOnlineAt?: string;
+  profileViews?: number;
+  totalLikes?: number;
 }
 
 export interface Message {
@@ -118,9 +148,27 @@ const mockInterestSets = [
 ];
 
 export const mockProfiles: Profile[] = [
-  { id: '1', displayName: 'Sofia', age: 26, city: 'Warsaw', bio: 'Life is too short for boring conversations. Let\'s create something memorable 🔥', photos: [mockPhotos[0], mockPhotos[1]], interests: mockInterestSets[0], relationshipType: 'both', moodStatus: 'Looking for fun', distance: 3, isVerified: true, donorBadge: false, chemistryScore: 94, gender: 'female', orientation: 'straight' },
-  { id: '2', displayName: 'Mia', age: 24, city: 'Kraków', bio: 'Adventure seeker. Photographer. Will probably steal your fries 😈', photos: [mockPhotos[1], mockPhotos[2]], interests: mockInterestSets[1], relationshipType: 'relationship', moodStatus: 'Just chatting', distance: 8, isVerified: true, donorBadge: true, chemistryScore: 87, gender: 'female', orientation: 'bisexual' },
-  { id: '3', displayName: 'Elena', age: 29, city: 'Gdańsk', bio: 'Wine enthusiast, amateur chef, professional overthinker. Ask me about my travels 🌍', photos: [mockPhotos[2], mockPhotos[3]], interests: mockInterestSets[2], relationshipType: 'hookup', moodStatus: 'Serious only', distance: 15, isVerified: false, donorBadge: false, chemistryScore: 76, gender: 'female', orientation: 'straight' },
+  { 
+    id: '1', displayName: 'Sofia', age: 26, city: 'Warsaw', bio: 'Life is too short for boring conversations. Let\'s create something memorable 🔥', 
+    photos: [mockPhotos[0], mockPhotos[1]], interests: mockInterestSets[0], relationshipType: 'both', moodStatus: 'Looking for fun', 
+    distance: 3, isVerified: true, donorBadge: false, chemistryScore: 94, gender: 'female', orientation: 'straight',
+    height: 168, bodyType: 'Slim', eyeColor: 'Blue', hairColor: 'Blonde', smoking: 'Never', drinking: 'Socially',
+    lastOnlineAt: new Date().toISOString(), profileViews: 1240, totalLikes: 450
+  },
+  { 
+    id: '2', displayName: 'Mia', age: 24, city: 'Kraków', bio: 'Adventure seeker. Photographer. Will probably steal your fries 😈', 
+    photos: [mockPhotos[1], mockPhotos[2]], interests: mockInterestSets[1], relationshipType: 'relationship', moodStatus: 'Just chatting', 
+    distance: 8, isVerified: true, donorBadge: true, chemistryScore: 87, gender: 'female', orientation: 'bisexual',
+    height: 162, bodyType: 'Average', eyeColor: 'Brown', hairColor: 'Brown', smoking: 'Socially', drinking: 'Socially',
+    lastOnlineAt: new Date().toISOString(), profileViews: 2100, totalLikes: 890
+  },
+  { 
+    id: '3', displayName: 'Elena', age: 29, city: 'Gdańsk', bio: 'Wine enthusiast, amateur chef, professional overthinker. Ask me about my travels 🌍', 
+    photos: [mockPhotos[2], mockPhotos[3]], interests: mockInterestSets[2], relationshipType: 'hookup', moodStatus: 'Serious only', 
+    distance: 15, isVerified: false, donorBadge: false, chemistryScore: 76, gender: 'female', orientation: 'straight',
+    height: 175, bodyType: 'Athletic', eyeColor: 'Green', hairColor: 'Black', smoking: 'Regularly', drinking: 'Regularly',
+    lastOnlineAt: new Date(Date.now() - 3600000).toISOString(), profileViews: 850, totalLikes: 230
+  },
   { id: '4', displayName: 'Zara', age: 23, city: 'Wrocław', bio: 'Gym rat by day, movie buff by night. Looking for my partner in crime 🎬', photos: [mockPhotos[4], mockPhotos[0]], interests: mockInterestSets[3], relationshipType: 'both', moodStatus: 'Looking for fun', distance: 22, isVerified: true, donorBadge: false, chemistryScore: 91, gender: 'female', orientation: 'straight' },
   { id: '5', displayName: 'Alex', age: 28, city: 'Poznań', bio: 'Tech guy with a creative soul. Into deep talks and good food 🍕', photos: [mockPhotos[5], mockPhotos[6]], interests: mockInterestSets[4], relationshipType: 'relationship', moodStatus: 'Just chatting', distance: 5, isVerified: true, donorBadge: true, chemistryScore: 83, gender: 'male', orientation: 'straight' },
   { id: '6', displayName: 'Marco', age: 31, city: 'Warsaw', bio: 'Italian, passionate about food and even more passionate about life 🍝', photos: [mockPhotos[6], mockPhotos[7]], interests: mockInterestSets[0], relationshipType: 'hookup', moodStatus: 'Looking for fun', distance: 2, isVerified: false, donorBadge: false, chemistryScore: 79, gender: 'male', orientation: 'straight' },
