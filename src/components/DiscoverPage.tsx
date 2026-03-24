@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
-import { Heart, X, Star, Filter, MapPin, Shield, Info, Eye, Ghost } from 'lucide-react';
+import { Heart, X, Star, Filter, MapPin, Shield, Info, Eye, Ghost, Sparkles } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
 import { StoriesBar, mockUserStories } from '@/components/StoriesSystem';
@@ -126,7 +126,7 @@ export default function DiscoverPage() {
   const touchStartY = useRef(0);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const { user } = useAuth();
-  const { profiles: dbProfiles, loading: loadingProfiles, refetch, fetchMoreIfNeeded } = useDiscoverProfiles(user?.id ?? null);
+  const { profiles: dbProfiles, loading: loadingProfiles, refetch, fetchMoreIfNeeded, recordSwipe } = useDiscoverProfiles(user?.id ?? null);
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [cardIndex, setCardIndex] = useState(0);
   const [showSuperSwipe, setShowSuperSwipe] = useState(false);
@@ -227,6 +227,7 @@ export default function DiscoverPage() {
   const handleSwipeRight = async () => {
     const profile = profiles[cardIndex];
     setCardIndex(i => i + 1);
+    if (profile) recordSwipe(profile.id);
     if (!user || !profile) { storeSwipeRight(); return; }
     await db.from('swipes').insert({ swiper_id: user.id, swiped_id: profile.id, direction: 'right' });
     const { data: mutual } = await db.from('swipes').select('id').eq('swiper_id', profile.id).eq('swiped_id', user.id).eq('direction', 'right').maybeSingle();
@@ -247,6 +248,7 @@ export default function DiscoverPage() {
   const handleSwipeLeft = async () => {
     const profile = profiles[cardIndex];
     setCardIndex(i => i + 1);
+    if (profile) recordSwipe(profile.id);
     storeSwipeLeft();
     if (user && profile) await db.from('swipes').insert({ swiper_id: user.id, swiped_id: profile.id, direction: 'left' });
   };
@@ -496,7 +498,7 @@ export default function DiscoverPage() {
       </AnimatePresence>
       <AnimatePresence>
         {showRewardedAd && (
-          <RewardedAd reward="super_like_x5" onComplete={(reward) => { setShowRewardedAd(false); setCardIndex(0); }} onClose={() => setShowRewardedAd(false)} />
+          <RewardedAd reward="super_like_x5" onComplete={(reward) => { setShowRewardedAd(false); setCardIndex(0); }} onSkip={() => setShowRewardedAd(false)} onClose={() => setShowRewardedAd(false)} />
         )}
       </AnimatePresence>
     </div>

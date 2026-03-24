@@ -1,5 +1,5 @@
 // @ts-ignore
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore

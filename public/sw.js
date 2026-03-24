@@ -75,7 +75,14 @@ self.addEventListener('fetch', (e) => {
   // HTML navigation (SPA) — serve index.html from cache when offline
   if (request.mode === 'navigate') {
     e.respondWith(
-      fetch(request).catch(() => caches.match('/'))
+      fetch(request).catch(async () => {
+        const cachedResponse = await caches.match('/');
+        if (cachedResponse) return cachedResponse;
+        return new Response('Offline: Spark Connect requires an internet connection.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      })
     );
     return;
   }

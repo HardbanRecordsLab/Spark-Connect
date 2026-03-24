@@ -60,7 +60,7 @@ export interface Profile {
   interests: string[];
   relationshipType: string;
   moodStatus: string;
-  distance: number;
+  distance: number | null;
   isVerified: boolean;
   donorBadge: boolean;
   chemistryScore: number;
