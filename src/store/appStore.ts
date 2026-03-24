@@ -35,6 +35,11 @@ export interface User {
   lastOnlineAt?: string;
   profileViews?: number;
   totalLikes?: number;
+  isPremium?: boolean;
+  premiumUntil?: string;
+  verificationVideoUrl?: string;
+  profileTheme?: string;
+  stealthMode?: boolean;
 }
 
 export interface Profile {
@@ -68,6 +73,11 @@ export interface Profile {
   lastOnlineAt?: string;
   profileViews?: number;
   totalLikes?: number;
+  isPremium?: boolean;
+  premiumUntil?: string;
+  verificationVideoUrl?: string;
+  profileTheme?: string;
+  stealthMode?: boolean;
 }
 
 export interface Message {

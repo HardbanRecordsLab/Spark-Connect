@@ -19,6 +19,8 @@ export interface UserSettings {
   hide_from_search: boolean;
   blur_for_unverified: boolean;
   secured_mode: boolean;
+  allow_whispers: boolean;
+  blur_nsfw_feed: boolean;
 }
 
 const DEFAULTS: UserSettings = {
@@ -36,6 +38,8 @@ const DEFAULTS: UserSettings = {
   hide_from_search: false,
   blur_for_unverified: false,
   secured_mode: false,
+  allow_whispers: true,
+  blur_nsfw_feed: true,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
