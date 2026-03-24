@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
 import { Heart, X, Star, Filter, MapPin, Shield, Info, Eye, Ghost } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
@@ -11,7 +11,9 @@ import { AvailableNowSection } from '@/components/AvailableNow';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { SuperSwipeModal } from '@/components/SuperSwipe';
+import RewardedAd from '@/components/RewardedAd';
 import { WhisperModal } from '@/components/WhisperMessage';
 
 const db = supabase as any;
@@ -97,6 +99,10 @@ export default function DiscoverPage() {
   const { discoverProfiles: mockProfiles, swipeLeft: storeSwipeLeft, swipeRight: storeSwipeRight, superLike } = useAppStore();
   const [showFilters, setShowFilters] = useState(false);
   const [showVibeCheck, setShowVibeCheck] = useState(false);
+  const [showRewardedAd, setShowRewardedAd] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const touchStartY = useRef(0);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const { user } = useAuth();
   const { profiles: dbProfiles, loading: loadingProfiles, refetch, fetchMoreIfNeeded } = useDiscoverProfiles(user?.id ?? null);
@@ -104,6 +110,7 @@ export default function DiscoverPage() {
   const [cardIndex, setCardIndex] = useState(0);
   const [showSuperSwipe, setShowSuperSwipe] = useState(false);
   const [showWhisper, setShowWhisper] = useState(false);
+  const { notify } = usePushNotifications(user?.id ?? null);
   const [superSwipeDailyUsed, setSuperSwipeDailyUsed] = useState(false);
 
   useEffect(() => {
@@ -136,7 +143,15 @@ export default function DiscoverPage() {
     const { data: mutual } = await db.from('swipes').select('id').eq('swiper_id', profile.id).eq('swiped_id', user.id).eq('direction', 'right').maybeSingle();
     if (mutual) {
       const { data: match } = await db.from('matches').insert({ user1_id: user.id, user2_id: profile.id }).select('id').single();
-      if (match) { await db.from('conversations').insert({ match_id: match.id }); storeSwipeRight(); }
+      if (match) {
+        await db.from('conversations').insert({ match_id: match.id });
+        storeSwipeRight();
+        // Trigger push notification for match
+        try {
+          await fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: profile.id, type: 'match', senderName: user.email?.split('@')[0] || 'ktoś' }) });
+        } catch (_) { /* push not critical */ }
+      }
     }
   };
 
@@ -152,8 +167,35 @@ export default function DiscoverPage() {
   const topProfile = visibleProfiles[0];
   const filterCount = activeFilterCount(filters);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const diff = e.touches[0].clientY - touchStartY.current;
+    if (diff > 0 && diff < 80) setPullY(diff);
+  };
+  const handleTouchEnd = async () => {
+    if (pullY > 60) {
+      setRefreshing(true);
+      setCardIndex(0);
+      await new Promise(r => setTimeout(r, 800));
+      setRefreshing(false);
+    }
+    setPullY(0);
+  };
+
   return (
-    <div className="h-full flex flex-col px-4 pb-4 pt-2 bg-radial-glow overflow-y-auto scrollbar-hidden">
+    <div className="h-full flex flex-col px-4 pb-4 pt-2 bg-radial-glow overflow-y-auto scrollbar-hidden"
+      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      {/* Pull to refresh indicator */}
+      {(pullY > 10 || refreshing) && (
+        <div className="flex justify-center pb-2 transition-all" style={{ height: refreshing ? 36 : Math.max(0, pullY * 0.4) }}>
+          <div className={`flex items-center gap-2 text-xs text-primary ${refreshing ? 'animate-pulse' : ''}`}>
+            <span className={refreshing ? 'animate-spin inline-block' : ''} style={{ transform: `rotate(${pullY * 3}deg)` }}>🔄</span>
+            {refreshing ? 'Odświeżam...' : pullY > 60 ? 'Puść aby odświeżyć' : 'Pociągnij w dół'}
+          </div>
+        </div>
+      )}
       <div className="mb-2"><StoriesBar userStories={mockUserStories} showAddButton={true} /></div>
 
       {/* Available Now strip */}
@@ -179,9 +221,22 @@ export default function DiscoverPage() {
       </div>
 
       {loadingProfiles && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
-          <div className="w-16 h-16 rounded-full gradient-fire flex items-center justify-center text-3xl animate-pulse">🔥</div>
-          <p className="text-muted-foreground text-sm">Szukam osób w pobliżu...</p>
+        <div className="flex-1 relative min-h-[380px]">
+          {/* Skeleton card stack */}
+          <div className="absolute inset-0 rounded-3xl overflow-hidden animate-pulse" style={{ background: 'hsl(240 10% 10%)' }}>
+            <div className="w-full h-full" style={{ background: 'linear-gradient(180deg, hsl(240 10% 12%) 0%, hsl(240 15% 4%) 100%)' }} />
+          </div>
+          <div className="absolute inset-0 flex flex-col justify-end p-5">
+            <div className="h-7 w-36 rounded-xl mb-2 animate-pulse" style={{ background: 'hsl(240 10% 14%)' }} />
+            <div className="h-4 w-48 rounded-lg mb-3 animate-pulse" style={{ background: 'hsl(240 10% 14%)' }} />
+            <div className="flex gap-2">
+              {[60, 80, 70].map((w, i) => (
+                <div key={i} className="h-6 rounded-full animate-pulse" style={{ width: w, background: 'hsl(240 10% 14%)' }} />
+              ))}
+            </div>
+          </div>
+          <div className="absolute bottom-[-12px] inset-x-4 h-3 rounded-b-3xl animate-pulse" style={{ background: 'hsl(240 10% 9%)', zIndex: -1 }} />
+          <p className="absolute top-4 left-0 right-0 text-center text-xs text-muted-foreground animate-pulse">Szukam osób w pobliżu...</p>
         </div>
       )}
 
@@ -278,6 +333,11 @@ export default function DiscoverPage() {
         {showVibeCheck && topProfile && (
           <VibeCheck profileName={topProfile.displayName} profilePhoto={topProfile.photos[0]}
             onMatch={() => { setShowVibeCheck(false); handleSwipeRight(); }} onSkip={() => { setShowVibeCheck(false); handleSwipeLeft(); }} onClose={() => setShowVibeCheck(false)} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showRewardedAd && (
+          <RewardedAd reward="super_like_x5" onComplete={(reward) => { setShowRewardedAd(false); setCardIndex(0); }} onClose={() => setShowRewardedAd(false)} />
         )}
       </AnimatePresence>
     </div>

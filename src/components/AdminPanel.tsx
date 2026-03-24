@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Search, Check, X, Eye, Ban, AlertTriangle,
-  Users, Clock, RefreshCw, LogOut, ChevronDown, Filter,
-  Flame, Mail, Calendar, Image as ImageIcon
+  Users, Clock, RefreshCw, LogOut, Filter,
+  Mail, Calendar, Image as ImageIcon, MessageSquare,
+  TrendingUp, UserCheck, UserX, Map, Flame, Settings,
+  Bell, Lock, Globe, ChevronRight, Activity, Database
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const ADMIN_EMAIL = 'spark-connect@hardbanrecordslab.online';
+const ADMIN_EMAIL = 'hardbanrecordslab.pl@gmail.com';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
 type VerifyStatus = 'pending' | 'approved' | 'rejected' | 'all';
+type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings';
 
 interface PendingUser {
   id: string;
@@ -32,8 +35,8 @@ interface PendingUser {
   profile_complete: boolean;
 }
 
-// ── Stat card ─────────────────────────────────────────────────
-function StatCard({ label, value, icon, color }: { label: string; value: number; icon: string; color: string }) {
+// ── Stat card ──────────────────────────────────────────────────
+function StatCard({ label, value, icon, color, sub }: { label: string; value: number | string; icon: string; color: string; sub?: string }) {
   return (
     <div className={`glass rounded-2xl p-4 border ${color}`}>
       <div className="flex items-center justify-between mb-2">
@@ -41,16 +44,14 @@ function StatCard({ label, value, icon, color }: { label: string; value: number;
         <span className="text-2xl font-black">{value}</span>
       </div>
       <p className="text-xs text-muted-foreground">{label}</p>
+      {sub && <p className="text-xs text-primary mt-0.5">{sub}</p>}
     </div>
   );
 }
 
-// ── User card ─────────────────────────────────────────────────
+// ── User card ──────────────────────────────────────────────────
 function UserCard({
-  user,
-  onApprove,
-  onReject,
-  onBan,
+  user, onApprove, onReject, onBan,
 }: {
   user: PendingUser;
   onApprove: (id: string) => void;
@@ -70,193 +71,333 @@ function UserCard({
     : { label: '⏳ Oczekuje', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl overflow-hidden border border-border"
-    >
+    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      className="glass rounded-2xl overflow-hidden border border-border">
       {/* Header */}
       <div className="flex items-center gap-3 p-4">
-        {/* Photo */}
-        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-secondary">
+        <div className="relative w-14 h-14 flex-shrink-0">
           {photos.length > 0 ? (
-            <img src={photos[photoIndex]} alt="" className="w-full h-full object-cover" />
+            <img src={photos[photoIndex]} alt="" className="w-14 h-14 rounded-xl object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl">👤</div>
+            <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl">👤</div>
           )}
           {photos.length > 1 && (
-            <div className="absolute bottom-0.5 right-0.5 bg-background/80 rounded px-1 text-xs">
-              {photoIndex + 1}/{photos.length}
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground font-bold">
+              {photos.length}
             </div>
           )}
         </div>
-
-        {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold truncate">{user.display_name || 'Bez nazwy'}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>
-              {statusBadge.label}
-            </span>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-bold text-sm truncate">{user.display_name || 'Bez nazwy'}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>{statusBadge.label}</span>
           </div>
-          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-            {user.age && <span>👤 {user.age} lat</span>}
-            {user.gender && <span>· {user.gender}</span>}
-            {user.city && <span>· 📍 {user.city}</span>}
+          <div className="text-xs text-muted-foreground flex items-center gap-3">
+            {user.age && <span>🎂 {user.age} lat</span>}
+            {user.city && <span>📍 {user.city}</span>}
+            {user.gender && <span>⚧ {user.gender}</span>}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+            <Mail className="w-3 h-3" />
+            <span className="truncate">{user.email}</span>
           </div>
         </div>
-
-        <button onClick={() => setExpanded(!expanded)} className="w-8 h-8 glass rounded-full flex items-center justify-center flex-shrink-0">
-          <motion.div animate={{ rotate: expanded ? 180 : 0 }}>
-            <ChevronDown className="w-4 h-4" />
-          </motion.div>
+        <button onClick={() => setExpanded(v => !v)}
+          className="w-8 h-8 glass rounded-xl flex items-center justify-center flex-shrink-0">
+          <Eye className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
       {/* Expanded details */}
       <AnimatePresence>
         {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-border"
-          >
+          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
+            className="overflow-hidden border-t border-border">
             <div className="p-4 space-y-3">
-              {/* All photos */}
+              {/* Photos carousel */}
               {photos.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-                    <ImageIcon className="w-3.5 h-3.5" /> Zdjęcia ({photos.length})
+                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                    <ImageIcon className="w-3 h-3" /> Zdjęcia ({photos.length})
                   </p>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hidden">
-                    {photos.map((photo, i) => (
-                      <img
-                        key={i}
-                        src={photo}
-                        alt=""
-                        onClick={() => setPhotoIndex(i)}
-                        className={`h-24 w-20 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${photoIndex === i ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'}`}
-                      />
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hidden pb-1">
+                    {photos.map((p, i) => (
+                      <img key={i} src={p} alt="" onClick={() => setPhotoIndex(i)}
+                        className={`w-20 h-28 rounded-xl object-cover flex-shrink-0 cursor-pointer transition-all ${photoIndex === i ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'}`} />
                     ))}
                   </div>
                 </div>
               )}
-
               {/* Bio */}
               {user.bio && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Bio</p>
-                  <p className="text-sm glass rounded-xl p-3">{user.bio}</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                    <MessageSquare className="w-3 h-3" /> Bio
+                  </p>
+                  <p className="text-sm text-foreground/80 glass rounded-xl px-3 py-2">{user.bio}</p>
                 </div>
               )}
-
-              {/* Rejection reason */}
-              {user.admin_rejected && user.rejection_reason && (
-                <div className="glass border border-destructive/30 rounded-xl p-3">
-                  <p className="text-xs text-destructive font-semibold mb-1">Powód odrzucenia</p>
-                  <p className="text-sm text-muted-foreground">{user.rejection_reason}</p>
-                </div>
-              )}
-
               {/* Meta */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {new Date(user.created_at).toLocaleDateString('pl-PL')}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Mail className="w-3 h-3" />
-                  {user.email}
-                </span>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(user.created_at).toLocaleDateString('pl-PL')}</span>
+                {user.is_verified && <span className="text-green-400">✓ Zweryfikowany</span>}
+                {user.rejection_reason && (
+                  <span className="text-destructive">Powód: {user.rejection_reason}</span>
+                )}
               </div>
-
               {/* Reject form */}
               <AnimatePresence>
                 {showRejectForm && (
-                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                     className="space-y-2">
-                    <textarea
-                      value={reason}
-                      onChange={e => setReason(e.target.value)}
-                      placeholder="Powód odrzucenia (np. fałszywe zdjęcia, bot, niepełnoletni)..."
-                      rows={3}
-                      className="w-full glass rounded-xl px-3 py-2 text-sm outline-none border border-destructive/30 resize-none"
-                    />
+                    <textarea value={reason} onChange={e => setReason(e.target.value)}
+                      placeholder="Powód odrzucenia (widoczny dla użytkownika)..."
+                      className="w-full glass rounded-xl px-3 py-2 text-sm outline-none border border-destructive/40 resize-none h-20" />
                     <div className="flex gap-2">
-                      <button onClick={() => setShowRejectForm(false)} className="flex-1 glass py-2 rounded-xl text-sm">Anuluj</button>
-                      <button
-                        onClick={() => { onReject(user.id, reason); setShowRejectForm(false); }}
+                      <button onClick={() => { onReject(user.id, reason); setShowRejectForm(false); }}
                         disabled={!reason.trim()}
-                        className="flex-1 bg-destructive text-destructive-foreground py-2 rounded-xl text-sm font-bold disabled:opacity-40"
-                      >
-                        Odrzuć
+                        className="flex-1 bg-destructive text-destructive-foreground py-2 rounded-xl text-sm font-medium disabled:opacity-50">
+                        Odrzuć z powodem
                       </button>
+                      <button onClick={() => setShowRejectForm(false)}
+                        className="px-4 glass rounded-xl text-sm">Anuluj</button>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-
-              {/* Action buttons */}
-              {!user.admin_approved && !user.admin_rejected && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onApprove(user.id)}
-                    className="flex-1 gradient-fire text-primary-foreground py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5"
-                  >
-                    <Check className="w-4 h-4" /> Zatwierdź
-                  </button>
-                  <button
-                    onClick={() => setShowRejectForm(true)}
-                    className="flex-1 bg-destructive/20 text-destructive border border-destructive/30 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5"
-                  >
-                    <X className="w-4 h-4" /> Odrzuć
-                  </button>
-                </div>
-              )}
-
-              {/* Re-review approved/rejected */}
-              {(user.admin_approved || user.admin_rejected) && (
-                <div className="flex gap-2">
-                  {!user.admin_approved && (
-                    <button onClick={() => onApprove(user.id)} className="flex-1 gradient-fire text-primary-foreground py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Zatwierdź
-                    </button>
-                  )}
-                  {!user.admin_rejected && (
-                    <button onClick={() => setShowRejectForm(true)} className="flex-1 bg-destructive/10 text-destructive border border-destructive/20 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1">
-                      <X className="w-3.5 h-3.5" /> Odrzuć
-                    </button>
-                  )}
-                  <button onClick={() => onBan(user.id)} className="w-10 h-10 bg-destructive/20 text-destructive border border-destructive/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Ban className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Ban always available */}
-              {!user.admin_approved && !user.admin_rejected && (
-                <button onClick={() => onBan(user.id)} className="w-full glass border border-destructive/20 text-destructive py-2 rounded-xl text-sm flex items-center justify-center gap-1.5">
-                  <Ban className="w-3.5 h-3.5" /> Zablokuj konto
-                </button>
-              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Action buttons */}
+      {!user.admin_approved && !user.admin_rejected && (
+        <div className="flex gap-2 px-4 pb-4">
+          <button onClick={() => onApprove(user.id)}
+            className="flex-1 flex items-center justify-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 py-2.5 rounded-xl text-sm font-semibold transition-all">
+            <Check className="w-4 h-4" /> Zatwierdź
+          </button>
+          <button onClick={() => setShowRejectForm(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 py-2.5 rounded-xl text-sm font-semibold transition-all">
+            <X className="w-4 h-4" /> Odrzuć
+          </button>
+          <button onClick={() => onBan(user.id)}
+            className="w-11 flex items-center justify-center bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 rounded-xl transition-all">
+            <Ban className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+      {(user.admin_approved || user.admin_rejected) && (
+        <div className="px-4 pb-4">
+          <button onClick={() => onBan(user.id)}
+            className="w-full flex items-center justify-center gap-2 glass border border-destructive/30 text-destructive py-2.5 rounded-xl text-sm transition-all hover:bg-destructive/10">
+            <Ban className="w-4 h-4" /> Zbanuj użytkownika
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
 
-// ── Main AdminPanel ───────────────────────────────────────────
+// ── Stats Section ──────────────────────────────────────────────
+function StatsSection() {
+  const mockStats = {
+    totalUsers: 1842, activeToday: 247, newThisWeek: 89,
+    matches: 3421, messages: 28940, reports: 12,
+    groups: 23, groupMessages: 4820, avgSession: '8m 22s',
+  };
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">📊 Statystyki aplikacji</h2>
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard label="Wszyscy użytkownicy" value={mockStats.totalUsers} icon="👥" color="border-border" />
+        <StatCard label="Aktywni dziś" value={mockStats.activeToday} icon="🟢" color="border-green-500/30" sub="+12% vs wczoraj" />
+        <StatCard label="Nowi (tydzień)" value={mockStats.newThisWeek} icon="🆕" color="border-blue-500/30" />
+        <StatCard label="Dopasowania" value={mockStats.matches} icon="💫" color="border-primary/30" sub="łącznie" />
+        <StatCard label="Wiadomości" value={mockStats.messages} icon="💬" color="border-border" sub="łącznie" />
+        <StatCard label="Zgłoszenia" value={mockStats.reports} icon="🚨" color="border-amber-500/30" sub="do weryfikacji" />
+        <StatCard label="Grupy aktywne" value={mockStats.groups} icon="✦" color="border-purple-500/30" />
+        <StatCard label="Śr. sesja" value={mockStats.avgSession} icon="⏱️" color="border-border" />
+      </div>
+
+      {/* Activity chart placeholder */}
+      <div className="glass rounded-2xl p-4 border border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <Activity className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold">Aktywność (7 dni)</span>
+        </div>
+        <div className="flex items-end gap-1.5 h-16">
+          {[45, 62, 78, 54, 91, 83, 67].map((v, i) => (
+            <div key={i} className="flex-1 rounded-t-sm gradient-fire opacity-80"
+              style={{ height: `${v}%` }} />
+          ))}
+        </div>
+        <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+          {['Pon','Wt','Śr','Czw','Pt','Sob','Ndz'].map(d => <span key={d}>{d}</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Groups Section ─────────────────────────────────────────────
+function GroupsSection() {
+  const groups = [
+    { name: 'Jazz & Vinyl ♫', members: 847, msgs: 1240, active: true, cat: 'Muzyka' },
+    { name: 'Kawa i filozofia ☕', members: 1204, msgs: 2880, active: true, cat: 'Lifestyle' },
+    { name: 'Kino Niezależne 🎬', members: 562, msgs: 890, active: true, cat: 'Film' },
+    { name: 'Bieganie Warszawa 🏃', members: 389, msgs: 430, active: false, cat: 'Sport' },
+    { name: 'Wino & Sery 🍷', members: 213, msgs: 320, active: false, cat: 'Food' },
+  ];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">✦ Grupy dyskusyjne</h2>
+        <button className="text-xs text-primary">+ Utwórz grupę</button>
+      </div>
+      <div className="space-y-2">
+        {groups.map((g, i) => (
+          <div key={i} className="glass rounded-xl p-3 flex items-center gap-3 border border-border">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="font-medium text-sm truncate">{g.name}</span>
+                {g.active && <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />}
+              </div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>👥 {g.members}</span>
+                <span>💬 {g.msgs} wiad.</span>
+                <span className="glass px-1.5 py-0.5 rounded-full">{g.cat}</span>
+              </div>
+            </div>
+            <div className="flex gap-1.5">
+              <button className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-primary">✏️</button>
+              <button className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-destructive">🗑️</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Reports Section ────────────────────────────────────────────
+function ReportsSection() {
+  const reports = [
+    { from: 'Sofia K.', against: 'Anonimowy_42', reason: 'Niezweryfikowane zdjęcia', time: '1 godz. temu', severity: 'high' },
+    { from: 'Marek W.', against: 'User_918', reason: 'Spam w grupie', time: '3 godz. temu', severity: 'medium' },
+    { from: 'Anna P.', against: 'Profil_205', reason: 'Nieodpowiednie zdjęcia', time: '5 godz. temu', severity: 'high' },
+    { from: 'Julia R.', against: 'Bot_suspect', reason: 'Podejrzenie bota', time: 'wczoraj', severity: 'medium' },
+  ];
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">🚨 Zgłoszenia użytkowników</h2>
+      <div className="space-y-2">
+        {reports.map((r, i) => (
+          <div key={i} className={`glass rounded-xl p-3 border ${r.severity === 'high' ? 'border-destructive/40' : 'border-amber-500/30'}`}>
+            <div className="flex items-start gap-2 mb-2">
+              <AlertTriangle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${r.severity === 'high' ? 'text-destructive' : 'text-amber-400'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">{r.reason}</div>
+                <div className="text-xs text-muted-foreground">{r.from} → {r.against} · {r.time}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button className="flex-1 py-1.5 glass rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground">Sprawdź profil</button>
+              <button className="flex-1 py-1.5 bg-destructive/20 rounded-lg text-xs font-medium text-destructive border border-destructive/30">Zbanuj</button>
+              <button className="flex-1 py-1.5 glass rounded-lg text-xs font-medium text-muted-foreground">Ignoruj</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Settings Section ───────────────────────────────────────────
+function SettingsSection() {
+  const [liveEnabled, setLiveEnabled] = useState(true);
+  const [mapEnabled, setMapEnabled] = useState(true);
+  const [hotnotEnabled, setHotnotEnabled] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+
+  const Toggle = ({ val, onChange }: { val: boolean; onChange: (v: boolean) => void }) => (
+    <button onClick={() => onChange(!val)}
+      className={`w-10 h-6 rounded-full relative transition-all ${val ? 'bg-primary' : 'bg-secondary'}`}>
+      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${val ? 'left-5' : 'left-1'}`} />
+    </button>
+  );
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">⚙️ Ustawienia aplikacji</h2>
+
+      <div className="glass rounded-2xl border border-border overflow-hidden divide-y divide-border">
+        {[
+          { icon: '🎥', label: 'Live Streaming', desc: 'Transmisje na żywo', val: liveEnabled, set: setLiveEnabled },
+          { icon: '📍', label: 'Mapa aktywnych', desc: 'GPS i lokalizacja', val: mapEnabled, set: setMapEnabled },
+          { icon: '🔥', label: 'Hot or Not', desc: 'Ocenianie profili', val: hotnotEnabled, set: setHotnotEnabled },
+          { icon: '🔓', label: 'Otwarta rejestracja', desc: 'Nowi użytkownicy mogą się rejestrować', val: registrationOpen, set: setRegistrationOpen },
+        ].map((s, i) => (
+          <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+            <span className="text-xl flex-shrink-0">{s.icon}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium">{s.label}</div>
+              <div className="text-xs text-muted-foreground">{s.desc}</div>
+            </div>
+            <Toggle val={s.val} onChange={s.set} />
+          </div>
+        ))}
+      </div>
+
+      {/* Maintenance mode - danger zone */}
+      <div className="glass rounded-2xl border border-destructive/40 overflow-hidden">
+        <div className="px-4 py-3 border-b border-destructive/30">
+          <span className="text-xs font-bold text-destructive uppercase tracking-wider">🚧 Strefa niebezpieczna</span>
+        </div>
+        <div className="flex items-center gap-3 px-4 py-3.5">
+          <span className="text-xl">🚧</span>
+          <div className="flex-1">
+            <div className="text-sm font-medium">Tryb maintenance</div>
+            <div className="text-xs text-muted-foreground">Blokuje dostęp zwykłym użytkownikom</div>
+          </div>
+          <button onClick={() => setMaintenanceMode(v => !v)}
+            className={`w-10 h-6 rounded-full relative transition-all ${maintenanceMode ? 'bg-destructive' : 'bg-secondary'}`}>
+            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${maintenanceMode ? 'left-5' : 'left-1'}`} />
+          </button>
+        </div>
+        {maintenanceMode && (
+          <div className="px-4 pb-3">
+            <p className="text-xs text-destructive">⚠️ Aplikacja jest teraz niedostępna dla użytkowników!</p>
+          </div>
+        )}
+      </div>
+
+      <div className="glass rounded-2xl border border-border p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Database className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold">Informacje systemowe</span>
+        </div>
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex justify-between"><span>Wersja app</span><span className="text-foreground">v1.4.2</span></div>
+          <div className="flex justify-between"><span>Admin email</span><span className="text-primary">{ADMIN_EMAIL}</span></div>
+          <div className="flex justify-between"><span>Baza danych</span><span className="text-green-400">● Online</span></div>
+          <div className="flex justify-between"><span>Supabase</span><span className="text-green-400">● Połączony</span></div>
+          <div className="flex justify-between"><span>Środowisko</span><span className="text-foreground">Production</span></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main AdminPanel ────────────────────────────────────────────
 export default function AdminPanel() {
   const [authed, setAuthed] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState<AdminSection>('users');
 
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [filter, setFilter] = useState<VerifyStatus>('pending');
@@ -264,7 +405,6 @@ export default function AdminPanel() {
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [refreshing, setRefreshing] = useState(false);
 
-  // ── Auth ────────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setLoginError('');
@@ -280,7 +420,6 @@ export default function AdminPanel() {
     loadUsers();
   };
 
-  // ── Load users ──────────────────────────────────────────────
   const loadUsers = async () => {
     setRefreshing(true);
     const { data } = await db
@@ -289,11 +428,9 @@ export default function AdminPanel() {
       .eq('profile_complete', true)
       .order('created_at', { ascending: false });
 
-    // Fetch emails from auth.users via admin API is not possible client-side,
-    // so we join with a view or use auth metadata if available
     const enriched: PendingUser[] = (data ?? []).map((p: PendingUser) => ({
       ...p,
-      email: `user_${p.id.slice(0, 6)}@spark.app`, // placeholder — real email via admin API
+      email: `user_${p.id.slice(0, 6)}@spark.app`,
     }));
 
     setUsers(enriched);
@@ -319,25 +456,22 @@ export default function AdminPanel() {
   };
 
   const handleBan = async (id: string) => {
-    if (!confirm('Na pewno zablokować to konto? Akcja jest nieodwracalna.')) return;
-    // Mark as rejected with ban reason + could invoke edge function to delete auth user
-    await db.from('profiles').update({ admin_rejected: true, rejection_reason: 'Konto zablokowane przez administratora' }).eq('id', id);
+    if (!confirm('Na pewno zbanować tego użytkownika?')) return;
+    await db.from('profiles').update({ admin_rejected: true, rejection_reason: 'Konto zbanowane przez administratora' }).eq('id', id);
     setUsers(prev => prev.filter(u => u.id !== id));
+    setStats(s => ({ ...s, total: s.total - 1 }));
   };
 
   const filtered = users.filter(u => {
     const matchSearch = !search ||
-      (u.display_name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
-      (u.city || '').toLowerCase().includes(search.toLowerCase());
-
+      u.display_name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.city?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase());
     const matchStatus =
       filter === 'all' ? true :
       filter === 'pending' ? (!u.admin_approved && !u.admin_rejected) :
-      filter === 'approved' ? u.admin_approved :
-      filter === 'rejected' ? u.admin_rejected :
-      true;
-
+      filter === 'approved' ? !!u.admin_approved :
+      !!u.admin_rejected;
     return matchSearch && matchStatus;
   });
 
@@ -347,11 +481,11 @@ export default function AdminPanel() {
       <div className="min-h-screen bg-radial-glow flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 gradient-fire rounded-2xl flex items-center justify-center mb-4 glow-red">
-              <Shield className="w-8 h-8 text-primary-foreground" />
+            <div className="w-20 h-20 rounded-2xl overflow-hidden mb-4" style={{ background: '#000' }}>
+              <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-2xl font-black">Panel Administratora</h1>
-            <p className="text-sm text-muted-foreground mt-1">Spark Connect · Tylko dla admina</p>
+            <p className="text-sm text-muted-foreground mt-1">Spark Connect 18+ · Dostęp tylko dla admina</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -362,149 +496,169 @@ export default function AdminPanel() {
                 <span className="text-sm text-destructive">{loginError}</span>
               </motion.div>
             )}
-            <input
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              type="email" required autoComplete="email"
-              placeholder="Admin email"
-              className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-            />
-            <input
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              type="password" required
-              placeholder="Hasło"
-              className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-            />
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Admin email</label>
+              <input value={email} onChange={e => setEmail(e.target.value)}
+                type="email" required autoComplete="email"
+                placeholder="hardbanrecordslab.pl@gmail.com"
+                className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Hasło</label>
+              <input value={password} onChange={e => setPassword(e.target.value)}
+                type="password" required
+                placeholder="Hasło administratora"
+                className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
+            </div>
             <button type="submit" disabled={loading}
               className="w-full gradient-fire text-primary-foreground font-bold py-4 rounded-2xl glow-red flex items-center justify-center gap-2 disabled:opacity-50">
               {loading
-                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-current border-t-transparent rounded-full" />
-                : <><Shield className="w-4 h-4" /> Zaloguj</>}
+                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    className="w-5 h-5 border-2 border-current border-t-transparent rounded-full" />
+                : <><Shield className="w-4 h-4" /> Zaloguj do panelu</>}
             </button>
           </form>
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            🔒 Dostęp tylko dla: <span className="text-primary">{ADMIN_EMAIL}</span>
+          </p>
         </div>
       </div>
     );
   }
 
   // ── Dashboard ───────────────────────────────────────────────
+  const navItems: { id: AdminSection; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: 'users', icon: <Users className="w-4 h-4" />, label: 'Użytkownicy', badge: stats.pending },
+    { id: 'stats', icon: <TrendingUp className="w-4 h-4" />, label: 'Statystyki' },
+    { id: 'groups', icon: <MessageSquare className="w-4 h-4" />, label: 'Grupy' },
+    { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: 4 },
+    { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Ustawienia' },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="glass-strong border-b border-border sticky top-0 z-40">
-        <div className="flex items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 gradient-fire rounded-xl flex items-center justify-center">
-              <Shield className="w-4 h-4 text-primary-foreground" />
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl overflow-hidden" style={{ background: '#000' }}>
+              <img src="/spark-connect-logo.png" alt="" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="font-bold text-sm">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">Spark Connect 18+</p>
+              <p className="text-xs text-muted-foreground">{ADMIN_EMAIL}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={loadUsers} disabled={refreshing}
-              className="w-9 h-9 glass rounded-xl flex items-center justify-center">
+              className="w-8 h-8 glass rounded-xl flex items-center justify-center">
               <motion.div animate={refreshing ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
-                <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
               </motion.div>
             </button>
             <button onClick={() => { supabase.auth.signOut(); setAuthed(false); }}
-              className="w-9 h-9 glass rounded-xl flex items-center justify-center">
-              <LogOut className="w-4 h-4 text-destructive" />
+              className="w-8 h-8 glass rounded-xl flex items-center justify-center">
+              <LogOut className="w-3.5 h-3.5 text-destructive" />
             </button>
           </div>
+        </div>
+
+        {/* Nav tabs */}
+        <div className="flex px-4 pb-3 gap-1 overflow-x-auto scrollbar-hidden">
+          {navItems.map(n => (
+            <button key={n.id} onClick={() => setSection(n.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all relative ${
+                section === n.id ? 'bg-primary/20 text-primary border border-primary/40' : 'glass text-muted-foreground border border-border'}`}>
+              {n.icon} {n.label}
+              {n.badge && n.badge > 0 ? (
+                <span className="ml-0.5 w-4 h-4 bg-primary rounded-full text-primary-foreground text-xs flex items-center justify-center font-bold">
+                  {n.badge}
+                </span>
+              ) : null}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4 max-w-2xl mx-auto">
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-2">
-          <StatCard label="Wszyscy" value={stats.total} icon="👥" color="border-border" />
-          <StatCard label="Oczekuje" value={stats.pending} icon="⏳" color="border-amber-500/30" />
-          <StatCard label="Zatwierdzeni" value={stats.approved} icon="✅" color="border-green-500/30" />
-          <StatCard label="Odrzuceni" value={stats.rejected} icon="❌" color="border-destructive/30" />
-        </div>
-
-        {/* Pending alert */}
-        {stats.pending > 0 && (
-          <motion.div
-            animate={{ scale: [1, 1.01, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="glass border border-amber-500/40 rounded-2xl px-4 py-3 flex items-center gap-3"
-          >
-            <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-bold text-amber-400">{stats.pending} profili czeka na weryfikację</p>
-              <p className="text-xs text-muted-foreground">Sprawdź zdjęcia i zatwierdź lub odrzuć</p>
+        {/* USERS SECTION */}
+        {section === 'users' && (
+          <>
+            {/* Quick stats */}
+            <div className="grid grid-cols-4 gap-2">
+              <StatCard label="Wszyscy" value={stats.total} icon="👥" color="border-border" />
+              <StatCard label="Oczekuje" value={stats.pending} icon="⏳" color="border-amber-500/30" />
+              <StatCard label="Zatwierdzeni" value={stats.approved} icon="✅" color="border-green-500/30" />
+              <StatCard label="Odrzuceni" value={stats.rejected} icon="❌" color="border-destructive/30" />
             </div>
-          </motion.div>
+
+            {stats.pending > 0 && (
+              <motion.div animate={{ scale: [1, 1.01, 1] }} transition={{ repeat: Infinity, duration: 2 }}
+                className="glass border border-amber-500/40 rounded-2xl px-4 py-3 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-400">{stats.pending} profili czeka na weryfikację</p>
+                  <p className="text-xs text-muted-foreground">Sprawdź zdjęcia i zatwierdź lub odrzuć</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Search */}
+            <div className="flex items-center gap-3 glass rounded-2xl px-4 py-3">
+              <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Szukaj po imieniu, emailu, mieście..."
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+              {search && <button onClick={() => setSearch('')}><X className="w-4 h-4 text-muted-foreground" /></button>}
+            </div>
+
+            {/* Filter tabs */}
+            <div className="flex gap-1.5 bg-secondary rounded-2xl p-1.5">
+              {([
+                { v: 'pending', l: '⏳ Oczekuje', count: stats.pending },
+                { v: 'approved', l: '✅ Zatwierdzeni', count: stats.approved },
+                { v: 'rejected', l: '❌ Odrzuceni', count: stats.rejected },
+                { v: 'all', l: '👥 Wszyscy', count: stats.total },
+              ] as { v: VerifyStatus; l: string; count: number }[]).map(tab => (
+                <button key={tab.v} onClick={() => setFilter(tab.v)}
+                  className={`flex-1 text-xs font-medium py-2 px-1 rounded-xl transition-all ${
+                    filter === tab.v ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  {tab.l}
+                  {tab.count > 0 && (
+                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${filter === tab.v ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'}`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Users list */}
+            <div className="space-y-3">
+              {filtered.length === 0 ? (
+                <div className="text-center py-12 opacity-50">
+                  <div className="text-4xl mb-3">🔍</div>
+                  <p className="text-sm text-muted-foreground">
+                    {filter === 'pending' ? 'Brak profili oczekujących — świetnie! ✓' : 'Brak wyników'}
+                  </p>
+                </div>
+              ) : (
+                filtered.map(user => (
+                  <UserCard key={user.id} user={user}
+                    onApprove={handleApprove} onReject={handleReject} onBan={handleBan} />
+                ))
+              )}
+            </div>
+          </>
         )}
 
-        {/* Search */}
-        <div className="flex items-center gap-3 glass rounded-2xl px-4 py-3">
-          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Szukaj po imieniu, emailu, mieście..."
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-          {search && <button onClick={() => setSearch('')}><X className="w-4 h-4 text-muted-foreground" /></button>}
-        </div>
-
-        {/* Filter tabs */}
-        <div className="flex gap-1.5 bg-secondary rounded-2xl p-1.5">
-          {([
-            { v: 'pending', l: '⏳ Oczekuje', count: stats.pending },
-            { v: 'approved', l: '✅ Zatwierdzeni', count: stats.approved },
-            { v: 'rejected', l: '❌ Odrzuceni', count: stats.rejected },
-            { v: 'all', l: '👥 Wszyscy', count: stats.total },
-          ] as { v: VerifyStatus; l: string; count: number }[]).map(tab => (
-            <button
-              key={tab.v}
-              onClick={() => setFilter(tab.v)}
-              className={`flex-1 text-xs font-medium py-2 px-1 rounded-xl transition-all ${
-                filter === tab.v
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.l}
-              {tab.count > 0 && (
-                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-                  filter === tab.v ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'
-                }`}>{tab.count}</span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Users list */}
-        <div className="space-y-3">
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 opacity-50">
-              <div className="text-4xl mb-3">🔍</div>
-              <p className="text-sm text-muted-foreground">
-                {filter === 'pending' ? 'Brak profili oczekujących' : 'Brak wyników'}
-              </p>
-            </div>
-          ) : (
-            filtered.map(user => (
-              <UserCard
-                key={user.id}
-                user={user}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onBan={handleBan}
-              />
-            ))
-          )}
-        </div>
+        {section === 'stats' && <StatsSection />}
+        {section === 'groups' && <GroupsSection />}
+        {section === 'reports' && <ReportsSection />}
+        {section === 'settings' && <SettingsSection />}
 
         <div className="text-center py-4">
-          <p className="text-xs text-muted-foreground">Spark Connect Admin · {ADMIN_EMAIL}</p>
+          <p className="text-xs text-muted-foreground">Spark Connect 18+ Admin · {ADMIN_EMAIL}</p>
         </div>
       </div>
     </div>

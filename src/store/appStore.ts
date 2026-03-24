@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type AppView = 'landing' | 'login' | 'register' | 'onboarding' | 'app';
-export type AppTab = 'discover' | 'roulette' | 'chats' | 'live' | 'profile';
+export type AppTab = 'discover' | 'roulette' | 'chats' | 'live' | 'profile' | 'groups' | 'map' | 'visitors' | 'hotnot';
 
 export interface User {
   id: string;

@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 // ─── Emoji reactions constants ────────────────────────────────────────────────
 const REACTION_EMOJIS = ['❤️', '🔥', '😂', '😮', '😢', '👎'] as const;
@@ -548,7 +549,7 @@ function ConversationItem({ conv, onClick }: { conv: Conversation; onClick: () =
     <button onClick={onClick} className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors rounded-2xl">
       <div className="relative flex-shrink-0">
         <div className={conv.user.isVerified ? 'story-ring' : ''}>
-          <img src={conv.user.photos[0]} alt={conv.user.displayName} className="w-14 h-14 rounded-full object-cover" style={conv.user.isVerified ? { padding: '2px' } : {}} />
+          <img src={conv.user.photos[0]} alt={conv.user.displayName} className="w-12 h-12 rounded-full object-cover" style={conv.user.isVerified ? { padding: "2px" } : {}} />
         </div>
         {conv.isOnline && (
           <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background" style={{ background: 'hsl(142 71% 45%)' }} />
@@ -585,6 +586,7 @@ function ConversationItem({ conv, onClick }: { conv: Conversation; onClick: () =
 function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) {
   const { user } = useAuth();
   const myId = user?.id ?? 'me';
+  const { notify } = usePushNotifications(user?.id ?? null);
 
   const [text, setText] = useState('');
   const [showGiftPicker, setShowGiftPicker] = useState(false);
@@ -802,7 +804,12 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
   };
 
 
+  const lastSentRef = useRef<number>(0);
   const handleSend = async () => {
+    // Rate limiting: max 1 message per second
+    const now = Date.now();
+    if (now - lastSentRef.current < 1000) return;
+    lastSentRef.current = now;
     if (!text.trim() || sending) return;
     setSending(true);
     presenceChannelRef.current?.track({ typing: false });
@@ -836,7 +843,11 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
         expires_at: expiresAt,
         reply_to_id: replyId,
       }).select().single();
-      if (!error && data) setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), replyToId: replyId } : m));
+      if (!error && data) {
+        setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), replyToId: replyId } : m));
+        // Local notification echo (in real app: server sends to recipient)
+        notify(`Nova wiadomość`, text.slice(0, 60));
+      }
     }
     setSending(false);
   };
@@ -953,7 +964,7 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="relative">
-          <img src={conv.user.photos[0]} alt={conv.user.displayName} className="w-10 h-10 rounded-full object-cover" />
+          <img src={conv.user.photos[0]} alt={conv.user.displayName} className="w-9 h-9 rounded-full object-cover" />
           {isAnonMode && (
             <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center">
               <Ghost className="w-3 h-3 text-muted-foreground" />
@@ -1300,9 +1311,16 @@ export default function ChatsPage() {
       <div className="px-3 mb-2"><AdBanner placement="chats" /></div>
       <div className="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-40 gap-3">
-            <div className="w-8 h-8 rounded-full gradient-fire animate-pulse" />
-            <p className="text-sm text-muted-foreground">Ładowanie...</p>
+          <div className="space-y-2 px-1 pt-1">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-2 py-3 rounded-2xl glass animate-pulse">
+                <div className="w-14 h-14 rounded-full skeleton flex-shrink-0" style={{ background: 'hsl(240 10% 14%)' }} />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 rounded-lg skeleton" style={{ width: `${55 + i * 7}%`, background: 'hsl(240 10% 14%)' }} />
+                  <div className="h-3 rounded-lg skeleton" style={{ width: `${40 + i * 5}%`, background: 'hsl(240 10% 12%)' }} />
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <AnimatePresence>

@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Zap } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useAuth } from '@/hooks/useAuth';
 import Confetti from './Confetti';
 import IcebreakerModal from './IcebreakerModal';
 
 export default function MatchModal() {
   const { matchedProfile, dismissMatch, setActiveTab } = useAppStore();
   const [showIcebreaker, setShowIcebreaker] = useState(false);
+  const { user } = useAuth();
+  const { notify } = usePushNotifications(user?.id ?? null);
+
+  // Trigger notification on match
+  useEffect(() => {
+    if (matchedProfile) {
+      notify(`💫 To dopasowanie!`, `Ty i ${matchedProfile.displayName} lubicie się nawzajem!`);
+    }
+  }, [matchedProfile?.id]);
 
   if (!matchedProfile) return null;
 

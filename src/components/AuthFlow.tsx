@@ -190,17 +190,9 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
         <h1 className="text-3xl font-black mb-1">Dołącz do Spark 🔥</h1>
         <p className="text-muted-foreground mb-8">Bezpłatnie. Bez karty kredytowej.</p>
 
-        <div className="space-y-3 mb-4">
-          <button onClick={handleGoogle} disabled={loading} className="w-full glass border border-border py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-3 text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50">
-            <GoogleIcon /> Kontynuuj z Google
-          </button>
-          <button onClick={handleApple} disabled={loading} className="w-full glass border border-border py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-3 text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50">
-            <AppleIcon /> Kontynuuj z Apple
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">lub email</span><div className="flex-1 h-px bg-border" />
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-5" style={{ background: 'rgba(91,141,240,.07)', border: '1px solid rgba(91,141,240,.2)' }}>
+          <span className="text-base">🔒</span>
+          <span className="text-xs text-muted-foreground">Bez logowania Google ani Apple — celowo. Twoje dane nie trafiają do Big Tech.</span>
         </div>
 
         {error && <ErrorAlert msg={error} />}
@@ -320,17 +312,9 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
         <h1 className="text-3xl font-black mb-1">Witaj z powrotem 🔥</h1>
         <p className="text-muted-foreground mb-8">Gotowy/a na nowe połączenia?</p>
 
-        <div className="space-y-3 mb-4">
-          <button onClick={handleGoogle} disabled={loading} className="w-full glass border border-border py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-3 text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50">
-            <GoogleIcon /> Kontynuuj z Google
-          </button>
-          <button onClick={handleApple} disabled={loading} className="w-full glass border border-border py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-3 text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50">
-            <AppleIcon /> Kontynuuj z Apple
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">lub email</span><div className="flex-1 h-px bg-border" />
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-5" style={{ background: 'rgba(91,141,240,.07)', border: '1px solid rgba(91,141,240,.2)' }}>
+          <span className="text-base">🔒</span>
+          <span className="text-xs text-muted-foreground">Bez logowania Google ani Apple — celowo. Twoje dane nie trafiają do Big Tech.</span>
         </div>
 
         {error && <ErrorAlert msg={error} />}
@@ -402,7 +386,7 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
         gender: data.gender,
         orientation: data.orientation,
         relationship_type: data.relationship_type,
-        // profile_complete only after full profile setup — allow in-app completion
+        interests: (data as any).interests || [],
         profile_complete: !!(data.display_name && data.age && data.gender && data.orientation),
         ...(avatarUrl && { avatar_url: avatarUrl, photos: [avatarUrl] }),
       }).eq('id', user.id);
@@ -528,6 +512,30 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
               <p className={`text-xs mt-0.5 ${data.relationship_type === o.v ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{o.sub}</p>
             </button>
           ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Twoje zainteresowania 🎯',
+      subtitle: 'Wybierz co lubisz — znajdziemy lepsze dopasowania (min. 3)',
+      valid: (data as any).interests?.length >= 3,
+      content: (
+        <div className="flex flex-wrap gap-2">
+          {['☕ Kawa','🎵 Muzyka','🎬 Kino','🍷 Wino','📸 Foto','🌍 Podróże','🎮 Gaming','🏃 Sport',
+            '📚 Książki','🍕 Foodie','🎨 Sztuka','🎭 Teatr','🧘 Yoga','🏖️ Plaża','🎸 Rock',
+            '🧪 Nauka','💻 Tech','🌿 Natura','🐾 Zwierzęta','🍣 Sushi','🎺 Jazz','🚴 Rower'].map(tag => {
+            const sel = ((data as any).interests || []).includes(tag);
+            return (
+              <button key={tag} onClick={() => {
+                const prev = (data as any).interests || [];
+                const next = sel ? prev.filter((t: string) => t !== tag) : [...prev, tag];
+                setData({ ...data, interests: next } as any);
+              }}
+                className={`px-3 py-2 rounded-2xl text-sm font-medium transition-all ${sel ? 'gradient-fire text-primary-foreground' : 'glass border border-border'}`}>
+                {tag}
+              </button>
+            );
+          })}
         </div>
       ),
     },

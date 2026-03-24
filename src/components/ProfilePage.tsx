@@ -13,6 +13,8 @@ import ReferralSystem from '@/components/ReferralSystem';
 import { AvailableNowToggle } from '@/components/AvailableNow';
 import { MyPrivatePhotos } from '@/components/PrivatePhotos';
 import CompatibilityQuiz from '@/components/CompatibilityQuiz';
+import DonationPage from '@/components/DonationPage';
+import RewardedAd from '@/components/RewardedAd';
 
 const moodOptions = [
   { value: 'Szukam zabawy 🔥',   emoji: '🔥' },
@@ -176,8 +178,10 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const { profile, updateProfile, refetch } = useProfile(user);
   const { requestLocation, loading: geoLoading } = useGeolocation();
-  const [activeSection, setActiveSection] = useState<'main' | 'settings' | 'referral' | 'quiz'>('main');
+  const [activeSection, setActiveSection] = useState<'main' | 'settings' | 'referral' | 'quiz' | 'donation'>('main');
   const [showFaceVerify, setShowFaceVerify] = useState(false);
+  const [showRewardedAd, setShowRewardedAd] = useState(false);
+  const [rewardType, setRewardType] = useState<'boost_24h' | 'who_liked_me_24h'>('boost_24h');
   const [isBoosted, setIsBoosted] = useState(false);
 
   const handleDetectLocation = async () => {
@@ -225,6 +229,10 @@ export default function ProfilePage() {
         }}
       />
     );
+  }
+
+  if (activeSection === 'donation') {
+    return <div className="h-full"><DonationPage onClose={() => setActiveSection('main')} /></div>;
   }
 
   return (
@@ -299,7 +307,7 @@ export default function ProfilePage() {
                 <span className="text-xs font-bold text-primary">Aktywny!</span>
               </div>
             ) : (
-              <button onClick={() => setIsBoosted(true)}
+              <button onClick={() => { setRewardType('boost_24h'); setShowRewardedAd(true); }}
                 className="gradient-fire text-primary-foreground text-xs px-3 py-1.5 rounded-full font-semibold">
                 Aktywuj
               </button>
@@ -397,6 +405,17 @@ export default function ProfilePage() {
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
 
+          <button onClick={() => setActiveSection('donation')} className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3 border border-accent/20">
+            <div className="w-9 h-9 rounded-xl bg-accent/20 flex items-center justify-center">
+              <span className="text-lg">💖</span>
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-sm">Wesprzyj Spark Connect</p>
+              <p className="text-xs text-muted-foreground">Aplikacja jest darmowa — ale możesz pomóc 🙏</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+
           <button onClick={() => setActiveSection('settings')} className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
               <Settings className="w-4 h-4 text-muted-foreground" />
@@ -428,6 +447,11 @@ export default function ProfilePage() {
 
       <AnimatePresence>
         {showFaceVerify && <FaceVerify onVerified={handleVerified} onClose={() => setShowFaceVerify(false)} />}
+      <AnimatePresence>
+        {showRewardedAd && (
+          <RewardedAd reward={rewardType} onComplete={() => { setShowRewardedAd(false); setIsBoosted(true); }} onClose={() => setShowRewardedAd(false)} />
+        )}
+      </AnimatePresence>
       </AnimatePresence>
     </div>
   );

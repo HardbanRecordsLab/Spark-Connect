@@ -72,5 +72,12 @@ export function usePushNotifications(userId: string | null) {
     }
   }, []);
 
-  return { permission, subscribed, subscribe, unsubscribe };
+  const notify = async (title: string, body: string, icon = '/spark-connect-logo.png') => {
+    if (permission === 'granted' && 'Notification' in window) {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, { body, icon, badge: '/favicon.png', vibrate: [200, 100, 200] });
+    }
+  };
+
+  return { permission, subscribed, subscribe, unsubscribe, notify };
 }

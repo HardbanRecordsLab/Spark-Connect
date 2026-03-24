@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -198,3 +198,40 @@
     background: linear-gradient(135deg, hsl(35 100% 65%), hsl(45 100% 70%), hsl(35 100% 55%));
   }
 }
+  /* Skeleton animation */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .skeleton {
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    background: hsl(var(--muted));
+    border-radius: var(--radius);
+  }
+
+  /* Safe area padding */
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* Neon border */
+  .neon-border {
+    box-shadow: 0 0 0 1px hsl(347 100% 65% / 0.3), 0 0 20px hsl(347 100% 65% / 0.1);
+  }
+
+  /* Card overlay gradient */
+  .bg-card-overlay {
+    background: linear-gradient(to top, hsl(240 15% 4% / 0.95) 0%, transparent 60%);
+  }
+
+  /* Bottom nav blur */
+  .bottom-nav-blur {
+    background: hsl(var(--ignite-bg) / 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid hsl(0 0% 100% / 0.06);
+  }
+
+  /* Radial glow background */
+  .bg-radial-glow {
+    background: radial-gradient(ellipse at top, hsl(347 60% 10%) 0%, hsl(var(--ignite-bg)) 60%);
+  }
