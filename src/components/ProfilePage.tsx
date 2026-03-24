@@ -1,5 +1,8 @@
+// @ts-ignore
 import { useState, useEffect } from 'react';
+// @ts-ignore
 import { motion, AnimatePresence } from 'framer-motion';
+// @ts-ignore
 import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';

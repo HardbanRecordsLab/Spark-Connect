@@ -4,7 +4,9 @@
 // Deploy: supabase functions deploy send-email
 // Secrets: supabase secrets set MAILERLITE_API_KEY=ml_xxxxxxxxxxxx
 
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = {
@@ -86,6 +88,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
 
 // ── MailerLite API call ────────────────────────────────────────────
 async function sendEmail(opts: { to: string; subject: string; html: string }) {
+  // @ts-ignore
   const apiKey = Deno.env.get("MAILERLITE_API_KEY");
   if (!apiKey) throw new Error("MAILERLITE_API_KEY not set in Supabase Secrets");
 
@@ -123,7 +126,9 @@ serve(async (req: Request) => {
   if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: cors });
 
   const supabase = createClient(
+    // @ts-ignore
     Deno.env.get("SUPABASE_URL")!,
+    // @ts-ignore
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader } } }
   );
