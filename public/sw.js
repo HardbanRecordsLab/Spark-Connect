@@ -48,8 +48,8 @@ self.addEventListener('fetch', (e) => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // Skip non-GET, chrome-extension, supabase API, R2 presign calls
-  if (request.method !== 'GET') return;
+  // Skip non-GET, non-http, supabase API, R2 presign calls
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
   if (url.hostname.includes('supabase.co')) return;
   if (url.hostname.includes('cloudflarestorage.com')) return;
   if (url.pathname.startsWith('/functions/')) return;
@@ -85,7 +85,7 @@ async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok) {
+  if (response.ok && response.url.startsWith('http')) {
     const cache = await caches.open(cacheName);
     cache.put(request, response.clone());
   }
@@ -95,7 +95,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirstImage(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && response.url.startsWith('http')) {
       const cache = await caches.open(IMAGE_CACHE);
       cache.put(request, response.clone());
     }
