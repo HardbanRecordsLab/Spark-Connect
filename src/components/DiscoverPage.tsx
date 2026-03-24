@@ -156,23 +156,36 @@ export default function DiscoverPage() {
   };
 
   useEffect(() => {
-    if (dbProfiles.length > 0) { setAllProfiles(dbProfiles); setCardIndex(0); }
-    else if (!loadingProfiles) { setAllProfiles(mockProfiles); setCardIndex(0); }
+    if (dbProfiles.length > 0) {
+      setAllProfiles(dbProfiles);
+    } else if (!loadingProfiles && mockProfiles.length > 0) {
+      setAllProfiles(mockProfiles);
+    }
   }, [dbProfiles, loadingProfiles, mockProfiles]);
+
+  // Reset cardIndex only when profiles actually change or are refreshed
+  useEffect(() => {
+    if (allProfiles.length > 0) {
+      setCardIndex(0);
+    }
+  }, [allProfiles.length]); 
 
   // Prefetch next page as user swipes
   useEffect(() => {
     const remaining = allProfiles.length - cardIndex;
-    fetchMoreIfNeeded(remaining);
+    if (allProfiles.length > 0) {
+      fetchMoreIfNeeded(remaining);
+    }
   }, [cardIndex, allProfiles.length, fetchMoreIfNeeded]);
 
   const profiles = allProfiles.filter(p => {
+    if (!p) return false;
     if (p.age < filters.ageMin || p.age > filters.ageMax) return false;
     if (filters.distanceMax < 200 && p.distance && p.distance > filters.distanceMax) return false;
     if (filters.gender.length > 0 && !filters.gender.map(g => g.toLowerCase()).includes((p.gender ?? '').toLowerCase())) return false;
     if (filters.moodStatus.length > 0 && !filters.moodStatus.includes(p.moodStatus)) return false;
     if (filters.verifiedOnly && !p.isVerified) return false;
-    if (filters.onlineOnly && !p.lastOnlineAt) return false; // Simple check for now
+    if (filters.onlineOnly && !p.lastOnlineAt) return false; 
     if (filters.withPhotosOnly && (!p.photos || p.photos.length === 0)) return false;
     if (filters.bodyType.length > 0 && p.bodyType && !filters.bodyType.includes(p.bodyType)) return false;
     if (filters.eyeColor.length > 0 && p.eyeColor && !filters.eyeColor.includes(p.eyeColor)) return false;
@@ -183,6 +196,21 @@ export default function DiscoverPage() {
   });
 
   const currentProfile = profiles[cardIndex] ?? null;
+  const visibleProfiles = profiles.slice(cardIndex, cardIndex + 3);
+  const isEmpty = cardIndex >= profiles.length && !loadingProfiles && allProfiles.length > 0;
+  const topProfile = visibleProfiles[0];
+  const filterCount = activeFilterCount(filters);
+
+  // Debugging logs
+  useEffect(() => {
+    console.log('DiscoverPage State:', {
+      allProfilesCount: allProfiles.length,
+      filteredProfilesCount: profiles.length,
+      cardIndex,
+      loadingProfiles,
+      isEmpty
+    });
+  }, [allProfiles.length, profiles.length, cardIndex, loadingProfiles, isEmpty]);
 
   const handleSwipeRight = async () => {
     const profile = profiles[cardIndex];
@@ -210,11 +238,6 @@ export default function DiscoverPage() {
     storeSwipeLeft();
     if (user && profile) await db.from('swipes').insert({ swiper_id: user.id, swiped_id: profile.id, direction: 'left' });
   };
-
-  const visibleProfiles = profiles.slice(cardIndex, cardIndex + 3);
-  const isEmpty = cardIndex >= profiles.length;
-  const topProfile = visibleProfiles[0];
-  const filterCount = activeFilterCount(filters);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
