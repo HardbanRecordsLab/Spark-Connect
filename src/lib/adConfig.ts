@@ -18,7 +18,7 @@ export interface AdSlot {
 
 // ── Active platform ───────────────────────────────────────────
 // Change this to switch which ad network is active globally.
-export const ACTIVE_AD_PLATFORM: AdPlatform = 'mock'; // → swap to 'adsense', 'adsterra', etc.
+export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsterra'; // → Activated Adsterra for Studio HRL Adult
 
 // ── Google AdSense ────────────────────────────────────────────
 export const ADSENSE_PUBLISHER_ID = 'ca-pub-XXXXXXXXXXXXXXXX'; // ← paste your ID here
@@ -31,7 +31,7 @@ export const ADSENSE_SLOTS: Record<string, AdSlot> = {
 };
 
 // ── AdSterra ─────────────────────────────────────────────────
-export const ADSTERRA_KEY = 'YOUR_ADSTERRA_KEY'; // ← paste your key
+export const ADSTERRA_KEY = '8770435084a76ca11da21362ffa12626'; // ← Anti-Adblock Popunder Key
 export const ADSTERRA_SLOTS: Record<string, AdSlot> = {
   discover_strip:   { platform: 'adsterra', slotId: 'YOUR_BANNER_ID',       format: 'banner',    width: 320, height: 50  },
   chats_card:       { platform: 'adsterra', slotId: 'YOUR_RECTANGLE_ID',    format: 'rectangle', width: 300, height: 100 },
