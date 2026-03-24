@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const CONTACT = 'spark-connect@hardbanrecordslab.online';
 const APP = 'Spark Connect';
 const OWNER = 'Studio HRL Adult';
+const PARENT_COMPANY = 'HardbanRecords Lab';
 const DOMAIN = 'spark-connect.hardbanrecordslab.online';
 const DATE = '24 marca 2026';
 
@@ -35,7 +36,7 @@ export default function PrivacyPolicy() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center p-0.5 shadow-lg border-2 border-primary/40 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center p-0.5 shadow-lg border-2 border-primary/20 overflow-hidden">
             <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125" />
           </div>
           <h1 className="font-bold text-lg">Polityka Prywatności</h1>
@@ -53,13 +54,13 @@ export default function PrivacyPolicy() {
             <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125 relative z-10" />
           </div>
           <h2 className="text-3xl font-black gradient-luxury-text uppercase tracking-tighter italic drop-shadow-md">{OWNER}</h2>
-          <p className="text-xs text-muted-foreground mt-1 tracking-[0.5em] font-black opacity-70 uppercase">Privacy & Data Protection</p>
+          <p className="text-xs text-muted-foreground mt-1 tracking-[0.4em] font-black opacity-60 uppercase">Owned by {PARENT_COMPANY}</p>
         </div>
 
         <div className="glass rounded-2xl p-4 border border-border/50">
           <p className="text-xs text-muted-foreground">Ostatnia aktualizacja: <strong>{DATE}</strong></p>
           <p className="text-xs text-muted-foreground mt-1">
-            Niniejsza Polityka Prywatności opisuje sposób, w jaki <strong>{OWNER}</strong> zbiera, przetwarza
+            Niniejsza Polityka Prywatności opisuje sposób, w jaki <strong>{OWNER}</strong> (studio należące do <strong>{PARENT_COMPANY}</strong>) zbiera, przetwarza
             i chroni Twoje dane osobowe w ramach aplikacji {APP} zgodnie z Rozporządzeniem (UE) 2016/679 (RODO).
           </p>
         </div>
@@ -67,7 +68,7 @@ export default function PrivacyPolicy() {
         {/* ─── 1 ─── */}
         <Section title="1. Administrator danych osobowych">
           <p>
-            Administratorem Twoich danych osobowych jest <strong>{OWNER}</strong>,
+            Administratorem Twoich danych osobowych jest <strong>{OWNER}</strong> (własność <strong>{PARENT_COMPANY}</strong>),
             dostępny pod adresem: <span className="text-primary">{CONTACT}</span>
           </p>
           <p>

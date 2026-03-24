@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const CONTACT = 'spark-connect@hardbanrecordslab.online';
 const APP = 'Spark Connect';
 const OWNER = 'Studio HRL Adult';
+const PARENT_COMPANY = 'HardbanRecords Lab';
 const DOMAIN = 'spark-connect.hardbanrecordslab.online';
 const DATE = '24 marca 2026';
 
@@ -26,7 +27,7 @@ export default function TermsOfService() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center p-0.5 shadow-lg border-2 border-primary/40 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center p-0.5 shadow-lg border-2 border-primary/20 overflow-hidden">
             <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125" />
           </div>
           <h1 className="font-bold text-lg">Regulamin Serwisu</h1>
@@ -44,13 +45,13 @@ export default function TermsOfService() {
             <img src="/studio hrl adult.jpeg" alt="Studio HRL Adult Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply scale-125 relative z-10" />
           </div>
           <h2 className="text-3xl font-black gradient-luxury-text uppercase tracking-tighter italic drop-shadow-md">{OWNER}</h2>
-          <p className="text-xs text-muted-foreground mt-1 tracking-[0.5em] font-black opacity-70 uppercase">Official Documentation</p>
+          <p className="text-xs text-muted-foreground mt-1 tracking-[0.4em] font-black opacity-60 uppercase">Owned by {PARENT_COMPANY}</p>
         </div>
 
         <div className="glass rounded-2xl p-4 border border-border/50">
           <p className="text-xs text-muted-foreground">Ostatnia aktualizacja: <strong>{DATE}</strong></p>
           <p className="text-xs text-muted-foreground mt-1">
-            Niniejszy Regulamin reguluje korzystanie z aplikacji {APP} należącej do <strong>{OWNER}</strong>, dostępnej pod adresem{' '}
+            Niniejszy Regulamin reguluje korzystanie z aplikacji {APP} należącej do <strong>{OWNER}</strong> (własność <strong>{PARENT_COMPANY}</strong>), dostępnej pod adresem{' '}
             <span className="text-primary">{DOMAIN}</span>.
             Przed rejestracją prosimy o uważne zapoznanie się z jego treścią.
           </p>
@@ -64,7 +65,7 @@ export default function TermsOfService() {
             pomiędzy zarejestrowanymi użytkownikami. Serwis prowadzony jest pod domeną <strong>{DOMAIN}</strong>.
           </p>
           <p>
-            1.2. Właścicielem i operatorem Serwisu jest <strong>{OWNER}</strong>, dostępny
+            1.2. Właścicielem i operatorem Serwisu jest <strong>{OWNER}</strong>, studio należące do <strong>{PARENT_COMPANY}</strong>, dostępne
             pod adresem e-mail: <span className="text-primary">{CONTACT}</span>.
           </p>
           <p>

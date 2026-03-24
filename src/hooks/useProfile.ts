@@ -35,10 +35,7 @@ export interface Profile {
   last_online_at?: string;
   profile_views?: number;
   total_likes?: number;
-  is_premium?: boolean;
-  premium_until?: string;
   verification_video_url?: string;
-  profile_theme?: string;
   stealth_mode?: boolean;
 }
 
