@@ -422,12 +422,15 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
   const db = supabase as any;
 
   const handleComplete = async () => {
+    if (loading) return; // Prevent double clicks
     console.log('Starting onboarding completion...', { step, data, avatarFile: !!avatarFile });
     setLoading(true);
     try {
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
-      if (!user) throw new Error('No user session found');
+      // Use getSession instead of getUser for more reliable token handling
+      const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+      if (sessionErr) throw sessionErr;
+      if (!session?.user) throw new Error('No user session found');
+      const user = session.user;
 
       let avatarUrl = '';
       if (avatarFile) {

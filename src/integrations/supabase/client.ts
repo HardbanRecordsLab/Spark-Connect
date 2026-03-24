@@ -14,8 +14,13 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    storageKey: 'spark-connect-auth-token',
+    // Disable multi-tab locking to prevent "auth-token was released because another request stole it"
+    storage: window.localStorage,
+    lockType: 'custom',
   },
 });
