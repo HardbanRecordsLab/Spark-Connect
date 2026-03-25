@@ -22,3 +22,21 @@ SELECT id, 'admin'::public.app_role
 FROM auth.users
 WHERE email IN ('hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online')
 ON CONFLICT (user_id, role) DO NOTHING;
+
+-- Enable RLS and add policies for user_roles
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can read their own roles') THEN
+    CREATE POLICY "Users can read their own roles" ON public.user_roles
+      FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage all roles') THEN
+    CREATE POLICY "Admins can manage all roles" ON public.user_roles
+      FOR ALL USING (EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_id = auth.uid() AND role = 'admin'
+      ));
+  END IF;
+END $$;

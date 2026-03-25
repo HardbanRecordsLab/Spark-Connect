@@ -28,8 +28,12 @@ CREATE TABLE IF NOT EXISTS public.blacklist (
 
 -- RLS dla blacklist
 ALTER TABLE public.blacklist ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Admins can manage blacklist" ON public.blacklist
-    USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage blacklist') THEN
+    CREATE POLICY "Admins can manage blacklist" ON public.blacklist
+        USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+  END IF;
+END $$;
 
 -- 2. Rozszerzenie tabeli profiles o wskaźnik bota
 ALTER TABLE public.profiles 
