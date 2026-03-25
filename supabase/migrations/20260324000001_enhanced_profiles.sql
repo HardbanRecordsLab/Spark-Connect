@@ -24,11 +24,14 @@ ADD COLUMN IF NOT EXISTS profile_views INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS total_likes INTEGER DEFAULT 0;
 
 -- Function to increment profile views
-CREATE OR REPLACE FUNCTION increment_profile_views(profile_id UUID)
-RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION public.increment_profile_views(profile_id UUID)
+RETURNS VOID 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   UPDATE profiles
   SET profile_views = profile_views + 1
   WHERE id = profile_id;
 END;
-$$ LANGUAGE plpgsql;
+$$;

@@ -44,20 +44,25 @@ ADD COLUMN IF NOT EXISTS is_bot_blocked boolean DEFAULT false;
 -- 3. Funkcja do sprawdzania czy użytkownik jest na czarnej liście
 CREATE OR REPLACE FUNCTION public.is_banned()
 RETURNS boolean
-LANGUAGE plpgsql SECURITY DEFINER AS $$
+LANGUAGE plpgsql 
+SECURITY DEFINER 
+SET search_path = public, auth
+AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.blacklist 
     WHERE (target_type = 'user_id' AND target_value = auth.uid()::text)
        OR (target_type = 'email' AND target_value = (SELECT email FROM auth.users WHERE id = auth.uid()))
-       -- IP checking would require a more complex setup with custom claims or headers
   );
 END;
 $$;
 
 -- 4. Trigger do blokowania botów na podstawie zbyt szybkiej aktywności (prosty Rate Limiter)
 CREATE OR REPLACE FUNCTION public.check_bot_activity()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SET search_path = public, auth
+AS $$
 DECLARE
     last_act timestamptz;
     diff interval;
@@ -81,4 +86,4 @@ BEGIN
     UPDATE public.profiles SET last_activity_timestamp = now() WHERE id = auth.uid();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
