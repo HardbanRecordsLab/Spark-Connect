@@ -1,5 +1,19 @@
 -- ── System Bezpieczeństwa: Blacklista i Anty-Bot ──────────────
 
+-- 0. Upewnij się, że typy i tabele ról istnieją (jeśli nie zostały utworzone wcześniej)
+DO $$ BEGIN
+    CREATE TYPE public.app_role AS ENUM ('admin', 'moderator', 'user');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role public.app_role DEFAULT 'user' NOT NULL,
+  UNIQUE(user_id, role)
+);
+
 -- 1. Tabela Czarnej Listy (Blacklist)
 CREATE TABLE IF NOT EXISTS public.blacklist (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
