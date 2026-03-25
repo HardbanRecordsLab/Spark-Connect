@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon } from 'lucide-react';
+import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, useEffect } from 'react';
 import DiscoverPage from './DiscoverPage';
@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
+import { useUserSettings } from '@/hooks/useUserSettings';
 
 const tabs: { id: AppTab; label: string; emoji: string; badge?: number }[] = [
   { id: 'discover', label: 'Odkryj', emoji: '🔍' },

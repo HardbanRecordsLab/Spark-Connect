@@ -763,9 +763,12 @@ export default function AuthFlow() {
             profileComplete: profile.profile_complete,
           };
           setCurrentUser(appUser);
-          setView(profile.profile_complete ? 'app' : 'onboarding' as never);
-          if (!profile.profile_complete) setStep('onboarding');
-          else setView('app');
+          // BUG FIX: usunięto zduplikowane wywołanie setView — wystarczy jedno
+          if (!profile.profile_complete) {
+            setStep('onboarding');
+          } else {
+            setView('app');
+          }
         }
       }
       setCheckingSession(false);

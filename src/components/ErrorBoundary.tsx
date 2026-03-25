@@ -39,7 +39,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             style={{ background: 'rgba(255,255,255,.07)', color: 'rgba(255,255,255,.5)' }}>
             Spróbuj ponownie
           </button>
-          {process.env.NODE_ENV === 'development' && (
+          {import.meta.env.DEV && (
             <details className="mt-6 text-left max-w-sm">
               <summary className="text-xs cursor-pointer" style={{ color: 'rgba(255,255,255,.3)' }}>
                 Szczegóły błędu (dev)
