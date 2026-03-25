@@ -607,7 +607,22 @@ export default function AdminPanel() {
     e.preventDefault();
     setLoading(true); setLoginError('');
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.user?.email || !ADMIN_EMAILS.includes(data.user.email)) {
+    
+    if (error || !data.user) {
+      setLoginError('Błąd logowania: ' + (error?.message || 'Nieznany błąd'));
+      setLoading(false);
+      return;
+    }
+
+    // Check if user has admin role in database
+    const { data: roleData } = await db
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', data.user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (!roleData && !ADMIN_EMAILS.includes(data.user.email || '')) {
       setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
       await supabase.auth.signOut();
       setLoading(false);
