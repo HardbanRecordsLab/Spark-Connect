@@ -15,7 +15,7 @@ const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanre
 const db = supabase as any;
 
 type VerifyStatus = 'pending' | 'approved' | 'rejected' | 'all';
-type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings';
+type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings' | 'blacklist';
 
 interface PendingUser {
   id: string;
@@ -34,6 +34,16 @@ interface PendingUser {
   created_at: string;
   profile_complete: boolean;
   coin_balance: number;
+  bot_score: number;
+  is_bot_blocked: boolean;
+}
+
+interface BlacklistEntry {
+  id: string;
+  target_type: 'email' | 'user_id' | 'ip';
+  target_value: string;
+  reason: string;
+  created_at: string;
 }
 
 interface ReportItem {
@@ -119,6 +129,14 @@ function UserCard({
             <span className="truncate">{user.email}</span>
             <span className="mx-1">·</span>
             <span className="text-amber-400 font-medium">💰 {user.coin_balance || 0}</span>
+            {user.bot_score > 0 && (
+              <>
+                <span className="mx-1">·</span>
+                <span className={`font-bold ${user.is_bot_blocked ? 'text-destructive' : 'text-amber-500'}`}>
+                  🤖 {Math.round(user.bot_score * 100)}% bot
+                </span>
+              </>
+            )}
           </div>
         </div>
         <button onClick={() => setExpanded(v => !v)}
@@ -492,6 +510,84 @@ function SettingsSection() {
   );
 }
 
+// ── Blacklist Section ──────────────────────────────────────────
+function BlacklistSection() {
+  const [entries, setEntries] = useState<BlacklistEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newTarget, setNewTarget] = useState('');
+  const [newReason, setNewReason] = useState('');
+  const [targetType, setTargetType] = useState<'email' | 'user_id' | 'ip'>('email');
+
+  useEffect(() => {
+    async function loadBlacklist() {
+      const { data } = await db.from('blacklist').select('*').order('created_at', { ascending: false });
+      setEntries(data || []);
+      setLoading(false);
+    }
+    loadBlacklist();
+  }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTarget) return;
+    const { error } = await db.from('blacklist').insert({
+      target_type: targetType,
+      target_value: newTarget,
+      reason: newReason
+    });
+    if (!error) {
+      setEntries([{ target_type: targetType, target_value: newTarget, reason: newReason, created_at: new Date().toISOString() } as BlacklistEntry, ...entries]);
+      setNewTarget(''); setNewReason('');
+    }
+  };
+
+  const handleRemove = async (id: string) => {
+    await db.from('blacklist').delete().eq('id', id);
+    setEntries(entries.filter(e => e.id !== id));
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">🚫 Czarna lista (Banowanie)</h2>
+      
+      <form onSubmit={handleAdd} className="glass rounded-2xl p-4 border border-border space-y-3">
+        <div className="flex gap-2">
+          <select value={targetType} onChange={e => setTargetType(e.target.value as any)}
+            className="glass rounded-xl px-3 py-2 text-sm outline-none border border-border bg-background">
+            <option value="email">Email</option>
+            <option value="user_id">User ID</option>
+            <option value="ip">Adres IP</option>
+          </select>
+          <input value={newTarget} onChange={e => setNewTarget(e.target.value)}
+            placeholder={targetType === 'email' ? "email@uzytkownika.pl" : "Wartość..."}
+            className="flex-1 glass rounded-xl px-3 py-2 text-sm outline-none border border-border" />
+        </div>
+        <input value={newReason} onChange={e => setNewReason(e.target.value)}
+          placeholder="Powód blokady..."
+          className="w-full glass rounded-xl px-3 py-2 text-sm outline-none border border-border" />
+        <button type="submit" className="w-full py-2 bg-destructive text-destructive-foreground rounded-xl text-sm font-bold">
+          Dodaj do czarnej listy
+        </button>
+      </form>
+
+      <div className="space-y-2">
+        {loading ? <div className="text-center py-10 opacity-50">Ładowanie...</div> : entries.map(e => (
+          <div key={e.id} className="glass rounded-xl p-3 flex items-center justify-between border border-destructive/20">
+            <div>
+              <div className="text-sm font-bold flex items-center gap-2">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive uppercase tracking-wider">{e.target_type}</span>
+                {e.target_value}
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5">{e.reason} · {new Date(e.created_at).toLocaleDateString()}</div>
+            </div>
+            <button onClick={() => handleRemove(e.id)} className="w-8 h-8 glass rounded-lg flex items-center justify-center text-destructive">🗑️</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main AdminPanel ────────────────────────────────────────────
 export default function AdminPanel() {
   const [authed, setAuthed] = useState(false);
@@ -526,7 +622,7 @@ export default function AdminPanel() {
     setRefreshing(true);
     const { data } = await db
       .from('profiles')
-      .select('id, display_name, age, gender, city, bio, photos, avatar_url, is_verified, admin_approved, admin_rejected, rejection_reason, created_at, profile_complete, coin_balance')
+      .select('id, display_name, age, gender, city, bio, photos, avatar_url, is_verified, admin_approved, admin_rejected, rejection_reason, created_at, profile_complete, coin_balance, bot_score, is_bot_blocked')
       .eq('profile_complete', true)
       .order('created_at', { ascending: false });
 
@@ -634,6 +730,7 @@ export default function AdminPanel() {
     { id: 'stats', icon: <TrendingUp className="w-4 h-4" />, label: 'Statystyki' },
     { id: 'groups', icon: <MessageSquare className="w-4 h-4" />, label: 'Grupy' },
     { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: 4 },
+    { id: 'blacklist', icon: <Ban className="w-4 h-4" />, label: 'Blacklista' },
     { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Ustawienia' },
   ];
 
@@ -757,6 +854,7 @@ export default function AdminPanel() {
         {section === 'stats' && <StatsSection />}
         {section === 'groups' && <GroupsSection />}
         {section === 'reports' && <ReportsSection />}
+        {section === 'blacklist' && <BlacklistSection />}
         {section === 'settings' && <SettingsSection />}
 
         <div className="text-center py-4">
