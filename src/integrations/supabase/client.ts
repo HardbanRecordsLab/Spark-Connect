@@ -27,6 +27,8 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       storageKey: 'spark-connect-auth-token',
+      // Włączamy null-locking, aby uniknąć błędów blokowania w Chrome/React Strict Mode
+      lockType: 'null',
     },
   }
 );

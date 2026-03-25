@@ -376,14 +376,30 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
         <form onSubmit={handleLogin} className="space-y-4 mt-4">
           <div>
             <label className="text-sm font-medium mb-1.5 block">Email</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} type="email" required placeholder="twoj@email.com"
-              className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
+            <input 
+              name="email"
+              id="login-email"
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              type="email" 
+              required 
+              placeholder="twoj@email.com"
+              className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors" 
+            />
           </div>
           <div>
             <label className="text-sm font-medium mb-1.5 block">Hasło</label>
             <div className="relative">
-              <input value={password} onChange={e => setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} required placeholder="Twoje hasło"
-                className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors pr-12" />
+              <input 
+                name="password"
+                id="login-password"
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                type={showPassword ? 'text' : 'password'} 
+                required 
+                placeholder="Twoje hasło"
+                className="w-full glass rounded-2xl px-4 py-3.5 text-sm outline-none border border-border focus:border-primary transition-colors pr-12" 
+              />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -539,6 +555,8 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
           <div>
             <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Jak masz na imię?</label>
             <input
+              name="display_name"
+              id="onboarding-name"
               value={data.display_name}
               onChange={e => setData({ ...data, display_name: e.target.value })}
               placeholder="Twoje imię (np. Ania)"
@@ -549,6 +567,8 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
           <div>
             <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Ile masz lat? (min. 18)</label>
             <input
+              name="age"
+              id="onboarding-age"
               value={data.age}
               onChange={e => setData({ ...data, age: e.target.value })}
               type="number" min={18} max={100}
@@ -648,6 +668,8 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
           <div className="relative group">
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-40 blur-lg group-focus-within:opacity-100 transition-opacity" />
             <textarea
+              name="bio"
+              id="onboarding-bio"
               value={data.bio}
               onChange={e => setData({ ...data, bio: e.target.value })}
               placeholder="Napisz coś wyjątkowego o sobie... Co Cię kręci? Czego szukasz? Twoje pasje i fantazje... 🔥"
