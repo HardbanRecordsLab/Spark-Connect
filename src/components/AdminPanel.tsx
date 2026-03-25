@@ -595,13 +595,29 @@ export default function AdminPanel() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [section, setSection] = useState<AdminSection>('users');
 
-  const [users, setUsers] = useState<PendingUser[]>([]);
-  const [filter, setFilter] = useState<VerifyStatus>('pending');
-  const [search, setSearch] = useState('');
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-  const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    async function checkExistingSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: roleData } = await db
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (roleData || ADMIN_EMAILS.includes(session.user.email || '')) {
+          setAuthed(true);
+          loadUsers();
+        }
+      }
+      setChecking(false);
+    }
+    checkExistingSession();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -632,6 +648,12 @@ export default function AdminPanel() {
     setLoading(false);
     loadUsers();
   };
+
+  const [users, setUsers] = useState<PendingUser[]>([]);
+  const [filter, setFilter] = useState<VerifyStatus>('pending');
+  const [search, setSearch] = useState('');
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadUsers = async () => {
     setRefreshing(true);
@@ -687,6 +709,14 @@ export default function AdminPanel() {
       !!u.admin_rejected;
     return matchSearch && matchStatus;
   });
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-radial-glow flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // ── Login screen ────────────────────────────────────────────
   if (!authed) {
