@@ -6,7 +6,7 @@
    - Push notifications: handled here
 */
 
-const CACHE_VERSION = 'sc-v5';
+const CACHE_VERSION = 'sc-v6';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const IMAGE_CACHE   = `${CACHE_VERSION}-images`;
 const MAX_IMAGE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
