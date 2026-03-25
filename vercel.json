@@ -24,7 +24,7 @@
         { "key": "X-Frame-Options",        "value": "DENY" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://deductpursue.com https://preferencenail.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.r2.cloudflarestorage.com https://nominatim.openstreetmap.org https://deductpursue.com https://preferencenail.com https://protrafficinspector.com https://kettledroopingcontinuation.com; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self' blob:;" }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://deductpursue.com https://preferencenail.com https://vercel.live https://*.vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.r2.cloudflarestorage.com https://nominatim.openstreetmap.org https://deductpursue.com https://preferencenail.com https://protrafficinspector.com https://kettledroopingcontinuation.com https://vercel.live https://*.vercel.live; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self' blob:; frame-src 'self' https://vercel.live https://*.vercel.live;" }
       ]
     }
   ]
