@@ -246,7 +246,7 @@ function useProfileStats(userId?: string) {
 
 export default function ProfilePage() {
   const { currentUser, setView } = useAppStore();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { profile, updateProfile, refetch } = useProfile(user);
   const { requestLocation, loading: geoLoading } = useGeolocation();
   const [activeSection, setActiveSection] = useState<'main' | 'settings' | 'referral' | 'quiz' | 'donation'>('main');
@@ -312,6 +312,11 @@ export default function ProfilePage() {
       <div className="relative h-64">
         <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-card-overlay" />
+        <div className="absolute top-4 right-4 z-10">
+          <button onClick={() => setActiveSection('settings')} className="w-10 h-10 glass rounded-full flex items-center justify-center text-primary-foreground shadow-lg backdrop-blur-md border border-white/20">
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
         <div className="absolute bottom-4 left-5 right-5">
           <div className="flex items-end justify-between">
             <div>
@@ -324,6 +329,11 @@ export default function ProfilePage() {
                 <span>{city || 'Dodaj miasto'}</span>
               </div>
             </div>
+            {isAdmin && (
+              <a href="/admin" target="_blank" className="flex items-center gap-2 glass-dark border border-primary/40 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter text-primary animate-pulse shadow-[0_0_15px_rgba(255,26,78,0.3)]">
+                <Shield className="w-3 h-3" /> Admin Panel
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ export interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean;
 }
 
 export function useAuth() {
@@ -13,17 +14,47 @@ export function useAuth() {
     user: null,
     session: null,
     loading: true,
+    isAdmin: false,
   });
 
   useEffect(() => {
+    async function checkAdmin(userId: string) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data } = await db
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      return !!data;
+    }
+
     // Set up auth listener BEFORE getting session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({ user: session?.user ?? null, session, loading: false });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      let isAdmin = false;
+      if (session?.user) {
+        isAdmin = await checkAdmin(session.user.id);
+        // Fallback for hardcoded admin emails
+        const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
+        if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+          isAdmin = true;
+        }
+      }
+      setState({ user: session?.user ?? null, session, loading: false, isAdmin });
     });
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({ user: session?.user ?? null, session, loading: false });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      let isAdmin = false;
+      if (session?.user) {
+        isAdmin = await checkAdmin(session.user.id);
+        const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
+        if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+          isAdmin = true;
+        }
+      }
+      setState({ user: session?.user ?? null, session, loading: false, isAdmin });
     });
 
     return () => subscription.unsubscribe();
