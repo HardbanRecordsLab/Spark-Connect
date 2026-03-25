@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const ADMIN_EMAIL = 'hardbanrecordslab.pl@gmail.com';
+const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -33,6 +33,16 @@ interface PendingUser {
   rejection_reason: string | null;
   created_at: string;
   profile_complete: boolean;
+  coin_balance: number;
+}
+
+interface ReportItem {
+  id: string;
+  reason: string;
+  status: string;
+  created_at: string;
+  reporter: { display_name: string; id: string };
+  reported: { display_name: string; id: string; photos: string[] };
 }
 
 // ── Stat card ──────────────────────────────────────────────────
@@ -70,6 +80,10 @@ function UserCard({
     ? { label: 'Odrzucony', cls: 'bg-destructive/20 text-destructive border-destructive/30' }
     : { label: '⏳ Oczekuje', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
 
+  const verificationBadge = user.is_verified 
+    ? { label: '✓ Zweryfikowany', cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' }
+    : null;
+
   return (
     <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className="glass rounded-2xl overflow-hidden border border-border">
@@ -82,7 +96,7 @@ function UserCard({
             <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl">👤</div>
           )}
           {photos.length > 1 && (
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground font-bold">
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] text-primary-foreground font-bold border-2 border-background">
               {photos.length}
             </div>
           )}
@@ -90,7 +104,10 @@ function UserCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-bold text-sm truncate">{user.display_name || 'Bez nazwy'}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>{statusBadge.label}</span>
+            <div className="flex gap-1">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>{statusBadge.label}</span>
+              {verificationBadge && <span className={`text-[10px] px-2 py-0.5 rounded-full border ${verificationBadge.cls}`}>{verificationBadge.label}</span>}
+            </div>
           </div>
           <div className="text-xs text-muted-foreground flex items-center gap-3">
             {user.age && <span>🎂 {user.age} lat</span>}
@@ -100,6 +117,8 @@ function UserCard({
           <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
             <Mail className="w-3 h-3" />
             <span className="truncate">{user.email}</span>
+            <span className="mx-1">·</span>
+            <span className="text-amber-400 font-medium">💰 {user.coin_balance || 0}</span>
           </div>
         </div>
         <button onClick={() => setExpanded(v => !v)}
@@ -201,23 +220,69 @@ function UserCard({
 
 // ── Stats Section ──────────────────────────────────────────────
 function StatsSection() {
-  const mockStats = {
-    totalUsers: 1842, activeToday: 247, newThisWeek: 89,
-    matches: 3421, messages: 28940, reports: 12,
-    groups: 23, groupMessages: 4820, avgSession: '8m 22s',
-  };
+  const [stats, setStats] = useState({
+    totalUsers: 0, activeToday: 0, newThisWeek: 0,
+    matches: 0, messages: 0, reports: 0,
+    groups: 0, groupMessages: 0, avgSession: 'N/A',
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const [
+          { count: total },
+          { count: matches },
+          { count: msgs },
+          { count: reports },
+        ] = await Promise.all([
+          db.from('profiles').select('*', { count: 'exact', head: true }),
+          db.from('matches').select('*', { count: 'exact', head: true }),
+          db.from('messages').select('*', { count: 'exact', head: true }),
+          db.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        ]);
+
+        // Mock additional data for now
+        setStats({
+          totalUsers: total || 0,
+          matches: matches || 0,
+          messages: msgs || 0,
+          reports: reports || 0,
+          activeToday: Math.floor((total || 0) * 0.15), // 15% estimated
+          newThisWeek: Math.floor((total || 0) * 0.05), // 5% estimated
+          groups: 12,
+          groupMessages: 1240,
+          avgSession: '6m 45s',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 opacity-50">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full mb-4" />
+        <p className="text-sm">Ładowanie statystyk...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">📊 Statystyki aplikacji</h2>
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="Wszyscy użytkownicy" value={mockStats.totalUsers} icon="👥" color="border-border" />
-        <StatCard label="Aktywni dziś" value={mockStats.activeToday} icon="🟢" color="border-green-500/30" sub="+12% vs wczoraj" />
-        <StatCard label="Nowi (tydzień)" value={mockStats.newThisWeek} icon="🆕" color="border-blue-500/30" />
-        <StatCard label="Dopasowania" value={mockStats.matches} icon="💫" color="border-primary/30" sub="łącznie" />
-        <StatCard label="Wiadomości" value={mockStats.messages} icon="💬" color="border-border" sub="łącznie" />
-        <StatCard label="Zgłoszenia" value={mockStats.reports} icon="🚨" color="border-amber-500/30" sub="do weryfikacji" />
-        <StatCard label="Grupy aktywne" value={mockStats.groups} icon="✦" color="border-purple-500/30" />
-        <StatCard label="Śr. sesja" value={mockStats.avgSession} icon="⏱️" color="border-border" />
+        <StatCard label="Wszyscy użytkownicy" value={stats.totalUsers} icon="👥" color="border-border" />
+        <StatCard label="Aktywni dziś" value={stats.activeToday} icon="🟢" color="border-green-500/30" />
+        <StatCard label="Nowi (tydzień)" value={stats.newThisWeek} icon="🆕" color="border-blue-500/30" />
+        <StatCard label="Dopasowania" value={stats.matches} icon="💫" color="border-primary/30" />
+        <StatCard label="Wiadomości" value={stats.messages} icon="💬" color="border-border" />
+        <StatCard label="Zgłoszenia" value={stats.reports} icon="🚨" color="border-amber-500/30" />
+        <StatCard label="Grupy aktywne" value={stats.groups} icon="✦" color="border-purple-500/30" />
+        <StatCard label="Śr. sesja" value={stats.avgSession} icon="⏱️" color="border-border" />
       </div>
 
       {/* Activity chart placeholder */}
@@ -282,32 +347,69 @@ function GroupsSection() {
 
 // ── Reports Section ────────────────────────────────────────────
 function ReportsSection() {
-  const reports = [
-    { from: 'Sofia K.', against: 'Anonimowy_42', reason: 'Niezweryfikowane zdjęcia', time: '1 godz. temu', severity: 'high' },
-    { from: 'Marek W.', against: 'User_918', reason: 'Spam w grupie', time: '3 godz. temu', severity: 'medium' },
-    { from: 'Anna P.', against: 'Profil_205', reason: 'Nieodpowiednie zdjęcia', time: '5 godz. temu', severity: 'high' },
-    { from: 'Julia R.', against: 'Bot_suspect', reason: 'Podejrzenie bota', time: 'wczoraj', severity: 'medium' },
-  ];
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadReports() {
+      const { data } = await db
+        .from('reports')
+        .select('*, reporter:reporter_id(id, display_name), reported:reported_id(id, display_name, photos)')
+        .order('created_at', { ascending: false });
+      setReports(data || []);
+      setLoading(false);
+    }
+    loadReports();
+  }, []);
+
+  const handleAction = async (id: string, newStatus: string) => {
+    await db.from('reports').update({ status: newStatus }).eq('id', id);
+    setReports(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+  };
+
+  if (loading) return <div className="text-center py-10 opacity-50 text-sm">Ładowanie zgłoszeń...</div>;
+
   return (
     <div className="space-y-4">
       <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">🚨 Zgłoszenia użytkowników</h2>
       <div className="space-y-2">
-        {reports.map((r, i) => (
-          <div key={i} className={`glass rounded-xl p-3 border ${r.severity === 'high' ? 'border-destructive/40' : 'border-amber-500/30'}`}>
-            <div className="flex items-start gap-2 mb-2">
-              <AlertTriangle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${r.severity === 'high' ? 'text-destructive' : 'text-amber-400'}`} />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">{r.reason}</div>
-                <div className="text-xs text-muted-foreground">{r.from} → {r.against} · {r.time}</div>
+        {reports.length === 0 ? (
+          <div className="text-center py-10 opacity-50 text-sm italic">Brak nowych zgłoszeń ✓</div>
+        ) : (
+          reports.map((r) => (
+            <div key={r.id} className={`glass rounded-xl p-3 border ${r.status === 'pending' ? 'border-amber-500/30' : 'border-border opacity-60'}`}>
+              <div className="flex items-start gap-3 mb-3">
+                <AlertTriangle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${r.status === 'pending' ? 'text-amber-400' : 'text-muted-foreground'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">{r.reason}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="text-primary">{r.reporter?.display_name || 'Anonim'}</span>
+                    {' → '}
+                    <span className="text-foreground font-semibold">{r.reported?.display_name || 'Użytkownik'}</span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
+                    {new Date(r.created_at).toLocaleString('pl-PL')} · Status: {r.status}
+                  </div>
+                </div>
+                {r.reported?.photos?.[0] && (
+                  <img src={r.reported.photos[0]} className="w-10 h-10 rounded-lg object-cover border border-border" alt="" />
+                )}
               </div>
+              {r.status === 'pending' && (
+                <div className="flex gap-2">
+                  <button onClick={() => handleAction(r.id, 'resolved')}
+                    className="flex-1 py-1.5 bg-green-500/10 hover:bg-green-500/20 rounded-lg text-xs font-medium text-green-400 border border-green-500/20 transition-all">
+                    Rozwiązane
+                  </button>
+                  <button onClick={() => handleAction(r.id, 'dismissed')}
+                    className="flex-1 py-1.5 glass hover:bg-secondary rounded-lg text-xs font-medium text-muted-foreground transition-all">
+                    Zignoruj
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex gap-2">
-              <button className="flex-1 py-1.5 glass rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground">Sprawdź profil</button>
-              <button className="flex-1 py-1.5 bg-destructive/20 rounded-lg text-xs font-medium text-destructive border border-destructive/30">Zbanuj</button>
-              <button className="flex-1 py-1.5 glass rounded-lg text-xs font-medium text-muted-foreground">Ignoruj</button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -409,7 +511,7 @@ export default function AdminPanel() {
     e.preventDefault();
     setLoading(true); setLoginError('');
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || data.user?.email !== ADMIN_EMAIL) {
+    if (error || !data.user?.email || !ADMIN_EMAILS.includes(data.user.email)) {
       setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
       await supabase.auth.signOut();
       setLoading(false);
@@ -424,7 +526,7 @@ export default function AdminPanel() {
     setRefreshing(true);
     const { data } = await db
       .from('profiles')
-      .select('id, display_name, age, gender, city, bio, photos, avatar_url, is_verified, admin_approved, admin_rejected, rejection_reason, created_at, profile_complete')
+      .select('id, display_name, age, gender, city, bio, photos, avatar_url, is_verified, admin_approved, admin_rejected, rejection_reason, created_at, profile_complete, coin_balance')
       .eq('profile_complete', true)
       .order('created_at', { ascending: false });
 
