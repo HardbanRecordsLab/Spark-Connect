@@ -114,7 +114,7 @@ export function useDiscoverProfiles(userId: string | null) {
       // Get user location for spatial query and distance calculation
       if (!myLocationRef.current) {
         const { data: myProfile } = await db
-          .from('profiles').select('lat,lng').eq('id', userId).single();
+          .from('profiles').select('lat,lng').eq('id', userId).maybeSingle();
         if (myProfile?.lat && myProfile?.lng) {
           myLocationRef.current = { lat: myProfile.lat, lng: myProfile.lng };
         }

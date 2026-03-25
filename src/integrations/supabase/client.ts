@@ -27,11 +27,8 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       storageKey: 'spark-connect-auth-token',
-      storage: window.localStorage,
-      // Fix "lock was released" error by disabling multi-tab locking
-      lockType: 'custom',
     },
   }
 );
 
-console.log('⚡ Supabase client initialized with custom lockType');
+console.log('⚡ Supabase client initialized');

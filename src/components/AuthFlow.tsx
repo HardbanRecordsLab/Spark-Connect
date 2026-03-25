@@ -459,7 +459,10 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
         ...(avatarUrl && { avatar_url: avatarUrl, photos: [avatarUrl] }),
       };
       
-      const { error: updateErr } = await db.from('profiles').update(updateData).eq('id', user.id);
+      const { error: updateErr } = await db.from('profiles').upsert({
+        id: user.id,
+        ...updateData
+      });
       
       if (updateErr) {
         console.error('Profile update error:', updateErr);
@@ -742,7 +745,7 @@ export default function AuthFlow() {
       if (session?.user) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = supabase as any;
-        const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+        const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
         if (profile) {
           const appUser: User = {
             id: profile.id,
@@ -769,6 +772,9 @@ export default function AuthFlow() {
           } else {
             setView('app');
           }
+        } else {
+          // Jeśli profil nie istnieje (np. świeża rejestracja), przechodzimy do onboarding
+          setStep('onboarding');
         }
       }
       setCheckingSession(false);
