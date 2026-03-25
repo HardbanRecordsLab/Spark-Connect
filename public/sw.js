@@ -63,10 +63,12 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // App shell — Cache-First (Vite hashes JS/CSS so they're always fresh)
+  // App shell — Cache-First (only for same-origin JS/CSS/Fonts)
   if (
-    url.pathname.match(/\.(js|css|woff2?)$/) ||
-    SHELL_ASSETS.includes(url.pathname)
+    url.origin === self.location.origin && (
+      url.pathname.match(/\.(js|css|woff2?)$/) ||
+      SHELL_ASSETS.includes(url.pathname)
+    )
   ) {
     e.respondWith(cacheFirst(request, SHELL_CACHE));
     return;
@@ -89,18 +91,24 @@ self.addEventListener('fetch', (e) => {
 });
 
 async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  const response = await fetch(request);
-  if (response.ok && response.url.startsWith('http')) {
-    try {
-      const cache = await caches.open(cacheName);
-      await cache.put(request, response.clone());
-    } catch (err) {
-      console.warn('SW: Cache put failed', err);
+  try {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    const response = await fetch(request);
+    if (response.ok && response.url.startsWith('http')) {
+      try {
+        const cache = await caches.open(cacheName);
+        await cache.put(request, response.clone());
+      } catch (err) {
+        console.warn('SW: Cache put failed', err);
+      }
     }
+    return response;
+  } catch (err) {
+    console.error('SW: cacheFirst fetch failed', err);
+    // If everything fails, return a 404 or let the browser handle it
+    return new Response('Network error', { status: 408 });
   }
-  return response;
 }
 
 async function networkFirstImage(request) {
