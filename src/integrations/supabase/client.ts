@@ -20,7 +20,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     detectSessionInUrl: true,
     flowType: 'pkce',
     storageKey: 'spark-connect-auth-token',
-    // Disable multi-tab locking to prevent "auth-token was released because another request stole it"
+    // Completely disable locking to prevent "auth-token was released because another request stole it"
     storage: window.localStorage,
+    lockType: 'custom',
   },
 });
