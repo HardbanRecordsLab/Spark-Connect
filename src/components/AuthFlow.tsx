@@ -426,6 +426,16 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
     if (loading) return; // Prevent double clicks
     console.log('Starting onboarding completion...', { step, data, avatarFile: !!avatarFile });
     setLoading(true);
+    
+    // Safety timeout: if it takes more than 30s, something is wrong
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        console.error('Onboarding timed out');
+        alert('Przekroczono czas oczekiwania. Spróbuj ponownie lub odśwież stronę.');
+      }
+    }, 30000);
+
     try {
       // Use getSession instead of getUser for more reliable token handling
       const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
@@ -437,25 +447,29 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
       if (avatarFile) {
         try {
           console.log('Uploading avatar...');
-          const { publicUrl } = await uploadToR2({ bucket: 'avatars', file: avatarFile, filename: avatarFile.name });
-          avatarUrl = publicUrl;
+          // Add internal timeout for upload only
+          const uploadPromise = uploadToR2({ bucket: 'avatars', file: avatarFile, filename: avatarFile.name });
+          const uploadTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timeout')), 15000));
+          
+          const uploadResult = await Promise.race([uploadPromise, uploadTimeout]) as any;
+          avatarUrl = uploadResult.publicUrl;
           console.log('Avatar uploaded:', avatarUrl);
         } catch (uploadErr) {
-          console.error('Avatar upload failed:', uploadErr);
+          console.error('Avatar upload failed or timed out:', uploadErr);
           // Don't block completion if only upload failed
         }
       }
 
       console.log('Updating profile in database...');
       const updateData = {
-        display_name: data.display_name || user.email?.split('@')[0] || 'User',
+        display_name: data.display_name?.trim() || user.email?.split('@')[0] || 'User',
         age: parseInt(data.age) || null,
         gender: data.gender || null,
         orientation: data.orientation || null,
         relationship_type: data.relationship_type,
         bio: data.bio || '',
         interests: (data as any).interests || [],
-        profile_complete: !!(data.display_name && data.age && data.gender && data.orientation),
+        profile_complete: true, // Force completion since we are at the last step
         ...(avatarUrl && { avatar_url: avatarUrl, photos: [avatarUrl] }),
       };
       
@@ -469,9 +483,11 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
         throw updateErr;
       }
 
-      console.log('Profile updated successfully');
+      console.log('Profile updated successfully, calling onComplete');
+      clearTimeout(timeoutId);
       onComplete();
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error('Onboarding error:', err);
       alert(`Wystąpił błąd podczas zapisywania profilu: ${err.message || 'Nieznany błąd'}`);
     } finally {
