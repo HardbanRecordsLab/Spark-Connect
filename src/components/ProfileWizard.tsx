@@ -8,6 +8,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
+import { useR2Upload } from '@/hooks/useR2Upload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileData {
   // Step 1: Basic Info
@@ -68,24 +70,19 @@ const ProfileWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showSensitive, setShowSensitive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const [profileData, setProfileData] = useState<ProfileData>({
-    // Step 1
     displayName: '',
     age: '',
     gender: '',
     city: '',
     bio: '',
-    
-    // Step 2
-    height: '',
-    bodyType: '',
+    interests: [],
+    relationshipType: '',
+    avatar: null,
     smoking: '',
     drinking: '',
     tattoos: '',
     piercing: '',
-    
-    // Step 3
     passions: [],
     interests: [],
     likes: [],
@@ -158,15 +155,52 @@ const ProfileWizard: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // TODO: Implement actual profile creation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Implement actual profile creation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Musisz być zalogowany/a');
+
+      // Upload avatar if provided
+      let avatarUrl = '';
+      if (profileData.avatar) {
+        const { upload } = useR2Upload();
+        const result = await upload({
+          bucket: 'avatars',
+          file: profileData.avatar,
+          filename: `avatar-${user.id}`
+        });
+        avatarUrl = result.publicUrl;
+      }
+
+      // Save profile data to Supabase
+      const profileDataToSave = {
+        id: user.id,
+        display_name: profileData.displayName,
+        age: parseInt(profileData.age) || 25,
+        gender: profileData.gender,
+        orientation: profileData.orientation,
+        bio: profileData.bio,
+        city: profileData.city,
+        avatar_url: avatarUrl,
+        interests: profileData.interests || [],
+        relationship_goal: profileData.relationshipGoal || '',
+        looking_for: profileData.lookingFor || [],
+        profile_complete: true,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .upsert(profileDataToSave)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
       toast.success('Profil utworzony pomyślnie!');
       setView('app');
       navigate('/profile');
     } catch (error) {
       console.error('Profile creation failed:', error);
-      toast.error('Błąd tworzenia profilu. Spróbuj ponownie.');
+      toast.error(`Błąd tworzenia profilu: ${error.message || 'Nieznany błąd'}`);
     } finally {
       setIsSubmitting(false);
     }
