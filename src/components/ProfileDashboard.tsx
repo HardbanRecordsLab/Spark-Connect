@@ -214,10 +214,10 @@ const ProfileDashboard: React.FC = () => {
               <div className="p-6 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-gradient-to-br from-primary to-pink-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">🔥</span>
+                    <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-6 h-6 object-contain" />
                   </div>
                   <div>
-                    <div className="font-bold">Spark Connect</div>
+                    <div className="font-bold text-lg">Spark Connect</div>
                     <div className="text-xs text-primary">Premium</div>
                   </div>
                 </div>
