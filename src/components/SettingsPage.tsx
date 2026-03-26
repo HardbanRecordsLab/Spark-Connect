@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ArrowLeft, Bell, Shield, Trash2, FileText, Eye,
+import { ArrowLeft, Bell, Shield, Trash2, FileText, Eye,
   Globe, Lock, ChevronRight, Check, AlertTriangle, X, Loader2, Download
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -71,6 +71,7 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
       }
     } catch (err) {
       console.error('GDPR export failed:', err);
+      toast.error('Eksport danych nie powiódł się. Spróbuj ponownie.');
     }
     setExporting(false);
   };
@@ -108,10 +109,16 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
   const handleDelete = async () => {
     if (deleteConfirm !== 'DELETE') return;
     setDeleting(true);
-    // Sign out first then redirect — actual data deletion would need an edge function
-    await supabase.auth.signOut();
-    setDeleted(true);
-    setTimeout(() => setView('landing'), 2000);
+    try {
+      // Sign out first then redirect — actual data deletion would need an edge function
+      await supabase.auth.signOut();
+      setDeleted(true);
+      setTimeout(() => setView('landing'), 2000);
+    } catch (err) {
+      console.error('Account deletion failed:', err);
+      toast.error('Błąd usuwania konta.');
+      setDeleting(false);
+    }
   };
 
   if (section === 'notifications') {

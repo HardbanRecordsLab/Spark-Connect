@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Camera, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import type { User } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -97,7 +98,10 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             <button onClick={onRegister} className="w-full gradient-fire text-primary-foreground font-bold text-lg py-4 rounded-2xl glow-red flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_8px_25px_-5px_rgba(255,26,78,0.5)]">
               Dołącz za darmo <ArrowRight className="w-5 h-5" />
             </button>
-            <button onClick={onLogin} className="w-full glass text-foreground font-semibold py-4 rounded-2xl active:scale-95 transition-transform border border-white/10">
+            <button onClick={() => navigate('/wizard')} className="w-full glass text-foreground font-medium py-4 rounded-2xl border border-border hover:border-primary transition-all">
+              ✨ Stwórz profil krok po kroku
+            </button>
+            <button onClick={onLogin} className="w-full glass text-foreground font-medium py-3 rounded-2xl border border-border hover:border-primary transition-all">
               Mam już konto
             </button>
           </motion.div>
@@ -448,7 +452,7 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
       if (loading) {
         setLoading(false);
         console.error('Onboarding timed out');
-        alert('Przekroczono czas oczekiwania. Spróbuj ponownie lub odśwież stronę.');
+        toast.error('Przekroczono czas oczekiwania. Spróbuj ponownie lub odśwież stronę.');
       }
     }, 30000);
 
@@ -477,6 +481,11 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
       }
 
       console.log('Updating profile in database...');
+      // Validate data before saving
+      if (!data.display_name?.trim() && !user.email) {
+        throw new Error('Imię jest wymagane');
+      }
+      
       const updateData = {
         display_name: data.display_name?.trim() || user.email?.split('@')[0] || 'User',
         age: parseInt(data.age) || null,
@@ -505,7 +514,7 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
     } catch (err: any) {
       clearTimeout(timeoutId);
       console.error('Onboarding error:', err);
-      alert(`Wystąpił błąd podczas zapisywania profilu: ${err.message || 'Nieznany błąd'}`);
+      toast.error(`Wystąpił błąd podczas zapisywania profilu: ${err.message || 'Nieznany błąd'}`);
     } finally {
       setLoading(false);
     }

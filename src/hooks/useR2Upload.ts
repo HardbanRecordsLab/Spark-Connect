@@ -36,9 +36,9 @@ export function useR2Upload() {
     const name = filename ?? (file instanceof File ? file.name : 'blob');
     const contentType = file instanceof File ? file.type : 'application/octet-stream';
 
-    // 2. Poproś Edge Function o presigned URL
+    // 2. Poproś Edge Function o presigned URL z timeout
     onProgress?.(5);
-    const res = await fetch(getFunctionUrl(), {
+    const urlPromise = fetch(getFunctionUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,6 +46,13 @@ export function useR2Upload() {
       },
       body: JSON.stringify({ bucket, filename: name, contentType }),
     });
+
+    // Add timeout for URL generation
+    const urlTimeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('URL generation timeout')), 10000)
+    );
+
+    const res = await Promise.race([urlPromise, urlTimeout]) as Response;
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Błąd serwera' }));
@@ -65,12 +72,16 @@ export function useR2Upload() {
       throw new Error(`Plik jest za duży. Maksymalny rozmiar: ${mb} MB`);
     }
 
-    // 4. Uploaduj plik bezpośrednio do R2 przez presigned URL
+    // 4. Uploaduj plik bezpośrednio do R2 przez presigned URL z lepszym timeout
     onProgress?.(15);
 
     // Używamy XMLHttpRequest zamiast fetch dla progress tracking
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      const uploadTimeout = setTimeout(() => {
+        xhr.abort();
+        reject(new Error('Upload timeout - połączenie zbyt wolne'));
+      }, 45000); // 45 seconds for upload
 
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
@@ -80,6 +91,7 @@ export function useR2Upload() {
       });
 
       xhr.addEventListener('load', () => {
+        clearTimeout(uploadTimeout);
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve();
         } else {
@@ -87,8 +99,15 @@ export function useR2Upload() {
         }
       });
 
-      xhr.addEventListener('error', () => reject(new Error('Błąd sieci podczas uploadu')));
-      xhr.addEventListener('abort', () => reject(new Error('Upload anulowany')));
+      xhr.addEventListener('error', () => {
+        clearTimeout(uploadTimeout);
+        reject(new Error('Błąd sieci podczas uploadu'));
+      });
+      
+      xhr.addEventListener('abort', () => {
+        clearTimeout(uploadTimeout);
+        reject(new Error('Upload anulowany'));
+      });
 
       xhr.open('PUT', presignedUrl);
       xhr.setRequestHeader('Content-Type', contentType);

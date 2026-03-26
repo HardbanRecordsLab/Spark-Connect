@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Unlock, Eye, X, Check, Image as ImageIcon, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload, getPrivatePhotoUrl } from '@/hooks/useR2Upload';
 import { useAuth } from '@/hooks/useAuth';
@@ -219,7 +220,7 @@ export function MyPrivatePhotos({ userId }: MyPrivatePhotosProps) {
       await loadPhotos();
     } catch (err) {
       console.error('Private photo upload failed:', err);
-      alert('Upload nie powiódł się.');
+      toast.error('Upload nie powiódł się.');
     }
     setUploading(false);
     if (e.target) e.target.value = '';

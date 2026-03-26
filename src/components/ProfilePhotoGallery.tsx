@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Play, Loader2, Camera, Film, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useNSFWCheck } from '@/hooks/useNSFWCheck';
@@ -73,7 +74,7 @@ export default function ProfilePhotoGallery({
       await updateProfile(updates);
     } catch (err) {
       console.error('Photo upload failed:', err);
-      alert('Upload nie powiódł się. Spróbuj ponownie.');
+      toast.error('Upload nie powiódł się. Spróbuj ponownie.');
     }
     setUploading(null);
     if (e.target) e.target.value = '';
@@ -104,7 +105,7 @@ export default function ProfilePhotoGallery({
       await updateProfile({ photos: withVideo });
     } catch (err) {
       console.error('Video upload failed:', err);
-      alert('Upload wideo nie powiódł się.');
+      toast.error('Upload wideo nie powiódł się.');
     }
     setUploading(null);
     if (e.target) e.target.value = '';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
 import { Heart, X, Star, Filter, MapPin, Shield, Info, Eye, Ghost, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
 import { StoriesBar, mockUserStories } from '@/components/StoriesSystem';
@@ -213,7 +214,7 @@ export default function DiscoverPage() {
   const topProfile = visibleProfiles[0];
   const filterCount = activeFilterCount(filters);
 
-  // Debugging logs
+// Debugging logs
   useEffect(() => {
     console.log('DiscoverPage State:', {
       allProfilesCount: allProfiles.length,
@@ -295,7 +296,10 @@ export default function DiscoverPage() {
         </div>
         <div className="flex gap-3 overflow-x-auto scrollbar-hidden pb-1 px-1">
           {allProfiles.sort((a, b) => (b.profileViews || 0) - (a.profileViews || 0)).slice(0, 5).map(p => (
-            <div key={p.id} className="flex-shrink-0 w-24 relative group" onClick={() => console.log('open profile', p.id)}>
+            <div key={p.id} className="flex-shrink-0 w-24 relative group" onClick={() => {
+              console.log('open profile', p.id);
+              // TODO: Navigate to profile view
+            }}>
               <div className="aspect-[3/4] rounded-2xl overflow-hidden border border-border group-active:scale-95 transition-transform">
                 <img src={p.photos[0]} alt={p.displayName} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -328,7 +332,10 @@ export default function DiscoverPage() {
         </div>
         <div className="flex gap-3 overflow-x-auto scrollbar-hidden pb-1 px-1">
           {allProfiles.sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5).map(p => (
-            <div key={p.id} className="flex-shrink-0 w-20 relative group" onClick={() => console.log('open profile', p.id)}>
+            <div key={p.id} className="flex-shrink-0 w-20 relative group" onClick={() => {
+              console.log('open profile', p.id);
+              // TODO: Navigate to profile view
+            }}>
               <div className="aspect-square rounded-full overflow-hidden border-2 border-primary/20 p-0.5 group-active:scale-95 transition-transform">
                 <img src={p.photos[0]} alt={p.displayName} className="w-full h-full object-cover rounded-full" />
               </div>
@@ -342,7 +349,10 @@ export default function DiscoverPage() {
       </div>
 
       {/* Available Now strip */}
-      <AvailableNowSection onSelectProfile={(id) => console.log('open profile', id)} />
+      <AvailableNowSection onSelectProfile={(id) => {
+        console.log('open profile', id);
+        // TODO: Navigate to profile view
+      }} />
       <div className="flex items-center justify-between mb-3">
         <div className="flex flex-col">
           <div className="flex items-center gap-4">

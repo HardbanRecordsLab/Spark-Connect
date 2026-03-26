@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
 import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -255,10 +256,28 @@ export default function ProfilePage() {
   const [rewardType, setRewardType] = useState<'boost_24h' | 'who_liked_me_24h'>('boost_24h');
   const [isBoosted, setIsBoosted] = useState(false);
 
+  // Helper function for safe profile updates with error handling
+  const safeUpdateProfile = async (updates: any, successMessage?: string) => {
+    try {
+      await updateProfile(updates);
+      if (successMessage) {
+        toast.success(successMessage);
+      }
+    } catch (error) {
+      toast.error('Błąd zapisu. Spróbuj ponownie.');
+      console.error('Profile update failed:', error);
+    }
+  };
+
   const handleDetectLocation = async () => {
-    const pos = await requestLocation();
-    if (pos) {
-      await updateProfile({ city: pos.city });
+    try {
+      const pos = await requestLocation();
+      if (pos) {
+        await safeUpdateProfile({ city: pos.city }, 'Lokalizacja zaktualizowana');
+      }
+    } catch (error) {
+      toast.error('Błąd wykrywania lokalizacji');
+      console.error('Location detection failed:', error);
     }
   };
   const stats = useProfileStats(user?.id);
@@ -275,8 +294,13 @@ export default function ProfilePage() {
     || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80';
 
   const handleVerified = async () => {
-    setShowFaceVerify(false);
-    await updateProfile({ is_verified: true });
+    try {
+      setShowFaceVerify(false);
+      await safeUpdateProfile({ is_verified: true }, 'Weryfikacja zakończona pomyślnie!');
+    } catch (error) {
+      toast.error('Błąd weryfikacji');
+      console.error('Verification failed:', error);
+    }
   };
 
   const rawPhotos = profile?.photos ?? currentUser?.photos ?? [];
@@ -449,7 +473,7 @@ export default function ProfilePage() {
           <p className="text-sm text-muted-foreground mb-2">Czego szukasz?</p>
           <div className="flex gap-2 flex-wrap">
             {moodOptions.map(mood => (
-              <button key={mood.value} onClick={() => updateProfile({ mood_status: mood.value })}
+              <button key={mood.value} onClick={() => safeUpdateProfile({ mood_status: mood.value })}
                 className={`text-sm px-3 py-1.5 rounded-full transition-all ${activeMood === mood.value ? 'gradient-fire text-primary-foreground font-medium' : 'glass text-muted-foreground'}`}>
                 {mood.value}
               </button>
@@ -457,11 +481,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <EditableField label="Imię" value={displayName} maxLength={40} onSave={async v => { await updateProfile({ display_name: v }); }} />
-        <EditableField label="Wiek" value={String(age)} type="number" onSave={async v => { const n = parseInt(v, 10); if (n >= 18 && n <= 99) await updateProfile({ age: n }); }} />
+        <EditableField label="Imię" value={displayName} maxLength={40} onSave={async v => { await safeUpdateProfile({ display_name: v }, 'Imię zaktualizowane'); }} />
+        <EditableField label="Wiek" value={String(age)} type="number" onSave={async v => { const n = parseInt(v, 10); if (n >= 18 && n <= 99) await safeUpdateProfile({ age: n }, 'Wiek zaktualizowany'); }} />
         <div className="flex gap-2 items-stretch">
           <div className="flex-1">
-            <EditableField label="Miasto" value={city} maxLength={60} onSave={async v => { await updateProfile({ city: v }); }} />
+            <EditableField label="Miasto" value={city} maxLength={60} onSave={async v => { await safeUpdateProfile({ city: v }, 'Miasto zaktualizowane'); }} />
           </div>
           <button onClick={handleDetectLocation} disabled={geoLoading} title="Wykryj automatycznie"
             className="glass rounded-2xl px-3 flex items-center justify-center border border-border hover:border-primary/40 transition-colors">
@@ -481,7 +505,7 @@ export default function ProfilePage() {
               value={bio} 
               multiline 
               maxLength={2500} 
-              onSave={async v => { await updateProfile({ bio: v }); }} 
+              onSave={async v => { await safeUpdateProfile({ bio: v }, 'Opis zaktualizowany'); }} 
             />
           </div>
         </div>
@@ -490,33 +514,33 @@ export default function ProfilePage() {
         <div className="space-y-4 pt-4 border-t border-border/50">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">O mnie</h3>
           <div className="grid grid-cols-2 gap-3">
-            <EditableField label="Wzrost (cm)" value={String(profile?.height || '')} type="number" onSave={async v => { await updateProfile({ height: parseInt(v, 10) }); }} />
-            <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => { await updateProfile({ body_type: v }); }} />
+            <EditableField label="Wzrost (cm)" value={String(profile?.height || '')} type="number" onSave={async v => { await safeUpdateProfile({ height: parseInt(v, 10) }, 'Wzrost zaktualizowany'); }} />
+            <SelectField label="Sylwetka" value={profile?.body_type || ''} options={BODY_TYPES} onSave={async v => { await safeUpdateProfile({ body_type: v }, 'Sylwetka zaktualizowana'); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Biust" value={profile?.breast_size || ''} options={BREAST_SIZE} onSave={async v => { await updateProfile({ breast_size: v }); }} />
-            <SelectField label="Włosy łonowe" value={profile?.pubic_hair || ''} options={PUBIC_HAIR} onSave={async v => { await updateProfile({ pubic_hair: v }); }} />
+            <SelectField label="Biust" value={profile?.breast_size || ''} options={BREAST_SIZE} onSave={async v => { await safeUpdateProfile({ breast_size: v }, 'Biust zaktualizowany'); }} />
+            <SelectField label="Włosy łonowe" value={profile?.pubic_hair || ''} options={PUBIC_HAIR} onSave={async v => { await safeUpdateProfile({ pubic_hair: v }, 'Włosy łonowe zaktualizowane'); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => { await updateProfile({ eye_color: v }); }} />
-            <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => { await updateProfile({ hair_color: v }); }} />
+            <SelectField label="Kolor oczu" value={profile?.eye_color || ''} options={EYE_COLORS} onSave={async v => { await safeUpdateProfile({ eye_color: v }, 'Kolor oczu zaktualizowany'); }} />
+            <SelectField label="Kolor włosów" value={profile?.hair_color || ''} options={HAIR_COLORS} onSave={async v => { await safeUpdateProfile({ hair_color: v }, 'Kolor włosów zaktualizowany'); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => { await updateProfile({ smoking: v }); }} />
-            <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => { await updateProfile({ drinking: v }); }} />
+            <SelectField label="Palenie" value={profile?.smoking || ''} options={SMOKING} onSave={async v => { await safeUpdateProfile({ smoking: v }, 'Palenie zaktualizowane'); }} />
+            <SelectField label="Alkohol" value={profile?.drinking || ''} options={DRINKING} onSave={async v => { await safeUpdateProfile({ drinking: v }, 'Alkohol zaktualizowany'); }} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => { await updateProfile({ tattoos: v }); }} />
-            <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => { await updateProfile({ piercing: v }); }} />
+            <SelectField label="Tatuaże" value={profile?.tattoos || ''} options={TATTOOS} onSave={async v => { await safeUpdateProfile({ tattoos: v }, 'Tatuaże zaktualizowane'); }} />
+            <SelectField label="Piercing" value={profile?.piercing || ''} options={PIERCING} onSave={async v => { await safeUpdateProfile({ piercing: v }, 'Piercing zaktualizowany'); }} />
           </div>
           
           <div className="space-y-4 py-4 border-t border-border/50">
             <h3 className="text-sm font-bold uppercase tracking-wider text-primary px-1">Upodobania Seksualne 18+ 🔥</h3>
-            <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => { await updateProfile({ relationship_goal: v }); }} />
-            <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => { await updateProfile({ orientation: v }); }} />
-            <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => { await updateProfile({ looking_for_gender: v }); }} />
-            <SelectField label="Rola w łóżku" value={profile?.sexual_role || ''} options={SEXUAL_PREFERENCES} onSave={async v => { await updateProfile({ sexual_role: v }); }} />
-            <SelectField label="Bezpieczny seks" value={profile?.safe_sex || ''} options={SAFE_SEX} onSave={async v => { await updateProfile({ safe_sex: v }); }} />
+            <SelectField label="Cel relacji" value={profile?.relationship_goal || ''} options={RELATIONSHIP_GOALS} onSave={async v => { await safeUpdateProfile({ relationship_goal: v }, 'Cel relacji zaktualizowany'); }} />
+            <SelectField label="Orientacja" value={profile?.orientation || ''} options={SEXUAL_ORIENTATION} onSave={async v => { await safeUpdateProfile({ orientation: v }, 'Orientacja zaktualizowana'); }} />
+            <SelectField label="Szukam" value={profile?.looking_for_gender || ''} options={LOOKING_FOR} onSave={async v => { await safeUpdateProfile({ looking_for_gender: v }, 'Preferencje zaktualizowane'); }} />
+            <SelectField label="Rola w łóżku" value={profile?.sexual_role || ''} options={SEXUAL_PREFERENCES} onSave={async v => { await safeUpdateProfile({ sexual_role: v }, 'Rola w łóżku zaktualizowana'); }} />
+            <SelectField label="Bezpieczny seks" value={profile?.safe_sex || ''} options={SAFE_SEX} onSave={async v => { await safeUpdateProfile({ safe_sex: v }, 'Bezpieczny seks zaktualizowany'); }} />
             
             <div className="glass rounded-2xl p-4">
               <p className="text-sm font-semibold mb-3">To co uwielbiam 👅</p>
@@ -527,7 +551,7 @@ export default function ProfilePage() {
                     <button key={tag} onClick={async () => {
                       const prev = profile?.likes || [];
                       const next = sel ? prev.filter((t: string) => t !== tag) : [...prev, tag];
-                      await updateProfile({ likes: next });
+                      await safeUpdateProfile({ likes: next });
                     }}
                     className={`text-[10px] px-3 py-1.5 rounded-full border transition-all ${sel ? 'gradient-fire text-primary-foreground border-transparent' : 'glass border-border text-muted-foreground'}`}>
                       {tag}
@@ -546,7 +570,7 @@ export default function ProfilePage() {
                     <button key={tag} onClick={async () => {
                       const prev = profile?.dislikes || [];
                       const next = sel ? prev.filter((t: string) => t !== tag) : [...prev, tag];
-                      await updateProfile({ dislikes: next });
+                      await safeUpdateProfile({ dislikes: next });
                     }}
                     className={`text-[10px] px-3 py-1.5 rounded-full border transition-all ${sel ? 'bg-destructive text-destructive-foreground border-transparent' : 'glass border-border text-muted-foreground'}`}>
                       {tag}
@@ -557,11 +581,11 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => { await updateProfile({ education: v }); }} />
-          <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => { await updateProfile({ occupation: v }); }} />
+          <SelectField label="Wykształcenie" value={profile?.education || ''} options={EDUCATION} onSave={async v => { await safeUpdateProfile({ education: v }, 'Wykształcenie zaktualizowane'); }} />
+          <EditableField label="Zawód" value={profile?.occupation || ''} onSave={async v => { await safeUpdateProfile({ occupation: v }, 'Zawód zaktualizowany'); }} />
         </div>
 
-        <InterestsEditor interests={interests} onSave={async tags => { await updateProfile({ interests: tags }); }} />
+        <InterestsEditor interests={interests} onSave={async tags => { await safeUpdateProfile({ interests: tags }, 'Zainteresowania zaktualizowane'); }} />
 
         {/* Dostępny teraz — tryb spontaniczny */}
         <AvailableNowToggle />

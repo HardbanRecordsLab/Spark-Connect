@@ -73,14 +73,41 @@ export function useProfile(user: User | null) {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { data: null, error: new Error('Not authenticated') };
-    const { data, error } = await db
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .single();
-    if (!error && data) setProfile(data);
-    return { data, error };
+    
+    // Retry logic for failed updates
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data, error } = await db
+          .from('profiles')
+          .update(updates)
+          .eq('id', user.id)
+          .select()
+          .single();
+        
+        if (!error && data) {
+          setProfile(data);
+          return { data, error: null };
+        }
+        
+        if (error) {
+          if (attempt === maxRetries) {
+            console.error(`Profile update failed after ${maxRetries} attempts:`, error);
+            return { data: null, error };
+          }
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      } catch (err) {
+        if (attempt === maxRetries) {
+          console.error(`Profile update failed after ${maxRetries} attempts:`, err);
+          return { data: null, error: err as Error };
+        }
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+    
+    return { data: null, error: new Error('Max retries exceeded') };
   };
 
   const addCoins = async (amount: number) => {

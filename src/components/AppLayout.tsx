@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost } from 'lucide-react';
+import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost, LayoutDashboard } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DiscoverPage from './DiscoverPage';
 import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
@@ -120,9 +121,10 @@ function GroupChatPanel({ name, emoji, onClose }: { name: string; emoji: string;
 export default function AppLayout() {
   const { activeTab, setActiveTab, showMatch, showVideoCall } = useAppStore();
   const { user } = useAuth();
-  const { profile } = useProfile(user);
+  const { profile } = useProfile(user?.id ?? null);
   const { conversations } = useConversations(user?.id ?? null);
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const navigate = useNavigate();
 
   const [showNotifs, setShowNotifs] = useState(false);
   const [showVibeRooms, setShowVibeRooms] = useState(false);
@@ -172,6 +174,10 @@ export default function AppLayout() {
           <span className="font-bold text-base gradient-text" style={{ fontFamily: 'serif' }}>Spark Connect</span>
         </div>
         <div className="flex items-center gap-1.5">
+          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-medium text-primary border border-primary/20">
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Dashboard
+          </button>
           <button onClick={() => setShowVibeRooms(true)}
             className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-medium text-primary border border-primary/20">
             🎲 Rooms
