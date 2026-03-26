@@ -453,13 +453,14 @@ function OnboardingView({ onComplete }: { onComplete: () => void }) {
         toast.error('Przekroczono czas oczekiwania. Spróbuj ponownie lub odśwież stronę.');
       }
     }, 30000);
+  };
+
   return (
     <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}>
       <ProfileWizard />
     </motion.div>
   );
 }
-
 
 // ── MAIN ─────────────────────────────────────────────────────
 export default function AuthFlow() {
