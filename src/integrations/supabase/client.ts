@@ -1,9 +1,8 @@
-// @ts-ignore
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 // BUG FIX: zamiast rzucać wyjątek na poziomie modułu (co crashuje całą aplikację
 // przed zamontowaniem React i uniemożliwia ErrorBoundary przechwycenie błędu),
@@ -27,8 +26,6 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       storageKey: 'spark-connect-auth-token',
-      // Włączamy null-locking, aby uniknąć błędów blokowania w Chrome/React Strict Mode
-      lockType: 'null',
     },
   }
 );
