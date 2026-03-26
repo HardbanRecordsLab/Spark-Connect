@@ -80,13 +80,24 @@ function YandexUnit({ slotId }: { slotId: string }) {
   useEffect(() => {
     if (!ref.current) return;
     const script = document.createElement('script');
-    script.innerHTML = `
-      window.yaContextCb=window.yaContextCb||[];
-      window.yaContextCb.push(()=>{
-        Ya.Context.AdvManager.render({blockId:'${slotId}',renderTo:'yandex-${slotId}'});
-      });
-    `;
+    script.src = 'https://yandex.ru/ads/system/context.js';
+    script.async = true;
     ref.current.appendChild(script);
+    
+    // Initialize Yandex context after script loads
+    script.onload = () => {
+      const contextScript = document.createElement('script');
+      contextScript.text = `
+        window.yaContextCb = window.yaContextCb || [];
+        window.yaContextCb.push(() => {
+          Ya.Context.AdvManager.render({
+            blockId: '${slotId}',
+            renderTo: 'yandex-${slotId}'
+          });
+        });
+      `;
+      ref.current.appendChild(contextScript);
+    };
   }, [slotId]);
   return <div ref={ref} id={`yandex-${slotId}`} />;
 }
