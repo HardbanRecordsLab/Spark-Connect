@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Spark Connect — darmowa aplikacja randkowa 18+. Prawdziwi ludzie, speed dating, grupy tematyczne, mapa aktywnych, czaty wideo. Zero botów, zero paywall."/>
+<meta name="keywords" content="randki, darmowe randki, speed dating, randki wideo, randki online, 18+, dorośli, Tinder alternatywa, czat wideo, grupy tematyczne, bezpieczne randkowanie, brak paywalla, Studio HRL Adult" />
+<meta name="robots" content="index, follow" />
+<meta property="og:title" content="Spark Connect 🔥 Randki 18+"/>
+<meta property="og:description" content="Darmowa aplikacja randkowa dla dorosłych. Prywatne zdjęcia, speed dating, czaty wideo."/>
+<meta property="og:image" content="https://spark-connect.hardbanrecordslab.online/og-image.jpg"/>
+<meta property="og:url" content="https://spark-connect.hardbanrecordslab.online"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<title>Spark Connect 🔥 — Randki & Przygody 18+</title>
+<link rel="icon" href="public/spark-connect-logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --bg:#06050e;
+  --bg2:#0d0c1a;
+  --bg3:#141226;
+  --fire:#e8194a;
+  --fire2:#c0392b;
+  --gold:#d4a853;
+  --gold2:#f0c070;
+  --cream:#f5f0e8;
+  --muted:#8a879e;
+  --border:rgba(255,255,255,0.07);
+  --glass:rgba(255,255,255,0.04);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);
+  color:var(--cream);
+  font-family:'Outfit',sans-serif;
+  overflow-x:hidden;
+}
+
+/* ── Subtle noise ── */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ════════════════════════════════
+   AGE GATE
+════════════════════════════════ */
+#gate{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(6,5,14,.97);
+  backdrop-filter:blur(24px);
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem;
+}
+.gate-inner{
+  max-width:460px;width:100%;
+  border:1px solid rgba(232,25,74,.25);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(20,18,38,.95),rgba(13,12,26,.95));
+  padding:3.5rem 3rem;text-align:center;
+  box-shadow:0 0 80px rgba(232,25,74,.1);
+}
+.gate-inner img{width:72px;border-radius:18px;margin-bottom:1.5rem}
+.gate-inner h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:700;letter-spacing:.02em;
+  margin-bottom:.75rem;
+}
+.gate-inner p{font-size:.95rem;color:var(--muted);line-height:1.7;margin-bottom:2.25rem}
+.gate-yes{
+  width:100%;padding:1rem;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--fire),#a01228);
+  color:#fff;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:600;
+  letter-spacing:.03em;margin-bottom:.75rem;
+  box-shadow:0 8px 32px rgba(232,25,74,.35);
+  transition:opacity .2s,transform .15s;
+}
+.gate-yes:hover{opacity:.88;transform:translateY(-1px)}
+.gate-no{
+  width:100%;padding:.8rem;border-radius:14px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;
+  font-size:.9rem;cursor:pointer;transition:border-color .2s;
+}
+.gate-no:hover{border-color:rgba(255,255,255,.15)}
+.gate-legal{font-size:.72rem;color:rgba(138,135,158,.6);margin-top:1.25rem;line-height:1.6}
+.gate-legal a{color:var(--gold);text-decoration:none}
+
+/* ════════════════════════════════
+   NAV
+════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 4rem;
+  transition:padding .3s,background .3s;
+}
+nav.scrolled{
+  padding:.7rem 4rem;
+  background:rgba(6,5,14,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:.8rem;text-decoration:none}
+.logo img{width:38px;border-radius:10px}
+.logo-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.35rem;font-weight:700;letter-spacing:.04em;
+  background:linear-gradient(135deg,#ff4d6d,#d4a853);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav-r{display:flex;align-items:center;gap:2.5rem}
+.nav-r a{
+  color:var(--muted);font-size:.88rem;font-weight:400;text-decoration:none;
+  letter-spacing:.04em;transition:color .2s;
+}
+.nav-r a:hover{color:var(--cream)}
+.nav-btn{
+  background:transparent;
+  border:1px solid rgba(232,25,74,.5);
+  color:var(--fire);
+  font-size:.88rem;font-weight:600;letter-spacing:.05em;
+  padding:.55rem 1.5rem;border-radius:50px;text-decoration:none;
+  transition:background .2s,color .2s;
+}
+.nav-btn:hover{background:var(--fire);color:#fff}
+@media(max-width:700px){
+  nav{padding:.9rem 1.5rem}
+  nav.scrolled{padding:.6rem 1.5rem}
+  .nav-r a:not(.nav-btn){display:none}
+}
+
+/* ════════════════════════════════
+   HERO
+════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  display:grid;grid-template-columns:1.1fr 1fr;
+  position:relative;overflow:hidden;
+}
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;min-height:auto}
+}
+
+/* Left — text side */
+.hero-left{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:9rem 5rem 5rem 6rem;
+  position:relative;z-index:2;
+}
+@media(max-width:900px){.hero-left{padding:8rem 1.5rem 3rem;text-align:center}}
+
+/* Decorative line */
+.hero-left::before{
+  content:'';
+  position:absolute;left:0;top:15%;bottom:15%;width:1px;
+  background:linear-gradient(to bottom,transparent,rgba(232,25,74,.4),transparent);
+}
+@media(max-width:900px){.hero-left::before{display:none}}
+
+.pre-tag{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:2rem;
+}
+.pre-tag::before{
+  content:'';width:24px;height:1px;background:var(--gold);
+}
+@media(max-width:900px){
+  .pre-tag{justify-content:center}
+  .pre-tag::before{display:none}
+}
+
+h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.2rem,6vw,5.8rem);
+  font-weight:300;line-height:1.06;letter-spacing:-.01em;
+  margin-bottom:2rem;
+}
+h1 em{
+  font-style:italic;font-weight:300;
+  background:linear-gradient(135deg,#ff3d65,#d4a853 60%,#ffcc70);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+  font-size:1.05rem;font-weight:300;color:var(--muted);
+  line-height:1.75;max-width:420px;margin-bottom:2.75rem;
+}
+@media(max-width:900px){.hero-sub{margin:0 auto 2.5rem}}
+
+.hero-ctas{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+@media(max-width:900px){.hero-ctas{justify-content:center}}
+
+.btn-fire{
+  display:inline-flex;align-items:center;gap:.55rem;
+  background:linear-gradient(135deg,var(--fire) 0%,#a01228 100%);
+  color:#fff;font-weight:600;font-size:.95rem;letter-spacing:.04em;
+  padding:.85rem 2rem;border-radius:12px;text-decoration:none;
+  box-shadow:0 6px 28px rgba(232,25,74,.38);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-fire:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(232,25,74,.5)}
+.btn-fire svg{transition:transform .2s}
+.btn-fire:hover svg{transform:translateX(3px)}
+
+.btn-outline{
+  display:inline-flex;align-items:center;gap:.5rem;
+  border:1px solid rgba(212,168,83,.35);color:var(--gold);
+  font-size:.9rem;font-weight:400;letter-spacing:.05em;
+  padding:.85rem 1.75rem;border-radius:12px;text-decoration:none;
+  transition:border-color .2s,background .2s;
+}
+.btn-outline:hover{border-color:var(--gold);background:rgba(212,168,83,.07)}
+
+.hero-proof{
+  display:flex;align-items:center;gap:1.25rem;margin-top:2.5rem;
+}
+@media(max-width:900px){.hero-proof{justify-content:center}}
+.proof-avatars{display:flex}
+.proof-avatars img{
+  width:34px;height:34px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--bg);margin-left:-10px;
+}
+.proof-avatars img:first-child{margin-left:0}
+.proof-text{font-size:.82rem;color:var(--muted);line-height:1.4}
+.proof-text strong{color:var(--cream)}
+
+/* ── Hero Right — photo mosaic ── */
+.hero-right{
+  position:relative;overflow:hidden;
+}
+@media(max-width:900px){.hero-right{height:60vw;min-height:320px}}
+
+.hero-right::before{
+  content:'';position:absolute;inset:0;z-index:2;
+  background:linear-gradient(to right,var(--bg) 0%,transparent 15%,transparent 85%,var(--bg) 100%),
+             linear-gradient(to bottom,var(--bg) 0%,transparent 8%,transparent 92%,var(--bg) 100%);
+}
+
+.mosaic{
+  position:absolute;inset:0;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:1fr 1fr 1fr;
+  gap:8px;padding:8px;
+}
+
+.mosaic-img{
+  overflow:hidden;border-radius:12px;position:relative;
+}
+.mosaic-img img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform 8s ease;
+}
+.mosaic-img:hover img{transform:scale(1.08)}
+.mosaic-img.span2{grid-column:span 2}
+.mosaic-img.row2{grid-row:span 2}
+
+/* ── Floating card on hero ── */
+.float-card{
+  position:absolute;bottom:2.5rem;right:2.5rem;z-index:5;
+  background:rgba(13,12,26,.92);
+  border:1px solid rgba(212,168,83,.25);
+  border-radius:16px;padding:1rem 1.25rem;
+  backdrop-filter:blur(12px);
+  min-width:180px;
+}
+.float-card .fc-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
+.float-card .fc-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.float-card .fc-num{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--cream)}
+.float-card .fc-label{font-size:.72rem;color:var(--muted)}
+
+/* ════════════════════════════════
+   DIVIDER
+════════════════════════════════ */
+.divider{
+  display:flex;align-items:center;gap:2rem;
+  padding:2rem 6rem;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  overflow:hidden;
+}
+@media(max-width:700px){.divider{padding:1.5rem;flex-wrap:wrap;gap:1rem}}
+.div-item{
+  display:flex;align-items:center;gap:.75rem;
+  white-space:nowrap;
+}
+.div-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:700;
+  background:linear-gradient(135deg,var(--fire),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.div-txt{font-size:.8rem;color:var(--muted);line-height:1.3}
+.div-sep{width:1px;height:40px;background:var(--border);flex-shrink:0}
+@media(max-width:700px){.div-sep{display:none}}
+
+/* ════════════════════════════════
+   PROFILES STRIP
+════════════════════════════════ */
+.strip-wrap{
+  padding:5rem 0;overflow:hidden;background:var(--bg);
+  position:relative;
+}
+.strip-wrap::before,.strip-wrap::after{
+  content:'';position:absolute;top:0;bottom:0;width:200px;z-index:2;
+  pointer-events:none;
+}
+.strip-wrap::before{left:0;background:linear-gradient(to right,var(--bg),transparent)}
+.strip-wrap::after{right:0;background:linear-gradient(to left,var(--bg),transparent)}
+
+.strip-header{text-align:center;padding:0 2rem 3rem}
+.strip-header .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.75rem;
+}
+.strip-header h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,3rem);font-weight:300;
+}
+.strip-header h2 em{font-style:italic;color:var(--fire)}
+
+.strip-track{
+  display:flex;gap:16px;width:max-content;
+  animation:slide 40s linear infinite;
+}
+.strip-track:hover{animation-play-state:paused}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.pill{
+  flex-shrink:0;width:180px;
+  border-radius:18px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+  position:relative;cursor:pointer;
+  background:var(--bg2);
+  transition:border-color .3s;
+}
+.pill:hover{border-color:rgba(232,25,74,.3)}
+.pill img{width:100%;height:240px;object-fit:cover;display:block;transition:transform .5s}
+.pill:hover img{transform:scale(1.05)}
+.pill-info{
+  padding:.9rem;
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(6,5,14,.95) 50%,transparent);
+  padding-top:2.5rem;
+}
+.pill-info b{display:block;font-size:.9rem;font-weight:600}
+.pill-info span{font-size:.75rem;color:var(--muted)}
+
+/* ════════════════════════════════
+   FEATURES
+════════════════════════════════ */
+.features{
+  padding:6rem;background:var(--bg2);
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6rem;align-items:center;
+}
+@media(max-width:900px){.features{grid-template-columns:1fr;padding:4rem 1.5rem;gap:3rem}}
+
+.feat-text .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);display:block;margin-bottom:.75rem;
+}
+.feat-text h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,3.5vw,3.2rem);font-weight:300;line-height:1.15;
+  margin-bottom:1.5rem;
+}
+.feat-text h2 em{font-style:italic;color:var(--fire)}
+.feat-text p{font-size:.95rem;color:var(--muted);line-height:1.75;margin-bottom:2.5rem}
+
+.feat-list{display:flex;flex-direction:column;gap:1rem}
+.feat-item{
+  display:flex;align-items:flex-start;gap:1rem;
+  padding:1.25rem;border-radius:14px;
+  background:var(--bg3);border:1px solid var(--border);
+  transition:border-color .3s;cursor:default;
+}
+.feat-item:hover{border-color:rgba(232,25,74,.25)}
+.feat-icon{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  background:linear-gradient(135deg,rgba(232,25,74,.15),rgba(212,168,83,.08));
+  border:1px solid rgba(232,25,74,.2);
+}
+.feat-item-title{font-weight:600;font-size:.95rem;margin-bottom:.25rem}
+.feat-item-desc{font-size:.83rem;color:var(--muted);line-height:1.55}
+
+/* ── Photo collage right ── */
+.feat-photos{
+  display:grid;grid-template-columns:1fr 1fr;
+  grid-template-rows:200px 200px 160px;
+  gap:10px;
+}
+.fp{
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.05);
+  position:relative;
+}
+.fp img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.fp:hover img{transform:scale(1.06)}
+.fp.tall{grid-row:span 2}
+.fp-badge{
+  position:absolute;bottom:10px;left:10px;
+  background:rgba(6,5,14,.85);backdrop-filter:blur(6px);
+  border:1px solid var(--border);border-radius:20px;
+  padding:.3rem .8rem;font-size:.72rem;color:var(--gold);font-weight:500;
+}
+
+/* ════════════════════════════════
+   PRIVATE PHOTOS SECTION
+════════════════════════════════ */
+.private-sec{
+  padding:6rem;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6rem;align-items:center;
+  background:var(--bg);
+}
+@media(max-width:900px){.private-sec{grid-template-columns:1fr;padding:4rem 1.5rem;gap:3rem}}
+
+/* Blurred photo grid */
+.blur-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  grid-template-rows:220px 220px;gap:10px;position:relative;
+}
+.blur-card{
+  border-radius:16px;overflow:hidden;
+  position:relative;
+  border:1px solid rgba(255,255,255,.07);
+}
+.blur-card img{width:100%;height:100%;object-fit:cover;filter:blur(12px) brightness(.6);transform:scale(1.1);transition:filter .4s}
+.blur-card:hover img{filter:blur(4px) brightness(.7)}
+.blur-card .lock{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.5rem;
+}
+.lock-icon{font-size:2rem}
+.lock-label{font-size:.78rem;color:rgba(255,255,255,.6);font-weight:500;letter-spacing:.05em}
+
+/* ── Center overlay tag ── */
+.blur-grid::after{
+  content:'Odblokowuj po wzajemnym zaproszeniu';
+  position:absolute;bottom:-1.5rem;left:50%;transform:translateX(-50%);
+  font-size:.72rem;color:var(--muted);white-space:nowrap;
+  background:var(--bg);padding:.2rem .75rem;border-radius:20px;
+  border:1px solid var(--border);
+}
+
+.private-text .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);display:block;margin-bottom:.75rem;
+}
+.private-text h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,3.5vw,3.2rem);font-weight:300;line-height:1.15;
+  margin-bottom:1.5rem;
+}
+.private-text h2 em{font-style:italic;color:var(--fire)}
+.private-text p{font-size:.95rem;color:var(--muted);line-height:1.75;margin-bottom:1.5rem}
+.private-badges{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2rem}
+.priv-badge{
+  font-size:.78rem;color:var(--gold2);
+  background:rgba(212,168,83,.08);border:1px solid rgba(212,168,83,.2);
+  padding:.35rem .9rem;border-radius:50px;
+}
+
+/* ════════════════════════════════
+   HOW IT WORKS
+════════════════════════════════ */
+.how{
+  padding:6rem;background:var(--bg3);text-align:center;
+}
+@media(max-width:700px){.how{padding:4rem 1.5rem}}
+.how .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);display:block;margin-bottom:.75rem;
+}
+.how h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,3rem);font-weight:300;
+  margin-bottom:4rem;
+}
+.how h2 em{font-style:italic;color:var(--fire)}
+
+.steps{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:2rem;max-width:900px;margin:0 auto 3.5rem;
+}
+@media(max-width:700px){.steps{grid-template-columns:1fr 1fr}}
+
+.step{position:relative;padding-top:1rem}
+.step::after{
+  content:'';
+  position:absolute;top:32px;left:calc(50% + 40px);
+  width:calc(100% - 80px);height:1px;
+  background:linear-gradient(to right,rgba(232,25,74,.3),rgba(212,168,83,.2));
+}
+.step:last-child::after{display:none}
+@media(max-width:700px){.step::after{display:none}}
+.step-num{
+  width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;font-size:1.5rem;
+  background:linear-gradient(135deg,rgba(232,25,74,.2),rgba(160,18,40,.1));
+  border:1px solid rgba(232,25,74,.3);position:relative;z-index:1;
+}
+.step h3{font-weight:600;font-size:.95rem;margin-bottom:.4rem}
+.step p{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+/* ════════════════════════════════
+   TESTIMONIALS
+════════════════════════════════ */
+.testi-sec{padding:6rem;background:var(--bg)}
+@media(max-width:700px){.testi-sec{padding:4rem 1.5rem}}
+.testi-header{text-align:center;margin-bottom:3.5rem}
+.testi-header .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);display:block;margin-bottom:.75rem;
+}
+.testi-header h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,3rem);font-weight:300;
+}
+
+.testis{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:700px){.testis{grid-template-columns:1fr}}
+.testi{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:2rem;
+}
+.testi-stars{
+  font-size:.85rem;letter-spacing:.15em;color:var(--gold);margin-bottom:1.25rem;
+}
+.testi-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.05rem;font-style:italic;font-weight:300;
+  line-height:1.7;color:var(--cream);opacity:.9;
+  margin-bottom:1.5rem;
+}
+.testi-person{display:flex;align-items:center;gap:.9rem}
+.testi-person img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(232,25,74,.25)}
+.testi-name{font-weight:600;font-size:.88rem}
+.testi-where{font-size:.75rem;color:var(--muted)}
+
+/* ════════════════════════════════
+   FINAL CTA
+════════════════════════════════ */
+.cta-final{
+  padding:8rem 2rem;text-align:center;
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,var(--bg2),var(--bg3));
+}
+.cta-final::before{
+  content:'';position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,25,74,.1) 0%,transparent 65%);
+  pointer-events:none;
+}
+.cta-final .sec-pre{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);display:block;margin-bottom:1.25rem;position:relative;z-index:1;
+}
+.cta-final h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.8rem,6vw,5rem);font-weight:300;line-height:1.08;
+  margin-bottom:1.5rem;position:relative;z-index:1;
+}
+.cta-final h2 em{font-style:italic;background:linear-gradient(135deg,#ff3d65,#d4a853);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cta-final p{font-size:1.05rem;color:var(--muted);max-width:480px;margin:0 auto 3rem;line-height:1.7;position:relative;z-index:1}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-final .age-note{
+  margin-top:1.5rem;font-size:.78rem;color:rgba(138,135,158,.5);
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  position:relative;z-index:1;
+}
+
+/* ════════════════════════════════
+   FOOTER
+════════════════════════════════ */
+footer{
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  padding:4rem 6rem 2.5rem;
+}
+@media(max-width:700px){footer{padding:3rem 1.5rem 2rem}}
+.footer-top{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:4rem;margin-bottom:3rem;
+}
+@media(max-width:900px){.footer-top{grid-template-columns:1fr 1fr;gap:2rem}}
+@media(max-width:500px){.footer-top{grid-template-columns:1fr}}
+
+.fb img{width:44px;border-radius:12px;margin-bottom:.9rem;display:block}
+.fb-name{
+  font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;
+  background:linear-gradient(135deg,#ff4d6d,#d4a853);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  display:block;margin-bottom:.75rem;
+}
+.fb p{font-size:.83rem;color:var(--muted);line-height:1.65;max-width:220px}
+
+.fc h4{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:1.25rem}
+.fc a{display:block;font-size:.85rem;color:var(--muted);text-decoration:none;margin-bottom:.65rem;transition:color .2s}
+.fc a:hover{color:var(--cream)}
+
+.footer-bottom{
+  border-top:1px solid var(--border);padding-top:2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-copy{font-size:.77rem;color:rgba(138,135,158,.5)}
+.footer-tags{display:flex;gap:.6rem;flex-wrap:wrap}
+.footer-tag{
+  font-size:.72rem;color:var(--muted);
+  border:1px solid var(--border);border-radius:50px;
+  padding:.22rem .7rem;
+}
+
+/* ════════════════════════════════
+   REVEAL ANIMATIONS
+════════════════════════════════ */
+.r{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.r.v{opacity:1;transform:none}
+.r.r1{transition-delay:.1s}
+.r.r2{transition-delay:.2s}
+.r.r3{transition-delay:.3s}
+</style>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="8e604793-44f6-4c2d-9f45-b1a93049396b"></script>
+</head>
+<body>
+
+<!-- ════ AGE GATE ════ -->
+<div id="gate">
+  <div class="gate-inner">
+    <img src="public/spark-connect-logo.png" alt="Spark Connect"/>
+    <h2>Tylko dla dorosłych</h2>
+    <p>Spark Connect to aplikacja randkowa 18+ zawierająca treści przeznaczone wyłącznie dla osób pełnoletnich. Potwierdź swój wiek aby wejść.</p>
+    <div>
+      <button class="gate-yes" onclick="enter()">Mam 18+ lat — wchodzę</button>
+      <button class="gate-no" onclick="location.href='https://google.com'">Nie, opuść stronę</button>
+    </div>
+    <p class="gate-legal">Wchodząc potwierdzasz że masz minimum 18 lat i akceptujesz <a href="https://spark-connect.hardbanrecordslab.online/terms">Regulamin</a> oraz <a href="https://spark-connect.hardbanrecordslab.online/privacy">Politykę Prywatności</a>. Ta strona zawiera treści erotyczne przeznaczone dla dorosłych.</p>
+  </div>
+</div>
+
+<!-- ════ NAV ════ -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <img src="public/spark-connect-logo.png" alt="Spark Connect"/>
+    <span class="logo-name">Spark Connect</span>
+  </a>
+  <div class="nav-r">
+    <a href="#strip">Profile</a>
+    <a href="#funkcje">Funkcje</a>
+    <a href="#jak-dziala">Jak działa</a>
+    <a href="#opinie">Opinie</a>
+    <a href="https://spark-connect.hardbanrecordslab.online" class="nav-btn">Zaloguj się</a>
+  </div>
+</nav>
+
+<!-- ════ HERO ════ -->
+<div class="hero">
+  <div class="hero-left">
+    <span class="pre-tag">Darmowa aplikacja randkowa 18+</span>
+    <h1>Znajdź kogoś<br/>na <em>tę noc.</em></h1>
+    <p class="hero-sub">Prawdziwi ludzie. Zweryfikowane profile. Prywatne zdjęcia, speed dating, czaty wideo — bez paywall, bez bota, bez cenzury.</p>
+    <div class="hero-ctas">
+      <a href="https://spark-connect.hardbanrecordslab.online" class="btn-fire">
+        Dołącz za darmo
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#jak-dziala" class="btn-outline">Jak to działa?</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-avatars">
+        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=80&q=80" alt=""/>
+        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80" alt=""/>
+        <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=80&q=80" alt=""/>
+        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&q=80" alt=""/>
+      </div>
+      <div class="proof-text"><strong>1 247 osób</strong> aktywnych dzisiaj<br/>w Polsce</div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="mosaic">
+      <div class="mosaic-img row2">
+        <img src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img">
+        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img">
+        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img span2">
+        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img">
+        <img src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img">
+        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&q=88" alt=""/>
+      </div>
+      <div class="mosaic-img">
+        <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?w=500&q=88" alt=""/>
+      </div>
+    </div>
+    <div class="float-card">
+      <div class="fc-row">
+        <div class="fc-dot"></div>
+        <span style="font-size:.72rem;color:#22c55e;font-weight:600">Online teraz</span>
+      </div>
+      <div class="fc-num">1 247</div>
+      <div class="fc-label">aktywnych użytkowników w Polsce</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DIVIDER STATS ════ -->
+<div class="divider r">
+  <div class="div-item">
+    <div class="div-num">47K+</div>
+    <div class="div-txt">Zarejestrowanych<br/>użytkowników</div>
+  </div>
+  <div class="div-sep"></div>
+  <div class="div-item">
+    <div class="div-num">98%</div>
+    <div class="div-txt">Zweryfikowanych<br/>profili</div>
+  </div>
+  <div class="div-sep"></div>
+  <div class="div-item">
+    <div class="div-num">8.3K</div>
+    <div class="div-txt">Nowych matchów<br/>w tym tygodniu</div>
+  </div>
+  <div class="div-sep"></div>
+  <div class="div-item">
+    <div class="div-num">$0</div>
+    <div class="div-txt">Koszt — zawsze<br/>bezpłatna</div>
+  </div>
+</div>
+
+<!-- ════ PROFILES STRIP ════ -->
+<div id="strip" style="padding:6rem 2rem; background:var(--bg); text-align:center;">
+  <span class="sec-pre" style="color:var(--gold); font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase; display:block; margin-bottom:1rem;">Odkrywaj profile</span>
+  <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(2rem, 4vw, 3.2rem); font-weight:300; margin-bottom:3rem;">Poznaj <em>prawdziwych</em> ludzi</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width:900px; margin:0 auto;">
+    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" style="width:130px; height:130px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.05);"/>
+  </div>
+</div>
+
+<!-- ════ FEATURES + COLLAGE ════ -->
+<div id="funkcje" class="features">
+  <div class="feat-text r">
+    <span class="sec-pre">Co oferujemy</span>
+    <h2>Funkcje stworzone<br/>dla <em>dorosłych</em></h2>
+    <p>Żadnych blokad, żadnych opłat za podstawowe funkcje. Spark Connect zarabia na reklamach — nie na Tobie.</p>
+    <a href="https://spark-connect.hardbanrecordslab.online" class="btn-fire">Zarejestruj się — to nic nie kosztuje
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="feat-list r r1">
+    <div class="feat-item"><div class="feat-icon">⚡</div><div><div class="feat-item-title">Speed Dating</div><div class="feat-item-desc">Wirtualne eventy co tydzień. 3-minutowe sesje wideo z losowymi osobami — bez wychodzenia z domu.</div></div></div>
+    <div class="feat-item"><div class="feat-icon">👻</div><div><div class="feat-item-title">Szeptem — anonimowa pierwsza wiadomość</div><div class="feat-item-desc">Napisz do kogoś anonimowo. Odbiorca widzi "Ktoś do Ciebie napisał 💋" — Ty decydujesz kiedy się ujawnić.</div></div></div>
+    <div class="feat-item"><div class="feat-icon">💘</div><div><div class="feat-item-title">Chemistry Score AI</div><div class="feat-item-desc">Algorytm analizuje zainteresowania, preferencje i aktywność. Pokazuje realny % dopasowania.</div></div></div>
+    <div class="feat-item"><div class="feat-icon">🟢</div><div><div class="feat-item-title">Dostępny teraz</div><div class="feat-item-desc">Status "szukam dziś wieczór" widoczny przez 3 godziny. Spontaniczne spotkania — bez planowania.</div></div></div>
+  </div>
+</div>
+
+<!-- ════ PRIVATE PHOTOS ════ -->
+<div class="private-sec" style="padding:6rem 2rem; background:var(--bg3); text-align:center;">
+    <span class="sec-pre" style="color:var(--gold); font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase; display:block; margin-bottom:1rem;">Niezapomniane emocje</span>
+    <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(2rem, 4vw, 3.2rem); font-weight:300; margin-bottom:3rem;">Galeria <em>Społeczności</em></h2>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center; max-width:800px; margin:0 auto;">
+      <img src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=300&q=80" style="width:180px; height:240px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.05); filter:brightness(0.9); transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+      <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=300&q=80" style="width:180px; height:240px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.05); filter:brightness(0.9); transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+      <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&q=80" style="width:180px; height:240px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.05); filter:brightness(0.9); transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+      <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?w=300&q=80" style="width:180px; height:240px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.05); filter:brightness(0.9); transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+    </div>
+</div>
+
+<!-- ════ HOW IT WORKS ════ -->
+<div id="jak-dziala" class="how">
+  <span class="sec-pre r">Jak to działa</span>
+  <h2 class="r">Od rejestracji do <em>pierwszego spotkania</em></h2>
+  <div class="steps r">
+    <div class="step">
+      <div class="step-num">1️⃣</div>
+      <h3>Zarejestruj się</h3>
+      <p>Email lub Google. Onboarding w 4 krokach, 2 minuty.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2️⃣</div>
+      <h3>Uzupełnij profil</h3>
+      <p>Zdjęcia, quiz 18+, preferencje. Profil weryfikowany przez admina.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3️⃣</div>
+      <h3>Swipuj i matchuj</h3>
+      <p>Prawo = like, lewo = skip. Wzajemny like = match i otwarty czat.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4️⃣</div>
+      <h3>Pisz i spotykaj</h3>
+      <p>Czat, wideo, speed dating. Ty decydujesz jak i kiedy.</p>
+    </div>
+  </div>
+  <a href="https://spark-connect.hardbanrecordslab.online" class="btn-fire r">Zacznij teraz — za darmo
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+<!-- ════ TESTIMONIALS ════ -->
+<div id="opinie" class="testi-sec">
+  <div class="testi-header r">
+    <span class="sec-pre">Opinie użytkowników</span>
+    <h2>Co mówią o Spark Connect</h2>
+  </div>
+  <div class="testis r">
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Próbowałam wszystkich — Tinder, Badoo, Sympatia. Wszędzie płaciłam za cokolwiek sensownego. Tu mam wszystko za darmo i jakość profili jest nieporównywalnie wyższa."</div>
+      <div class="testi-person">
+        <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&q=80" alt=""/>
+        <div><div class="testi-name">Karolina, 27</div><div class="testi-where">Warszawa · 3 tygodnie temu</div></div>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"System prywatnych zdjęć to strzał w dziesiątkę. Mogę pokazać więcej tylko tym, którym naprawdę ufam. Czuję się bezpieczniej niż na jakiejkolwiek innej platformie."</div>
+      <div class="testi-person">
+        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&q=80" alt=""/>
+        <div><div class="testi-name">Monika, 31</div><div class="testi-where">Kraków · 1 miesiąc temu</div></div>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Speed Dating online zmienił moje podejście do randkowania. W jeden piątkowy wieczór miałem 8 spotkań — bez wychodzenia z domu. Dwa z nich skończyły się prawdziwym spotkaniem."</div>
+      <div class="testi-person">
+        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80" alt=""/>
+        <div><div class="testi-name">Michał, 34</div><div class="testi-where">Wrocław · 2 tygodnie temu</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ FINAL CTA ════ -->
+<div class="cta-final">
+  <span class="sec-pre r">Zacznij teraz</span>
+  <h2 class="r">Gotowy/a na<br/><em>prawdziwe</em> połączenie?</h2>
+  <p class="r">Dołącz do ponad 47 000 osób które już korzystają z Spark Connect. Zero kart kredytowych, zero opłat. Zawsze.</p>
+  <div class="cta-btns r">
+    <a href="https://spark-connect.hardbanrecordslab.online" class="btn-fire" style="font-size:1rem;padding:.95rem 2.25rem">
+      Dołącz bezpłatnie
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="https://spark-connect.hardbanrecordslab.online" class="btn-outline">Zaloguj się</a>
+  </div>
+  <p class="age-note r">🔞 Tylko dla osób pełnoletnich — 18 lat lub więcej</p>
+</div>
+
+<!-- ════ FOOTER ════ -->
+<footer>
+  <div class="footer-top">
+    <div class="fb">
+      <img src="public/spark-connect-logo.png" alt="Spark Connect"/>
+      <span class="fb-name">Spark Connect</span>
+      <p>Darmowa aplikacja randkowa 18+ dla dorosłych. Prawdziwe połączenia, weryfikowane profile, pełna prywatność.</p>
+    </div>
+    <div class="fc">
+      <h4>Aplikacja</h4>
+      <a href="https://spark-connect.hardbanrecordslab.online">Zaloguj się</a>
+      <a href="https://spark-connect.hardbanrecordslab.online">Zarejestruj się</a>
+      <a href="https://spark-connect.hardbanrecordslab.online?tab=discover">Przeglądaj profile</a>
+      <a href="https://spark-connect.hardbanrecordslab.online?tab=roulette">Spark Roulette</a>
+      <a href="https://spark-connect.hardbanrecordslab.online?tab=live">Live Stream</a>
+    </div>
+    <div class="fc">
+      <h4>Informacje</h4>
+      <a href="https://spark-connect.hardbanrecordslab.online/terms">Regulamin</a>
+      <a href="https://spark-connect.hardbanrecordslab.online/privacy">Polityka Prywatności</a>
+      <a href="mailto:spark-connect@hardbanrecordslab.online">Kontakt</a>
+      <a href="mailto:spark-connect@hardbanrecordslab.online">Zgłoś profil</a>
+    </div>
+    <div class="fc">
+      <h4>Bezpieczeństwo</h4>
+      <a href="https://spark-connect.hardbanrecordslab.online/privacy">RODO / GDPR</a>
+      <a href="mailto:spark-connect@hardbanrecordslab.online">Usuń konto</a>
+      <a href="https://spark-connect.hardbanrecordslab.online/terms">Zasady 18+</a>
+      <a href="mailto:spark-connect@hardbanrecordslab.online">Zgłoś nadużycie</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Spark Connect · spark-connect.hardbanrecordslab.online · Wszelkie prawa zastrzeżone</div>
+    <div class="footer-tags">
+      <span class="footer-tag">🔞 18+</span>
+      <span class="footer-tag">🔒 RODO</span>
+      <span class="footer-tag">✓ Weryfikowane</span>
+      <span class="footer-tag">💯 Bezpłatna</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Age gate
+function enter(){
+  document.getElementById('gate').style.display='none';
+  sessionStorage.setItem('age18','1');
+}
+if(sessionStorage.getItem('age18')) document.getElementById('gate').style.display='none';
+
+// Nav scroll
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',window.scrollY>60);
+});
+
+// Scroll reveal
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('v')});
+},{threshold:0.1});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
