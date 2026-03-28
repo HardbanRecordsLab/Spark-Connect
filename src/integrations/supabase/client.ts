@@ -25,7 +25,7 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      storageKey: 'spark-connect-auth',
+      storageKey: 'spark-connect-auth-' + Math.random().toString(36).substr(2, 9),
       // Disable locking to prevent lock conflicts in React Strict Mode
       lock: false as boolean | undefined,
       // Add timeout to prevent hanging locks
