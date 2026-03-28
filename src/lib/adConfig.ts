@@ -18,7 +18,7 @@ export interface AdSlot {
 
 // ── Active platform ───────────────────────────────────────────
 // Change this to switch which ad network is active globally.
-export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsense'; // → Włączono AdSense dla monetyzacji
+export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsterra'; // → Włączono Adsterra dla monetyzacji
 
 // ── Google AdSense ────────────────────────────────────────────
 export const ADSENSE_PUBLISHER_ID = 'ca-pub-9458765432109876'; // ← Prawdziwy Publisher ID
