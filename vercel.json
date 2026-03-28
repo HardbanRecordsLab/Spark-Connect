@@ -26,7 +26,7 @@
         { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" },
         { "key": "X-XSS-Protection",       "value": "1; mode=block" },
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
-        { "key": "Permissions-Policy",     "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=(), autoplay=(), encrypted-media=(), fullscreen=(), picture-in-picture=(), screen-wake-lock=(), web-share=()" },
+        { "key": "Permissions-Policy",     "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), autoplay=(), encrypted-media=(), fullscreen=(), picture-in-picture=(), screen-wake-lock=(), web-share=()" },
         { "key": "Content-Security-Policy", "value": "default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: https: http: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; style-src 'self' 'unsafe-inline' https: http:; img-src 'self' data: https: http: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http: ws: wss:; font-src 'self' data: https: http:; worker-src 'self' blob:; frame-src 'self' https: http:;" }
       ]
     }
