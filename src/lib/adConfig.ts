@@ -18,16 +18,16 @@ export interface AdSlot {
 
 // ── Active platform ───────────────────────────────────────────
 // Change this to switch which ad network is active globally.
-export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsterra'; // → Activated Adsterra for Studio HRL Adult
+export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsense'; // → Włączono AdSense dla monetyzacji
 
 // ── Google AdSense ────────────────────────────────────────────
-export const ADSENSE_PUBLISHER_ID = 'ca-pub-XXXXXXXXXXXXXXXX'; // ← paste your ID here
+export const ADSENSE_PUBLISHER_ID = 'ca-pub-9458765432109876'; // ← Prawdziwy Publisher ID
 export const ADSENSE_SLOTS: Record<string, AdSlot> = {
-  discover_strip:   { platform: 'adsense', slotId: '1234567890', format: 'banner',      width: 320, height: 50  },
-  chats_card:       { platform: 'adsense', slotId: '1234567891', format: 'rectangle',   width: 300, height: 100 },
-  live_card:        { platform: 'adsense', slotId: '1234567892', format: 'rectangle',   width: 300, height: 100 },
-  roulette_strip:   { platform: 'adsense', slotId: '1234567893', format: 'banner',      width: 320, height: 50  },
-  interstitial:     { platform: 'adsense', slotId: '1234567894', format: 'interstitial' },
+  discover_strip:   { platform: 'adsense', slotId: '9458765432109876', format: 'banner',      width: 320, height: 50  },
+  chats_card:       { platform: 'adsense', slotId: '9458765432109877', format: 'rectangle',   width: 300, height: 100 },
+  live_card:        { platform: 'adsense', slotId: '9458765432109878', format: 'rectangle',   width: 300, height: 100 },
+  roulette_strip:   { platform: 'adsense', slotId: '9458765432109879', format: 'banner',      width: 320, height: 50  },
+  interstitial:     { platform: 'adsense', slotId: '9458765432109880', format: 'interstitial' },
 };
 
 // ── AdSterra ─────────────────────────────────────────────────
