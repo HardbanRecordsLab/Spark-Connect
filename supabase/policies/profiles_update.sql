@@ -1,6 +1,8 @@
--- Users can update their own profile
-CREATE POLICY profiles_update_policy ON profiles
+-- UPDATE
+DROP POLICY IF EXISTS "profiles_update_policy" ON "profiles";
+CREATE POLICY "profiles_update_policy"
+ON "profiles"
 FOR UPDATE
-USING (auth.uid() = id)
-USING (auth.role() = 'authenticated')
-WITH CHECK (true);
+TO authenticated
+USING ((select auth.uid()) = "id")
+WITH CHECK ((select auth.uid()) = "id");

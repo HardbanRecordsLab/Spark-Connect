@@ -1,4 +1,7 @@
 -- Users can create conversations
-CREATE POLICY conversations_insert_policy ON public.conversations
+DROP POLICY IF EXISTS "conversations_insert_policy" ON "public.conversations";
+CREATE POLICY "conversations_insert_policy"
+ON "public.conversations"
 FOR INSERT
-WITH CHECK (auth.role() = ''authenticated'');
+TO authenticated
+WITH CHECK ((select auth.uid()) = "user_id");
