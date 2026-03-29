@@ -8,6 +8,8 @@ import {
 import { useAppStore } from '@/store/appStore';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProfileStats {
   views: number;
@@ -25,6 +27,7 @@ interface NavigationItem {
 
 const ProfileDashboard: React.FC = () => {
   const { currentUser, setView } = useAppStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,41 +37,69 @@ const ProfileDashboard: React.FC = () => {
     matches: 0,
     messages: 0
   });
+  const [loading, setLoading] = useState(true);
 
-  const navigationItems: NavigationItem[] = [
-    { id: 'overview', label: 'Przegląd', icon: <Home className="w-4 h-4" /> },
-    { id: 'profile', label: 'Mój profil', icon: <User className="w-4 h-4" /> },
-    { id: 'photos', label: 'Zdjęcia', icon: <Camera className="w-4 h-4" /> },
-    { id: 'matches', label: 'Dopasowania', icon: <Heart className="w-4 h-4" />, badge: stats.matches },
-    { id: 'messages', label: 'Wiadomości', icon: <MessageSquare className="w-4 h-4" />, badge: stats.messages },
-    { id: 'discover', label: 'Odkrywaj', icon: <Search className="w-4 h-4" /> },
-    { id: 'map', label: 'Mapa', icon: <Map className="w-4 h-4" /> },
-    { id: 'settings', label: 'Ustawienia', icon: <Settings className="w-4 h-4" /> },
-  ];
+  // Auth guard - redirect if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/');
+      return;
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
-    // Simulate loading stats
+    // Load real stats from Supabase
     const loadStats = async () => {
+      if (!user) return;
+      
       try {
-        // TODO: Replace with actual API call
+        setLoading(true);
+        
+        // Get profile views
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('views')
+          .eq('id', user.id)
+          .single();
+        
+        // Get likes count
+        const { count: likesCount } = await supabase
+          .from('profile_likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('target_profile_id', user.id);
+        
+        // Get matches count
+        const { count: matchesCount } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+        
+        // Get messages count
+        const { count: messagesCount } = await supabase
+          .from('conversations')
+          .select('*', { count: 'exact', head: true })
+          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+        
         setStats({
-          views: Math.floor(Math.random() * 1000) + 100,
-          likes: Math.floor(Math.random() * 500) + 50,
-          matches: Math.floor(Math.random() * 100) + 10,
-          messages: Math.floor(Math.random() * 200) + 20
+          views: profile?.views || 0,
+          likes: likesCount || 0,
+          matches: matchesCount || 0,
+          messages: messagesCount || 0
         });
       } catch (error) {
         console.error('Failed to load stats:', error);
         toast.error('Nie udało się załadować statystyk');
+      } finally {
+        setLoading(false);
       }
     };
 
     loadStats();
-  }, []);
+  }, [user?.id]);
 
   const handleLogout = async () => {
     try {
-      // TODO: Implement actual logout
+      await supabase.auth.signOut();
       setView('landing');
       navigate('/');
       toast.success('Wylogowano pomyślnie');
@@ -83,7 +114,31 @@ const ProfileDashboard: React.FC = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const navigationItems: NavigationItem[] = [
+    { id: 'overview', label: 'Przegląd', icon: <Home className="w-4 h-4" /> },
+    { id: 'profile', label: 'Mój profil', icon: <User className="w-4 h-4" /> },
+    { id: 'photos', label: 'Zdjęcia', icon: <Camera className="w-4 h-4" /> },
+    { id: 'matches', label: 'Dopasowania', icon: <Heart className="w-4 h-4" />, badge: stats.matches },
+    { id: 'messages', label: 'Wiadomości', icon: <MessageSquare className="w-4 h-4" />, badge: stats.messages },
+    { id: 'discover', label: 'Odkrywaj', icon: <Search className="w-4 h-4" /> },
+    { id: 'map', label: 'Mapa', icon: <Map className="w-4 h-4" /> },
+    { id: 'settings', label: 'Ustawienia', icon: <Settings className="w-4 h-4" /> },
+  ];
+
   const renderContent = () => {
+    if (loading) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-strong rounded-2xl p-12 text-center"
+        >
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-transparent border-r-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-muted-foreground">Ładowanie statystyk...</p>
+        </motion.div>
+      );
+    }
+
     switch (activeSection) {
       case 'overview':
         return (
@@ -134,7 +189,9 @@ const ProfileDashboard: React.FC = () => {
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span>Ostatnie logowanie</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">2h temu</span>
+                  <span className="text-sm text-muted-foreground">
+                    {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : '2h temu'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 glass rounded-xl">
                   <div className="flex items-center gap-3">
@@ -253,13 +310,15 @@ const ProfileDashboard: React.FC = () => {
               <div className="p-4 border-t border-border">
                 <div className="flex items-center gap-3 p-3 glass rounded-xl">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {getInitials(currentUser?.displayName)}
+                    {getInitials(user?.display_name)}
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium truncate">
-                      {currentUser?.displayName || 'Użytkownik'}
+                      {user?.display_name || 'Użytkownik'}
                     </div>
-                    <div className="text-xs text-muted-foreground">Premium</div>
+                    <div className="text-xs text-muted-foreground">
+                      {user?.email === 'spark-connect@hardbanrecordslab.online' ? 'Admin' : 'Premium'}
+                    </div>
                   </div>
                 </div>
                 <button
