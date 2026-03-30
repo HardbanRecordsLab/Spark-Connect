@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SparkConnect — Mój Profil</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --flame: #E8431A;
+  --flame-light: #FF6B35;
+  --flame-dark: #C2320D;
+  --gold: #D4A843;
+  --gold-light: #F5C842;
+  --night: #0D0B14;
+  --night-2: #16121F;
+  --night-3: #1E1929;
+  --night-4: #2A2438;
+  --night-5: #332D45;
+  --glass: rgba(255,255,255,0.04);
+  --glass-2: rgba(255,255,255,0.07);
+  --glass-border: rgba(255,255,255,0.09);
+  --glass-border-2: rgba(255,255,255,0.14);
+  --text: #F2EEE8;
+  --text-muted: rgba(242,238,232,0.55);
+  --text-faint: rgba(242,238,232,0.3);
+  --success: #2ECC71;
+  --purple: #9B59B6;
+  --blue: #3498DB;
+  --pink: #E91E8C;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  background: var(--night);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--night-5); border-radius: 10px; }
+
+.bg-mesh {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 50%, rgba(232,67,26,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 85% 15%, rgba(212,168,67,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 55% 85%, rgba(155,89,182,0.06) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 248px; flex-shrink: 0;
+  background: var(--night-2);
+  border-right: 1px solid var(--glass-border);
+  display: flex; flex-direction: column;
+  padding: 20px 0;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+}
+
+.logo { padding: 0 20px 20px; border-bottom: 1px solid var(--glass-border); margin-bottom: 12px; }
+.logo-mark { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--flame), var(--gold));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(232,67,26,0.4);
+}
+.logo-name { font-family: var(--font-display); font-size: 19px; font-weight: 700; }
+.logo-name span { color: var(--flame-light); }
+.logo-tag {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 500;
+  color: var(--flame-light); letter-spacing: 1.5px;
+  border: 1px solid rgba(255,107,53,0.3);
+  padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block;
+}
+
+/* Profile completion */
+.completion-box {
+  margin: 0 12px 12px;
+  background: linear-gradient(135deg, rgba(232,67,26,0.12), rgba(212,168,67,0.08));
+  border: 1px solid rgba(232,67,26,0.2);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.comp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.comp-label { font-size: 11px; color: var(--text-muted); }
+.comp-pct { font-family: var(--font-mono); font-size: 13px; color: var(--gold); font-weight: 500; }
+.comp-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.comp-fill { height: 100%; background: linear-gradient(90deg, var(--flame), var(--gold)); border-radius: 2px; width: 72%; transition: width 0.6s; }
+.comp-tip { font-size: 10px; color: var(--text-faint); margin-top: 6px; }
+
+.nav-section { padding: 0 12px; margin-bottom: 4px; }
+.nav-label {
+  font-size: 9.5px; color: var(--text-faint); letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 6px 12px 4px; display: block;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.15s;
+  font-size: 13px; color: var(--text-muted);
+  position: relative; user-select: none;
+}
+.nav-item:hover { background: var(--glass); color: var(--text); }
+.nav-item.active { background: rgba(232,67,26,0.14); color: var(--flame-light); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--flame); border-radius: 0 2px 2px 0;
+}
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--flame); color: white;
+  font-size: 10px; font-weight: 600;
+  padding: 2px 6px; border-radius: 10px;
+}
+.nav-badge.green { background: var(--success); }
+.nav-badge.gold { background: var(--gold); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 12px 0;
+  border-top: 1px solid var(--glass-border);
+}
+.user-mini {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer;
+}
+.user-mini:hover { background: var(--glass); }
+.av-mini {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--flame), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(232,67,26,0.35);
+}
+.user-mini-info { flex: 1; min-width: 0; }
+.user-mini-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-mini-status { font-size: 10.5px; color: var(--success); }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; max-height: 100vh; }
+
+/* COVER */
+.cover {
+  height: 230px;
+  background: linear-gradient(135deg, #1a0800 0%, #2d0e10 40%, #180a22 70%, #0b0016 100%);
+  position: relative; overflow: hidden;
+}
+.cover-noise {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+.cover-particles {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 25%, rgba(232,67,26,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 60%, rgba(212,168,67,0.4) 0%, transparent 100%),
+    radial-gradient(2px 2px at 55% 30%, rgba(232,67,26,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 70%, rgba(212,168,67,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 40%, rgba(255,107,53,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 80%, rgba(155,89,182,0.3) 0%, transparent 100%);
+}
+.cover-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 50% 100% at 50% 100%, rgba(232,67,26,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 20% 30%, rgba(212,168,67,0.1) 0%, transparent 60%);
+}
+.cover-actions {
+  position: absolute; top: 16px; right: 20px;
+  display: flex; gap: 8px;
+}
+.cover-btn {
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border-2);
+  color: var(--text-muted); font-size: 12px;
+  padding: 7px 14px; border-radius: 20px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.cover-btn:hover { color: var(--text); border-color: var(--glass-border-2); background: rgba(0,0,0,0.6); }
+.cover-btn.primary { background: rgba(232,67,26,0.3); border-color: rgba(232,67,26,0.5); color: var(--text); }
+
+/* PROFILE HEADER */
+.profile-header {
+  padding: 0 32px 24px;
+  position: relative;
+  border-bottom: 1px solid var(--glass-border);
+}
+.avatar-area { display: flex; align-items: flex-end; gap: 20px; margin-top: -48px; margin-bottom: 16px; }
+.avatar-wrap {
+  position: relative; flex-shrink: 0;
+}
+.avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: linear-gradient(135deg, #2d0e10, #1a0822);
+  border: 3px solid var(--night-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  box-shadow: 0 0 0 2px var(--flame), 0 8px 30px rgba(0,0,0,0.5);
+}
+.online-dot {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 14px; height: 14px; background: var(--success);
+  border-radius: 50%; border: 2px solid var(--night-2);
+}
+.header-info { flex: 1; padding-bottom: 4px; }
+.header-name {
+  font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  line-height: 1.1; margin-bottom: 4px;
+}
+.header-name em { color: var(--flame-light); font-style: normal; }
+.header-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  font-size: 13px; color: var(--text-muted); margin-bottom: 10px;
+}
+.header-meta span { display: flex; align-items: center; gap: 4px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 20px;
+  font-size: 13px; font-family: var(--font-body);
+  font-weight: 500; cursor: pointer; transition: all 0.2s;
+  border: none;
+}
+.btn-primary { background: var(--flame); color: white; }
+.btn-primary:hover { background: var(--flame-light); box-shadow: 0 4px 18px rgba(232,67,26,0.4); }
+.btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0D0B14; }
+.btn-gold:hover { box-shadow: 0 4px 18px rgba(212,168,67,0.4); }
+.btn-ghost { background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-muted); }
+.btn-ghost:hover { background: var(--glass-2); color: var(--text); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* STATS ROW */
+.stats-row {
+  display: flex; gap: 1px;
+  background: var(--glass-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 16px 32px;
+}
+.stat-box {
+  flex: 1; padding: 14px 12px; text-align: center;
+  background: var(--night-2);
+  transition: background 0.2s; cursor: default;
+}
+.stat-box:hover { background: var(--night-3); }
+.stat-val {
+  font-family: var(--font-display); font-size: 22px; font-weight: 700;
+  line-height: 1; margin-bottom: 3px;
+}
+.stat-val.flame { color: var(--flame-light); }
+.stat-val.gold { color: var(--gold); }
+.stat-val.green { color: var(--success); }
+.stat-val.purple { color: #B07FD4; }
+.stat-label { font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.5px; }
+
+/* TABS */
+.tabs-bar {
+  display: flex; gap: 2px; padding: 0 32px;
+  border-bottom: 1px solid var(--glass-border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 12px 16px; font-size: 13px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all 0.15s;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: var(--font-body);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--flame-light); border-bottom-color: var(--flame); }
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(232,67,26,0.25); color: var(--flame-light);
+  font-size: 10px; font-weight: 600; margin-left: 5px;
+}
+
+/* CONTENT */
+.content { padding: 24px 32px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.col-span-2 { grid-column: span 2; }
+
+/* CARD */
+.card {
+  background: var(--night-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 18px;
+  margin-bottom: 16px;
+}
+.card:last-child { margin-bottom: 0; }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.card-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+.card-action {
+  background: none; border: 1px solid var(--glass-border);
+  color: var(--text-muted); font-size: 12px; font-family: var(--font-body);
+  padding: 5px 12px; border-radius: 16px; cursor: pointer;
+  transition: all 0.2s;
+}
+.card-action:hover { border-color: var(--flame); color: var(--flame-light); }
+
+/* TAG SYSTEM */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11.5px; font-weight: 500;
+}
+.tag-default { background: var(--night-4); border: 1px solid var(--glass-border); color: var(--text-muted); }
+.tag-flame { background: rgba(232,67,26,0.15); border: 1px solid rgba(232,67,26,0.3); color: var(--flame-light); }
+.tag-gold { background: rgba(212,168,67,0.12); border: 1px solid rgba(212,168,67,0.3); color: var(--gold); }
+.tag-purple { background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.3); color: #B07FD4; }
+.tag-green { background: rgba(46,204,113,0.12); border: 1px solid rgba(46,204,113,0.3); color: var(--success); }
+.tag-blue { background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.3); color: #6BB8EC; }
+.tag-pink { background: rgba(233,30,140,0.12); border: 1px solid rgba(233,30,140,0.3); color: #F06CB4; }
+
+/* FORM CONTROLS */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 5px; display: block; letter-spacing: 0.3px; }
+.form-input {
+  width: 100%; background: var(--night-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-family: var(--font-body); font-size: 13px;
+  outline: none; transition: border 0.2s;
+}
+.form-input:focus { border-color: rgba(232,67,26,0.5); }
+textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+.form-select {
+  width: 100%; background: var(--night-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-family: var(--font-body); font-size: 13px;
+  outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(242,238,232,0.4)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 30px;
+}
+.form-select:focus { border-color: rgba(232,67,26,0.5); }
+
+/* SLIDER */
+.range-wrap { position: relative; padding-top: 4px; }
+.form-range {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 4px; background: var(--night-4); border-radius: 2px; outline: none; cursor: pointer;
+}
+.form-range::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--flame), var(--gold));
+  box-shadow: 0 2px 8px rgba(232,67,26,0.5); cursor: pointer;
+}
+.range-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); margin-top: 4px; }
+
+/* TOGGLE GRID (multi-select chips) */
+.toggle-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.toggle-chip {
+  padding: 6px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  background: var(--night-4); border: 1px solid var(--glass-border);
+  color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+  user-select: none;
+}
+.toggle-chip:hover { border-color: var(--flame); color: var(--text); }
+.toggle-chip.selected { background: rgba(232,67,26,0.18); border-color: rgba(232,67,26,0.5); color: var(--flame-light); }
+.toggle-chip.selected-gold { background: rgba(212,168,67,0.14); border-color: rgba(212,168,67,0.4); color: var(--gold); }
+.toggle-chip.selected-purple { background: rgba(155,89,182,0.14); border-color: rgba(155,89,182,0.4); color: #B07FD4; }
+
+/* PREF ROW */
+.pref-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 9px 0; border-bottom: 1px solid var(--glass-border);
+}
+.pref-row:last-child { border-bottom: none; }
+.pref-key { font-size: 12.5px; color: var(--text-muted); min-width: 130px; flex-shrink: 0; }
+.pref-val { font-size: 12.5px; color: var(--text); text-align: right; flex: 1; }
+
+/* COMPAT BAR */
+.compat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.compat-row:last-child { margin-bottom: 0; }
+.compat-lbl { font-size: 11.5px; color: var(--text-muted); width: 90px; flex-shrink: 0; }
+.compat-bar { flex: 1; height: 5px; background: var(--night-4); border-radius: 3px; overflow: hidden; }
+.compat-fill { height: 100%; border-radius: 3px; }
+.compat-pct { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); width: 30px; text-align: right; flex-shrink: 0; }
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 12px; color: var(--text-faint); letter-spacing: 1.2px;
+  text-transform: uppercase; margin-bottom: 12px; margin-top: 4px;
+}
+
+/* ABOUT ME SPECIAL */
+.about-bio {
+  font-size: 14px; line-height: 1.7; color: var(--text);
+  background: var(--night-3); border-radius: var(--radius);
+  padding: 14px 16px; border-left: 3px solid var(--flame);
+  margin-bottom: 14px;
+}
+
+/* VALUE SCALE */
+.value-scale { display: flex; flex-direction: column; gap: 10px; }
+.vs-row { display: flex; align-items: center; gap: 12px; }
+.vs-left { font-size: 11.5px; color: var(--text-faint); width: 90px; text-align: right; flex-shrink: 0; }
+.vs-right { font-size: 11.5px; color: var(--text-faint); width: 90px; flex-shrink: 0; }
+.vs-track {
+  flex: 1; height: 6px; background: var(--night-4); border-radius: 3px;
+  position: relative;
+}
+.vs-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--flame), var(--gold));
+  position: absolute; top: 50%; transform: translateY(-50%);
+  box-shadow: 0 2px 8px rgba(232,67,26,0.45);
+  cursor: pointer;
+}
+
+/* PHOTO GRID */
+.photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.photo-slot {
+  aspect-ratio: 1; border-radius: var(--radius);
+  background: var(--night-3); border: 1.5px dashed rgba(255,255,255,0.12);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.photo-slot:hover { border-color: var(--flame); }
+.photo-slot.filled { border-style: solid; border-color: transparent; }
+.photo-slot-add { font-size: 24px; color: var(--text-faint); margin-bottom: 4px; }
+.photo-slot-text { font-size: 11px; color: var(--text-faint); }
+.photo-emoji { font-size: 44px; }
+.photo-main-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(232,67,26,0.85); color: white;
+  font-size: 9px; font-weight: 600; letter-spacing: 1px;
+  padding: 3px 7px; border-radius: 4px;
+}
+.photo-bg-1 { background: linear-gradient(135deg, #1a0820, #2d1208); }
+.photo-bg-2 { background: linear-gradient(135deg, #0a1820, #1a2008); }
+.photo-bg-3 { background: linear-gradient(135deg, #200818, #081018); }
+.photo-bg-4 { background: linear-gradient(135deg, #082018, #201808); }
+.photo-bg-5 { background: linear-gradient(135deg, #180820, #200820); }
+
+/* MATCH CARDS */
+.match-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--night-2); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 12px;
+  margin-bottom: 10px; transition: all 0.2s; cursor: pointer;
+}
+.match-card:hover { border-color: rgba(232,67,26,0.3); background: var(--night-3); }
+.match-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.match-info { flex: 1; }
+.match-name { font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+.match-detail { font-size: 11.5px; color: var(--text-muted); }
+.match-pct { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--gold); }
+
+/* NOTIFICATION ROW */
+.notif-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--glass-border);
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-icon { font-size: 18px; width: 30px; text-align: center; }
+.notif-text { flex: 1; font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+.notif-text strong { color: var(--text); }
+.toggle-switch {
+  width: 36px; height: 20px; background: var(--night-4);
+  border-radius: 10px; position: relative; cursor: pointer;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--flame); }
+.toggle-knob {
+  width: 14px; height: 14px; background: white; border-radius: 50%;
+  position: absolute; top: 3px; left: 3px; transition: left 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.toggle-switch.on .toggle-knob { left: 19px; }
+
+/* BADGES */
+.badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px; background: var(--night-3); border-radius: var(--radius);
+  border: 1px solid var(--glass-border); min-width: 80px;
+  text-align: center; gap: 5px;
+}
+.badge-icon { font-size: 24px; }
+.badge-name { font-size: 10.5px; color: var(--text-muted); }
+.badge-item.earned { border-color: rgba(212,168,67,0.3); }
+.badge-item.earned .badge-name { color: var(--gold); }
+
+/* QUIZ RESULT */
+.quiz-result {
+  background: linear-gradient(135deg, rgba(155,89,182,0.1), rgba(232,67,26,0.08));
+  border: 1px solid rgba(155,89,182,0.25);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.quiz-title { font-size: 12px; color: #B07FD4; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px; }
+.quiz-answer { font-size: 14px; color: var(--text); }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--glass-border); margin: 16px 0; }
+
+/* HIGHLIGHT BOX */
+.highlight-box {
+  background: var(--night-3); border-radius: var(--radius);
+  padding: 14px; border: 1px solid var(--glass-border);
+  margin-bottom: 12px;
+}
+.hb-label { font-size: 10.5px; color: var(--text-faint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.hb-value { font-size: 13.5px; color: var(--text); font-weight: 500; }
+
+/* PRIVACY LEVEL */
+.privacy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.privacy-opt {
+  padding: 10px; border-radius: var(--radius-sm);
+  background: var(--night-3); border: 1px solid var(--glass-border);
+  text-align: center; cursor: pointer; transition: all 0.2s;
+}
+.privacy-opt:hover { border-color: var(--flame); }
+.privacy-opt.sel { background: rgba(232,67,26,0.13); border-color: rgba(232,67,26,0.4); }
+.privacy-opt-icon { font-size: 18px; margin-bottom: 4px; }
+.privacy-opt-label { font-size: 11px; color: var(--text-muted); }
+
+/* ACTIVITY HEATMAP */
+.activity-grid { display: flex; gap: 3px; flex-wrap: wrap; }
+.ac-day { width: 12px; height: 12px; border-radius: 2px; background: var(--night-4); }
+.ac-day.l1 { background: rgba(232,67,26,0.25); }
+.ac-day.l2 { background: rgba(232,67,26,0.5); }
+.ac-day.l3 { background: rgba(232,67,26,0.75); }
+.ac-day.l4 { background: var(--flame); }
+
+/* VERIFIED BADGE */
+.verified { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--success); }
+.verified-icon { font-size: 13px; }
+
+/* ACCORDION */
+.acc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 4px 0;
+}
+.acc-body { padding-top: 10px; }
+.acc-arrow { color: var(--text-faint); transition: transform 0.2s; }
+.acc-header.open .acc-arrow { transform: rotate(180deg); }
+
+/* SEXUALITY / IDENTITY labels */
+.identity-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+}
+
+/* QUESTION CARDS (like Hinge) */
+.q-card {
+  background: var(--night-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--flame);
+}
+.q-card-prompt { font-size: 11px; color: var(--text-faint); margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
+.q-card-answer { font-size: 14px; color: var(--text); line-height: 1.5; font-family: var(--font-display); font-style: italic; }
+
+/* SCROLL fade */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.tab-panel.active { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="app">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🔥</div>
+      <div>
+        <div class="logo-name">Spark<span>Connect</span></div>
+        <div class="logo-tag">18+ ONLY</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="completion-box">
+    <div class="comp-header">
+      <span class="comp-label">Kompletność profilu</span>
+      <span class="comp-pct">72%</span>
+    </div>
+    <div class="comp-bar"><div class="comp-fill"></div></div>
+    <div class="comp-tip">💡 Dodaj orientację seksualną, aby zwiększyć trafność dopasowań</div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Profil</span>
+    <div class="nav-item active" onclick="switchTab('o-mnie')">
+      <span class="nav-icon">👤</span> O mnie
+    </div>
+    <div class="nav-item" onclick="switchTab('preferencje')">
+      <span class="nav-icon">🔥</span> Preferencje
+    </div>
+    <div class="nav-item" onclick="switchTab('intymne')">
+      <span class="nav-icon">💋</span> Intymne 18+
+    </div>
+    <div class="nav-item" onclick="switchTab('pytania')">
+      <span class="nav-icon">💬</span> Pytania & Odpowiedzi
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Media</span>
+    <div class="nav-item" onclick="switchTab('zdjecia')">
+      <span class="nav-icon">📸</span> Zdjęcia & Wideo
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Odkryj</span>
+    <div class="nav-item" onclick="switchTab('dopasowania')">
+      <span class="nav-icon">❤️</span> Dopasowania <span class="nav-badge">7</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('wiadomosci')">
+      <span class="nav-icon">💌</span> Wiadomości <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('lajki')">
+      <span class="nav-icon">⚡</span> Polubienia <span class="nav-badge green">23</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <span class="nav-label">Konto</span>
+    <div class="nav-item" onclick="switchTab('statystyki')">
+      <span class="nav-icon">📊</span> Statystyki
+    </div>
+    <div class="nav-item" onclick="switchTab('prywatnosc')">
+      <span class="nav-icon">🔐</span> Prywatność
+    </div>
+    <div class="nav-item" onclick="switchTab('powiadomienia')">
+      <span class="nav-icon">🔔</span> Powiadomienia
+    </div>
+    <div class="nav-item" onclick="switchTab('ustawienia')">
+      <span class="nav-icon">⚙️</span> Ustawienia
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-mini">
+      <div class="av-mini">M</div>
+      <div class="user-mini-info">
+        <div class="user-mini-name">Maya, 28</div>
+        <div class="user-mini-status">● Online teraz</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-noise"></div>
+    <div class="cover-particles"></div>
+    <div class="cover-glow"></div>
+    <div class="cover-actions">
+      <button class="cover-btn">Podgląd profilu 👁</button>
+      <button class="cover-btn primary">Zmień okładkę 🖼</button>
+    </div>
+  </div>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="avatar-area">
+      <div class="avatar-wrap">
+        <div class="avatar">🌸</div>
+        <div class="online-dot"></div>
+      </div>
+      <div class="header-info">
+        <div class="header-name">Maya <em>Kowalska</em></div>
+        <div class="header-meta">
+          <span>📍 Warszawa</span>
+          <span>🎂 28 lat</span>
+          <span>💼 Graficzka UX</span>
+          <span class="verified"><span class="verified-icon">✓</span> Zweryfikowana</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary btn-sm">✏️ Edytuj profil</button>
+          <button class="btn btn-ghost btn-sm">🔗 Udostępnij</button>
+          <button class="btn btn-ghost btn-sm">⚙️ Ustawienia</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-val flame">247</div>
+      <div class="stat-label">Wyświetleń</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val gold">23</div>
+      <div class="stat-label">Polubień</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val green">7</div>
+      <div class="stat-label">Dopasowań</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val purple">89%</div>
+      <div class="stat-label">Atrakcyjność</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val gold">72%</div>
+      <div class="stat-label">Kompletność</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('o-mnie')">👤 O mnie</button>
+    <button class="tab-btn" onclick="switchTab('preferencje')">🔥 Preferencje</button>
+    <button class="tab-btn" onclick="switchTab('intymne')">💋 Intymne 18+</button>
+    <button class="tab-btn" onclick="switchTab('pytania')">💬 Q&A</button>
+    <button class="tab-btn" onclick="switchTab('zdjecia')">📸 Media</button>
+    <button class="tab-btn" onclick="switchTab('dopasowania')">❤️ Dopasowania <span class="tab-count">7</span></button>
+    <button class="tab-btn" onclick="switchTab('lajki')">⚡ Polubienia <span class="tab-count">23</span></button>
+    <button class="tab-btn" onclick="switchTab('statystyki')">📊 Statystyki</button>
+    <button class="tab-btn" onclick="switchTab('prywatnosc')">🔐 Prywatność</button>
+    <button class="tab-btn" onclick="switchTab('powiadomienia')">🔔 Powiadomienia</button>
+    <button class="tab-btn" onclick="switchTab('ustawienia')">⚙️ Ustawienia</button>
+  </div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content">
+
+  <!-- ────────────────────────────────── TAB: O MNIE ────────────────────────────────── -->
+  <div id="tab-o-mnie" class="tab-panel active">
+    <div class="grid-2">
+
+      <!-- LEWA KOLUMNA -->
+      <div>
+
+        <!-- BIO -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">✍️ Opis profilu (Bio)</div>
+              <div class="card-sub">Do 500 znaków — Twoja wizytówka</div>
+            </div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="about-bio">
+            Graficzka UX z zamiłowaniem do podróży i dobrej kawy. Wciągam się w sztukę uliczną, gotowanie nowych kuchni świata i długie spacery o poranku. Szukam kogoś, z kim można porozmawiać do 3 w nocy i wyjść na spontaniczny city-break w weekend. 🌍✨
+          </div>
+          <textarea class="form-input" placeholder="Opisz siebie — co Cię wyróżnia, co Cię pasjonuje, czego szukasz..."></textarea>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-faint);">
+            <span>Wskazówka: konkrety przyciągają bardziej niż ogólniki</span>
+            <span id="bioCount">0 / 500</span>
+          </div>
+        </div>
+
+        <!-- PYTANIA-WYRÓŻNIKI (Hinge-style) -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🎯 Wyróżniki profilu</div>
+              <div class="card-sub">Krótkie odpowiedzi na pytania — zwiększa dopasowania o 3×</div>
+            </div>
+            <button class="card-action">+ Dodaj</button>
+          </div>
+          <div class="q-card">
+            <div class="q-card-prompt">Najlepsza przygoda, jaką przeżyłam</div>
+            <div class="q-card-answer">"Spontaniczny wyjazd do Lizbony z kartą tylko w jedną stronę — wróciłam po 3 tygodniach z milionem zdjęć i nową perspektywą"</div>
+          </div>
+          <div class="q-card" style="border-left-color:var(--gold);">
+            <div class="q-card-prompt">Kontrowersyjna opinia, którą się przyznam</div>
+            <div class="q-card-answer">"Piekarnia otwarta przed 9:00 jest moralnym dobrem bezwzględnym"</div>
+          </div>
+          <div class="q-card" style="border-left-color:#B07FD4;">
+            <div class="q-card-prompt">To, czego szukam u kogoś</div>
+            <div class="q-card-answer">"Kogoś, kto umie słuchać i nie boi się być szczery — nawet gdy to trudne"</div>
+          </div>
+          <div style="text-align:center;padding-top:8px;">
+            <button class="btn btn-ghost btn-sm">Zmień pytania</button>
+          </div>
+        </div>
+
+        <!-- DANE PODSTAWOWE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Dane podstawowe</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+
+          <div class="grid-2" style="gap:10px;">
+            <div class="form-group">
+              <label class="form-label">Imię wyświetlane</label>
+              <input class="form-input" value="Maya" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Wiek</label>
+              <input class="form-input" type="number" value="28" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Płeć</label>
+              <select class="form-select">
+                <option>Kobieta</option>
+                <option>Mężczyzna</option>
+                <option>Niebinarny/a</option>
+                <option>Transpłciowy/a kobieta</option>
+                <option>Transpłciowy/a mężczyzna</option>
+                <option>Genderfluid</option>
+                <option>Agender</option>
+                <option>Wolę nie podawać</option>
+                <option>Inne (opisz)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Orientacja seksualna</label>
+              <select class="form-select">
+                <option>Heteroseksualna</option>
+                <option>Homoseksualna (lesbijka)</option>
+                <option>Biseksualna</option>
+                <option>Panseksualna</option>
+                <option>Aseksualna</option>
+                <option>Demiseksualna</option>
+                <option>Queer</option>
+                <option>Sapiosexualna</option>
+                <option>Wolę nie podawać</option>
+                <option>Inne</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Miasto</label>
+              <input class="form-input" value="Warszawa" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Wzrost (cm)</label>
+              <input class="form-input" type="number" value="168" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Waga (opcjonalna)</label>
+              <input class="form-input" type="number" placeholder="np. 60" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kolor oczu</label>
+              <select class="form-select">
+                <option>Brązowe</option>
+                <option>Zielone</option>
+                <option>Niebieskie</option>
+                <option>Szare</option>
+                <option>Piwne</option>
+                <option>Heterochromia</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kolor włosów</label>
+              <select class="form-select">
+                <option>Czarne</option>
+                <option>Ciemnobrązowe</option>
+                <option>Brązowe</option>
+                <option>Blond</option>
+                <option>Rude</option>
+                <option>Siwe/Białe</option>
+                <option>Farbowane/Kolorowe</option>
+                <option>Łysy/a</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Typ sylwetki</label>
+              <select class="form-select">
+                <option>Szczupła</option>
+                <option>Atletyczna</option>
+                <option>Średnia</option>
+                <option>Krągła</option>
+                <option>Plus size</option>
+                <option>Wolę nie podawać</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Zawód / Branża</label>
+            <input class="form-input" value="Graficzka UX / Design" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wykształcenie</label>
+            <select class="form-select">
+              <option>Wyższe (magister)</option>
+              <option>Wyższe (licencjat)</option>
+              <option>Wyższe (doktor)</option>
+              <option>Średnie</option>
+              <option>Zawodowe</option>
+              <option>W trakcie studiów</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Język ojczysty</label>
+            <select class="form-select">
+              <option>Polski</option>
+              <option>Angielski</option>
+              <option>Ukraiński</option>
+              <option>Rosyjski</option>
+              <option>Inne</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Języki obce</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">🇬🇧 Angielski</div>
+              <div class="toggle-chip selected">🇪🇸 Hiszpański</div>
+              <div class="toggle-chip">🇩🇪 Niemiecki</div>
+              <div class="toggle-chip">🇫🇷 Francuski</div>
+              <div class="toggle-chip">🇮🇹 Włoski</div>
+              <div class="toggle-chip">🇯🇵 Japoński</div>
+              <div class="toggle-chip">🇰🇷 Koreański</div>
+              <div class="toggle-chip">+ Inny</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASJE & ZAINTERESOWANIA -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🎭 Pasje & Zainteresowania</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="section-title">Sztuka & Kultura</div>
+          <div class="toggle-grid" style="margin-bottom:12px;">
+            <div class="toggle-chip selected">🎨 Sztuka</div>
+            <div class="toggle-chip selected">📷 Fotografia</div>
+            <div class="toggle-chip">🎭 Teatr</div>
+            <div class="toggle-chip selected">🎬 Kino</div>
+            <div class="toggle-chip">🎼 Muzyka klasyczna</div>
+            <div class="toggle-chip selected">🎵 Koncerty</div>
+            <div class="toggle-chip">🖼 Galerie sztuki</div>
+            <div class="toggle-chip">📚 Literatura</div>
+          </div>
+          <div class="section-title">Sport & Aktywność</div>
+          <div class="toggle-grid" style="margin-bottom:12px;">
+            <div class="toggle-chip selected">🧘 Yoga</div>
+            <div class="toggle-chip">🏃 Bieganie</div>
+            <div class="toggle-chip selected">🚴 Rower</div>
+            <div class="toggle-chip">🏊 Pływanie</div>
+            <div class="toggle-chip">🧗 Wspinaczka</div>
+            <div class="toggle-chip">🏋️ Siłownia</div>
+            <div class="toggle-chip">🎾 Tenis</div>
+            <div class="toggle-chip">⛷ Narty</div>
+            <div class="toggle-chip">🏄 Surfing</div>
+            <div class="toggle-chip selected">🥾 Piesze wędrówki</div>
+          </div>
+          <div class="section-title">Jedzenie & Lifestyle</div>
+          <div class="toggle-grid" style="margin-bottom:12px;">
+            <div class="toggle-chip selected">☕ Kawiarnie</div>
+            <div class="toggle-chip selected">🍷 Wino</div>
+            <div class="toggle-chip">🍺 Craft beer</div>
+            <div class="toggle-chip selected">🍝 Gotowanie</div>
+            <div class="toggle-chip">🌿 Weganizm</div>
+            <div class="toggle-chip selected">🌏 Kuchnie świata</div>
+            <div class="toggle-chip">🍣 Sushi</div>
+          </div>
+          <div class="section-title">Podróże & Przygoda</div>
+          <div class="toggle-grid" style="margin-bottom:12px;">
+            <div class="toggle-chip selected">✈️ Podróże</div>
+            <div class="toggle-chip selected">🏙 City-breaki</div>
+            <div class="toggle-chip">🏕 Kemping</div>
+            <div class="toggle-chip selected">🗺 Backpacking</div>
+            <div class="toggle-chip">🏖 Plaże</div>
+            <div class="toggle-chip">🏔 Góry</div>
+          </div>
+          <div class="section-title">Technologia & Nauka</div>
+          <div class="toggle-grid">
+            <div class="toggle-chip">💻 Tech / IT</div>
+            <div class="toggle-chip selected">🎮 Gaming</div>
+            <div class="toggle-chip">🔭 Astronomia</div>
+            <div class="toggle-chip">🧬 Nauka</div>
+            <div class="toggle-chip selected">🤖 AI / Nowe tech</div>
+            <div class="toggle-chip">♟ Szachy</div>
+            <div class="toggle-chip">🎲 Planszówki</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PRAWA KOLUMNA -->
+      <div>
+
+        <!-- STYL ŻYCIA -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🌿 Styl życia</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Palenie</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option>Nie palę</option>
+              <option>Rzuciłam/em</option>
+              <option>Okazjonalnie</option>
+              <option>Palę regularnie</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Alkohol</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option>Nie piję</option>
+              <option>Okazjonalnie</option>
+              <option selected>Socjalnie</option>
+              <option>Regularnie</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Marihuana</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option selected>Nie</option>
+              <option>Okazjonalnie</option>
+              <option>Regularnie</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Dieta</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option selected>Wszystkożerna</option>
+              <option>Wegetariańska</option>
+              <option>Wegańska</option>
+              <option>Pescatarian</option>
+              <option>Keto</option>
+              <option>Halal</option>
+              <option>Kosher</option>
+              <option>Bezglutenowa</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Aktywność fizyczna</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option>Rzadko</option>
+              <option>Kilka razy w miesiącu</option>
+              <option selected>2-3 razy w tygodniu</option>
+              <option>Codziennie</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Rytm dnia</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option>Ranny ptaszek 🌅</option>
+              <option selected>Sowa nocna 🦉</option>
+              <option>Bez różnicy</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Praca</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option selected>Zdalna (home office)</option>
+              <option>Biurowa</option>
+              <option>Hybrydowa</option>
+              <option>Wolny zawód / Freelance</option>
+              <option>W trakcie szukania</option>
+            </select>
+          </div>
+          <div class="pref-row" style="border:none;">
+            <div class="pref-key">Zwierzęta</div>
+            <select class="form-select" style="max-width:200px;padding:5px 10px;font-size:12px;">
+              <option>Brak</option>
+              <option selected>Mam kota 🐱</option>
+              <option>Mam psa 🐶</option>
+              <option>Mam inne</option>
+              <option>Kocham, ale nie mam</option>
+              <option>Alergia</option>
+              <option>Nie przepadam</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- WARTOŚCI I OSOBOWOŚĆ -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🧭 Wartości & Osobowość</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Religia / Światopogląd</label>
+            <select class="form-select">
+              <option>Ateista/ka</option>
+              <option>Agnostyk/czka</option>
+              <option>Katolik/czka</option>
+              <option>Chrześcijanin/ka</option>
+              <option>Żyd/Żydówka</option>
+              <option>Muzułmanin/ka</option>
+              <option>Buddysta/ka</option>
+              <option>Hinduista/ka</option>
+              <option>Duchowy/a, niereligijny/a</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Poglądy polityczne</label>
+            <select class="form-select">
+              <option>Lewicowe</option>
+              <option>Centrolewicowe</option>
+              <option selected>Centrowe</option>
+              <option>Centroprawicowe</option>
+              <option>Prawicowe</option>
+              <option>Libertariańskie</option>
+              <option>Apolityczny/a</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+          <div class="form-label" style="margin-bottom:10px;">Skale osobowości — gdzie jesteś?</div>
+          <div class="value-scale">
+            <div class="vs-row">
+              <div class="vs-left">Introwertyk</div>
+              <div class="vs-track"><div class="vs-thumb" style="left:65%"></div></div>
+              <div class="vs-right">Ekstrawertyk</div>
+            </div>
+            <div class="vs-row">
+              <div class="vs-left">Romantyk</div>
+              <div class="vs-track"><div class="vs-thumb" style="left:40%"></div></div>
+              <div class="vs-right">Pragmatyk</div>
+            </div>
+            <div class="vs-row">
+              <div class="vs-left">Homebody</div>
+              <div class="vs-track"><div class="vs-thumb" style="left:30%"></div></div>
+              <div class="vs-right">Imprezowicz</div>
+            </div>
+            <div class="vs-row">
+              <div class="vs-left">Spontaniczny</div>
+              <div class="vs-track"><div class="vs-thumb" style="left:55%"></div></div>
+              <div class="vs-right">Zorganizowany</div>
+            </div>
+            <div class="vs-row">
+              <div class="vs-left">Głową w chmurach</div>
+              <div class="vs-track"><div class="vs-thumb" style="left:45%"></div></div>
+              <div class="vs-right">Stopy na ziemi</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="form-label" style="margin-bottom:8px;">Typ osobowości MBTI (opcjonalnie)</div>
+          <div class="toggle-grid">
+            <div class="toggle-chip">INTJ</div><div class="toggle-chip">INTP</div>
+            <div class="toggle-chip">ENTJ</div><div class="toggle-chip">ENTP</div>
+            <div class="toggle-chip">INFJ</div><div class="toggle-chip selected">INFP</div>
+            <div class="toggle-chip">ENFJ</div><div class="toggle-chip">ENFP</div>
+            <div class="toggle-chip">ISTJ</div><div class="toggle-chip">ISFJ</div>
+            <div class="toggle-chip">ESTJ</div><div class="toggle-chip">ESFJ</div>
+            <div class="toggle-chip">ISTP</div><div class="toggle-chip">ISFP</div>
+            <div class="toggle-chip">ESTP</div><div class="toggle-chip">ESFP</div>
+          </div>
+        </div>
+
+        <!-- CELE RELACYJNE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💑 Cele & Intencje</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Czego szukasz?</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected-gold toggle-chip">💕 Poważny związek</div>
+              <div class="toggle-chip">💬 Przyjaźń</div>
+              <div class="toggle-chip">🔥 Bez zobowiązań</div>
+              <div class="toggle-chip">🤝 Randki / Coś nowego</div>
+              <div class="toggle-chip">🌈 Open relationship</div>
+              <div class="toggle-chip">💼 Networking</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dzieci</label>
+            <select class="form-select">
+              <option>Nie chcę mieć dzieci</option>
+              <option selected>Kiedyś może — zobaczę</option>
+              <option>Chcę mieć dzieci</option>
+              <option>Mam dzieci, nie chcę więcej</option>
+              <option>Mam dzieci, chcę więcej</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Małżeństwo</label>
+            <select class="form-select">
+              <option>Nie planuję</option>
+              <option selected>Może kiedyś</option>
+              <option>Tak, chcę się ożenić/wyjść za mąż</option>
+              <option>Jestem po rozwodzie</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Współzamieszkanie</label>
+            <select class="form-select">
+              <option>Mieszkam sama/sam</option>
+              <option selected>Mieszkam z roommates</option>
+              <option>Z rodziną</option>
+              <option>Własne mieszkanie</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gotowość do przeprowadzki</label>
+            <select class="form-select">
+              <option>Nie — jestem przywiązana do miasta</option>
+              <option selected>Być może, zależy od sytuacji</option>
+              <option>Tak, jestem elastyczna</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: PREFERENCJE ────────────────────────────────── -->
+  <div id="tab-preferencje" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🎯 Kogo szukasz?</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Płeć partnera/ki</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Kobieta</div>
+              <div class="toggle-chip selected">Mężczyzna</div>
+              <div class="toggle-chip">Niebinarny/a</div>
+              <div class="toggle-chip">Wszyscy</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Przedział wiekowy</label>
+            <div class="range-wrap">
+              <input class="form-range" type="range" min="18" max="60" value="24" oninput="document.getElementById('ageMin').textContent=this.value" />
+              <div class="range-labels"><span>18</span><span id="ageMin">24</span><span>60</span></div>
+            </div>
+            <input class="form-range" type="range" min="18" max="60" value="36" oninput="document.getElementById('ageMax').textContent=this.value" style="margin-top:4px;"/>
+            <div class="range-labels"><span></span><span id="ageMax">36</span><span></span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Odległość (km)</label>
+            <input class="form-range" type="range" min="1" max="200" value="30" oninput="document.getElementById('distVal').textContent=this.value+'km'" />
+            <div class="range-labels"><span>1km</span><span id="distVal">30km</span><span>200km+</span></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wzrost partnera/ki (cm)</label>
+            <div class="range-wrap">
+              <input class="form-range" type="range" min="150" max="210" value="170" />
+              <div class="range-labels"><span>150</span><span>170</span><span>210</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💼 Kryteria ważności</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jak ważne dla Ciebie są...</label>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Wygląd</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:60%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">60%</div>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Humor</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:95%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">95%</div>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Inteligencja</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:90%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">90%</div>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Stabilność</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:75%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">75%</div>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Wartości</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:88%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">88%</div>
+          </div>
+          <div class="compat-row">
+            <div class="compat-lbl">Pasje</div>
+            <div class="compat-bar"><div class="compat-fill" style="width:70%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div>
+            <div class="compat-pct">70%</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚙️ Filtry zaawansowane</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wykształcenie partnera</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip">Dowolne</div>
+              <div class="toggle-chip selected">Wyższe</div>
+              <div class="toggle-chip">Średnie lub wyższe</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Palenie</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Niepalący/a</div>
+              <div class="toggle-chip">Okazjonalnie OK</div>
+              <div class="toggle-chip">Bez znaczenia</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dzieci</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip">Brak dzieci</div>
+              <div class="toggle-chip selected">Ma dzieci — OK</div>
+              <div class="toggle-chip">Chce mieć dzieci</div>
+              <div class="toggle-chip">Bez znaczenia</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Orientacja seksualna partnerów</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Hetero</div>
+              <div class="toggle-chip selected">Bi</div>
+              <div class="toggle-chip selected">Pan</div>
+              <div class="toggle-chip selected">Queer</div>
+              <div class="toggle-chip selected">Wszyscy</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Intencje partnerów</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Poważny związek</div>
+              <div class="toggle-chip selected">Randki</div>
+              <div class="toggle-chip">Casual</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🚫 Dealbreakery</div>
+            <button class="card-action">+ Dodaj</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-faint);margin-bottom:10px;">Osoby spełniające poniższe kryteria nie będą Ci pokazywane</div>
+          <div class="toggle-grid">
+            <div class="toggle-chip selected" style="background:rgba(232,67,26,0.1);border-color:rgba(232,67,26,0.3);color:var(--flame-light);">🚬 Palacze</div>
+            <div class="toggle-chip selected" style="background:rgba(232,67,26,0.1);border-color:rgba(232,67,26,0.3);color:var(--flame-light);">😠 Agresja słowna</div>
+            <div class="toggle-chip selected" style="background:rgba(232,67,26,0.1);border-color:rgba(232,67,26,0.3);color:var(--flame-light);">🎰 Hazard</div>
+            <div class="toggle-chip">+ Dodaj</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: INTYMNE 18+ ────────────────────────────────── -->
+  <div id="tab-intymne" class="tab-panel">
+    <div style="background:linear-gradient(135deg,rgba(232,67,26,0.08),rgba(155,89,182,0.06));border:1px solid rgba(232,67,26,0.2);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:16px;">🔒</span>
+        <span style="font-size:13px;font-weight:600;">Strefa prywatna — tylko dla dopasowanych</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);">Informacje poniżej są widoczne wyłącznie dla osób, z którymi obustronnie się dopasowałaś. Możesz każdą sekcję ukryć osobno.</div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💋 Preferencje intymne</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rola / dynamika</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">💫 Wanilia</div>
+              <div class="toggle-chip">👑 Dominująca</div>
+              <div class="toggle-chip">🎀 Uległa</div>
+              <div class="toggle-chip selected">🔄 Switch</div>
+              <div class="toggle-chip">🤝 Równorzędna</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tempo zbliżenia</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">🐢 Wolę budować napięcie</div>
+              <div class="toggle-chip">⚡ Spontanicznie</div>
+              <div class="toggle-chip">🌊 Zależy od chemii</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kink / Zainteresowania (multiselekcja)</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">👄 Sensuality</div>
+              <div class="toggle-chip">⛓ Light BDSM</div>
+              <div class="toggle-chip selected">🎭 Role-play</div>
+              <div class="toggle-chip">📸 Erotic photos</div>
+              <div class="toggle-chip selected">🌙 Nocne sesje</div>
+              <div class="toggle-chip">🏖 Plenerowe</div>
+              <div class="toggle-chip">👫 Voyeurism</div>
+              <div class="toggle-chip">🎲 Niespodzianki</div>
+              <div class="toggle-chip">🪢 Bondage</div>
+              <div class="toggle-chip">💫 Tantra</div>
+              <div class="toggle-chip">🕯 Candle / Wax</div>
+              <div class="toggle-chip">🎵 Muzyka & atmosfera</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gdzie?</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">🏠 U mnie</div>
+              <div class="toggle-chip selected">🏨 U niego/niej</div>
+              <div class="toggle-chip">🏨 Hotel</div>
+              <div class="toggle-chip">🚗 Spontanicznie</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Podejście do bezpieczeństwa</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">✅ Zawsze prezerwatywa</div>
+              <div class="toggle-chip">💉 Po testach</div>
+              <div class="toggle-chip">🤝 Uzgodnione</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🌈 Tożsamość & seksualność</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Orientacja seksualna (szczegółowo)</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip">Heteroseksualna</div>
+              <div class="toggle-chip selected">Biseksualna</div>
+              <div class="toggle-chip">Lesbijska</div>
+              <div class="toggle-chip">Panseksualna</div>
+              <div class="toggle-chip">Aseksualna</div>
+              <div class="toggle-chip">Demiseksualna</div>
+              <div class="toggle-chip">Sapiosexualna</div>
+              <div class="toggle-chip">Queer</div>
+              <div class="toggle-chip">Omniseksualna</div>
+              <div class="toggle-chip">Skoliosexualna</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Romantyczna orientacja</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Biromantyczna</div>
+              <div class="toggle-chip">Heteroromantyczna</div>
+              <div class="toggle-chip">Homoromantyczna</div>
+              <div class="toggle-chip">Panromantyczna</div>
+              <div class="toggle-chip">Aromantyczna</div>
+              <div class="toggle-chip">Demiromantyczna</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Styl relacji</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">Monogamia</div>
+              <div class="toggle-chip">Etyczna niewyłączność</div>
+              <div class="toggle-chip">Poliamoria</div>
+              <div class="toggle-chip">Solo polyamory</div>
+              <div class="toggle-chip">Swinging</div>
+              <div class="toggle-chip">Anarchia relacyjna</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔐 Granice i zasady</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Moje granice (hard limits)</label>
+            <textarea class="form-input" placeholder="Opisz co jest dla Ciebie absolutnie nie do przekroczenia — to jest widoczne tylko dla dopasowanych...">Wzajemny szacunek jest dla mnie podstawą. Komunikacja i jasne ustalenia są ważniejsze niż spontaniczność.</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Co chcę wypróbować</label>
+            <textarea class="form-input" placeholder="Opcjonalnie — rzeczy, które chciałbyś/chciałabyś spróbować..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Oczekiwania dotyczące komunikacji</label>
+            <div class="toggle-grid">
+              <div class="toggle-chip selected">🗣 Otwarty dialog przed</div>
+              <div class="toggle-chip selected">✅ Safeword jest must</div>
+              <div class="toggle-chip">📱 Check-in po</div>
+              <div class="toggle-chip">🤝 Aftercare ważny</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fantazje (prywatne, widoczne po rozmowie)</label>
+            <div style="background:var(--night-3);border-radius:var(--radius-sm);padding:12px;border:1px dashed rgba(155,89,182,0.3);">
+              <div style="font-size:12px;color:var(--text-faint);text-align:center;">🔒 Odblokuj po 3 wiadomościach z tą osobą</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🩺 Zdrowie seksualne</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">Ostatni test STI</div>
+            <select class="form-select" style="max-width:180px;padding:5px 10px;font-size:12px;">
+              <option>Wolę nie podawać</option>
+              <option selected>W ostatnich 6 mies.</option>
+              <option>W ostatnim roku</option>
+              <option>Dawniej</option>
+            </select>
+          </div>
+          <div class="pref-row">
+            <div class="pref-key">PrEP</div>
+            <select class="form-select" style="max-width:180px;padding:5px 10px;font-size:12px;">
+              <option>Nie dotyczy</option>
+              <option>Tak</option>
+              <option>Nie</option>
+              <option selected>Wolę nie podawać</option>
+            </select>
+          </div>
+          <div class="pref-row" style="border:none;">
+            <div class="pref-key">Antykoncepcja</div>
+            <select class="form-select" style="max-width:180px;padding:5px 10px;font-size:12px;">
+              <option>Nie dotyczy</option>
+              <option selected>Stosuje</option>
+              <option>Nie</option>
+              <option>Wolę nie podawać</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: Q&A ────────────────────────────────── -->
+  <div id="tab-pytania" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💬 Pytania profilowe</div>
+            <button class="card-action">+ Dodaj pytanie</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-faint);margin-bottom:14px;">Wybierz pytania i udziel szczerych odpowiedzi. To najlepszy sposób, żeby pokazać swoją osobowość.</div>
+
+          <div class="q-card">
+            <div class="q-card-prompt">Doskonały weekend wygląda tak</div>
+            <div class="q-card-answer">Sobota: długie śniadanie, potem spontaniczny spacer po mieście z aparatem. Niedziela: domowe gotowanie, ulubiona seria i może ktoś miły obok.</div>
+          </div>
+          <div class="q-card" style="border-left-color:var(--gold)">
+            <div class="q-card-prompt">Zanim mnie osądzisz, wiedz że...</div>
+            <div class="q-card-answer">Zawsze mówię na głos co myślę o filmach. Dosłownie. W kinie też.</div>
+          </div>
+          <div class="q-card" style="border-left-color:#B07FD4;">
+            <div class="q-card-prompt">Moja nieskrywana supermoc</div>
+            <div class="q-card-answer">Zawsze wiem, który kawiarnia w mieście ma najlepsze cortado. Testowałam empirycznie.</div>
+          </div>
+          <div class="q-card" style="border-left-color:var(--success);">
+            <div class="q-card-prompt">Pierwsza randka? Zabieram Cię na...</div>
+            <div class="q-card-answer">Małą knajpkę z naturalnym winem, gdzie menu jest na tablicy kredą. Potem spacer nad Wisłę, jeśli pogoda pozwoli.</div>
+          </div>
+          <div class="q-card" style="border-left-color:#6BB8EC;">
+            <div class="q-card-prompt">Mój deal-breaker w rozmowie</div>
+            <div class="q-card-answer">Kiedy ktoś mówi "i co jeszcze" zamiast słuchać odpowiedzi na poprzednie pytanie.</div>
+          </div>
+
+          <button class="btn btn-ghost" style="width:100%;margin-top:8px;">Zmień pytania</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🎯 Szybkie fakty o mnie</div>
+            <button class="card-action">Edytuj</button>
+          </div>
+          <div class="highlight-box">
+            <div class="hb-label">Pytam na pierwszej randce</div>
+            <div class="hb-value">Co ostatnio Cię zaskoczyło?</div>
+          </div>
+          <div class="highlight-box">
+            <div class="hb-label">Moje guilty pleasure</div>
+            <div class="hb-value">K-dramy o 2 w nocy zamiast spania</div>
+          </div>
+          <div class="highlight-box">
+            <div class="hb-label">Ostatnia książka, którą przeczytałam</div>
+            <div class="hb-value">"Piękno jest raną" — Eka Kurniawan</div>
+          </div>
+          <div class="highlight-box">
+            <div class="hb-label">Ulubiony cytat</div>
+            <div class="hb-value">"Life is short, buy the plane ticket"</div>
+          </div>
+          <div class="highlight-box">
+            <div class="hb-label">Jeśli miałabym inny zawód</div>
+            <div class="hb-value">Właścicielka małej galerii sztuki</div>
+          </div>
+          <div class="highlight-box" style="margin-bottom:0;">
+            <div class="hb-label">Sposób na stres</div>
+            <div class="hb-value">Gotuję coś skomplikowanego i puszczam jazz</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⭐ Moje odznaki</div>
+          </div>
+          <div class="badge-row">
+            <div class="badge-item earned">
+              <div class="badge-icon">✅</div>
+              <div class="badge-name">Zweryfikowana</div>
+            </div>
+            <div class="badge-item earned">
+              <div class="badge-icon">💬</div>
+              <div class="badge-name">Super rozmówca</div>
+            </div>
+            <div class="badge-item earned">
+              <div class="badge-icon">📸</div>
+              <div class="badge-name">Galeria 5+</div>
+            </div>
+            <div class="badge-item">
+              <div class="badge-icon">🌟</div>
+              <div class="badge-name">Odkrywca</div>
+            </div>
+            <div class="badge-item">
+              <div class="badge-icon">🔥</div>
+              <div class="badge-name">Hot this week</div>
+            </div>
+            <div class="badge-item">
+              <div class="badge-icon">🏆</div>
+              <div class="badge-name">Top 1%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: MEDIA ────────────────────────────────── -->
+  <div id="tab-zdjecia" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">📸 Galeria zdjęć</div>
+          <div class="card-sub">Do 12 zdjęć — pierwsze jest Twoim zdjęciem profilowym</div>
+        </div>
+        <button class="btn btn-primary btn-sm">+ Dodaj</button>
+      </div>
+      <div class="photos-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="photo-slot filled photo-bg-1"><div class="photo-main-badge">GŁÓWNE</div><div class="photo-emoji">🌸</div></div>
+        <div class="photo-slot filled photo-bg-2"><div class="photo-emoji">🏔️</div></div>
+        <div class="photo-slot filled photo-bg-3"><div class="photo-emoji">🍝</div></div>
+        <div class="photo-slot filled photo-bg-4"><div class="photo-emoji">🐱</div></div>
+        <div class="photo-slot filled photo-bg-5"><div class="photo-emoji">🎨</div></div>
+        <div class="photo-slot"><div class="photo-slot-add">+</div><div class="photo-slot-text">Dodaj</div></div>
+        <div class="photo-slot"><div class="photo-slot-add">+</div><div class="photo-slot-text">Dodaj</div></div>
+        <div class="photo-slot"><div class="photo-slot-add">+</div><div class="photo-slot-text">Dodaj</div></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎬 Wideo profilowe</div></div>
+        <div style="background:var(--night-3);border-radius:var(--radius);aspect-ratio:16/6;display:flex;align-items:center;justify-content:center;border:1.5px dashed rgba(255,255,255,0.1);cursor:pointer;">
+          <div style="text-align:center;">
+            <div style="font-size:28px;margin-bottom:6px;">🎬</div>
+            <div style="font-size:13px;color:var(--text-muted);">Krótkie wideo (max 30 sek.)</div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:4px;">Zwiększa trafność dopasowań o 40%</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎤 Voice Note</div></div>
+        <div style="background:var(--night-3);border-radius:var(--radius);padding:20px;text-align:center;border:1.5px dashed rgba(255,255,255,0.1);cursor:pointer;">
+          <div style="font-size:28px;margin-bottom:6px;">🎙️</div>
+          <div style="font-size:13px;color:var(--text-muted);">Nagraj krótkie powitanie (max 20 sek.)</div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:4px;">Głos to najszybszy sposób na chemię</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔒 Prywatne zdjęcia</div></div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:12px;">Prywatna galeria — udostępniasz ją ręcznie wybranym osobom po dopasowaniu</div>
+      <div class="photos-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="photo-slot" style="border:1.5px dashed rgba(155,89,182,0.3);">
+          <div style="font-size:20px;color:rgba(155,89,182,0.5);">🔒</div>
+          <div class="photo-slot-text" style="color:rgba(155,89,182,0.6);">Prywatne</div>
+        </div>
+        <div class="photo-slot" style="border:1.5px dashed rgba(155,89,182,0.3);">
+          <div class="photo-slot-add" style="color:rgba(155,89,182,0.5);">+</div>
+          <div class="photo-slot-text" style="color:rgba(155,89,182,0.5);">Dodaj</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: DOPASOWANIA ────────────────────────────────── -->
+  <div id="tab-dopasowania" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="section-title">❤️ Twoje dopasowania</div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#1a0820,#2d1208)">💃</div><div class="match-info"><div class="match-name">Karolina, 27</div><div class="match-detail">📍 Warszawa · Marketing</div></div><div class="match-pct">88%</div></div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#0a1820,#1a2008)">🧔</div><div class="match-info"><div class="match-name">Tomek, 31</div><div class="match-detail">📍 Warszawa · IT</div></div><div class="match-pct">82%</div></div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#200a1a,#081020)">🧑‍🎨</div><div class="match-info"><div class="match-name">Ania, 29</div><div class="match-detail">📍 Kraków · Sztuka</div></div><div class="match-pct">79%</div></div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#0a2010,#200a10)">👨</div><div class="match-info"><div class="match-name">Jakub, 33</div><div class="match-detail">📍 Warszawa · Medycyna</div></div><div class="match-pct">77%</div></div>
+      </div>
+      <div>
+        <div class="section-title">⚡ Polubili Cię (23)</div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#200820,#0a1820)">💁</div><div class="match-info"><div class="match-name">Marta, 26</div><div class="match-detail">📍 Warszawa</div></div><button class="btn btn-primary btn-sm">Polubiaj ❤️</button></div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#082010,#100820)">🧑</div><div class="match-info"><div class="match-name">Marek, 33</div><div class="match-detail">📍 Kraków</div></div><button class="btn btn-primary btn-sm">Polubiaj ❤️</button></div>
+        <div class="match-card"><div class="match-avatar" style="background:linear-gradient(135deg,#200810,#082010)">👩</div><div class="match-info"><div class="match-name">Julia, 24</div><div class="match-detail">📍 Wrocław</div></div><button class="btn btn-primary btn-sm">Polubiaj ❤️</button></div>
+        <div style="text-align:center;padding:10px;font-size:12px;color:var(--text-faint);">+ 20 więcej czeka na odpowiedź</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: LAJKI ────────────────────────────────── -->
+  <div id="tab-lajki" class="tab-panel">
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ Osoby, które Cię polubiły (23)</div></div>
+      <div class="grid-3">
+        <div class="match-card" style="flex-direction:column;text-align:center;padding:16px;"><div class="match-avatar" style="background:linear-gradient(135deg,#1a0820,#2d1208);margin:0 auto 8px;width:52px;height:52px;font-size:26px;">💁</div><div class="match-name">Marta, 26</div><div class="match-detail">📍 Warszawa</div><div style="display:flex;gap:6px;margin-top:10px;justify-content:center;"><button class="btn btn-ghost btn-sm">✗</button><button class="btn btn-primary btn-sm">❤️</button></div></div>
+        <div class="match-card" style="flex-direction:column;text-align:center;padding:16px;"><div class="match-avatar" style="background:linear-gradient(135deg,#082010,#201808);margin:0 auto 8px;width:52px;height:52px;font-size:26px;">🧔</div><div class="match-name">Marek, 33</div><div class="match-detail">📍 Kraków</div><div style="display:flex;gap:6px;margin-top:10px;justify-content:center;"><button class="btn btn-ghost btn-sm">✗</button><button class="btn btn-primary btn-sm">❤️</button></div></div>
+        <div class="match-card" style="flex-direction:column;text-align:center;padding:16px;"><div class="match-avatar" style="background:linear-gradient(135deg,#200810,#0a1018);margin:0 auto 8px;width:52px;height:52px;font-size:26px;">👩</div><div class="match-name">Julia, 24</div><div class="match-detail">📍 Wrocław</div><div style="display:flex;gap:6px;margin-top:10px;justify-content:center;"><button class="btn btn-ghost btn-sm">✗</button><button class="btn btn-primary btn-sm">❤️</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: STATYSTYKI ────────────────────────────────── -->
+  <div id="tab-statystyki" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Ostatnie 30 dni</div></div>
+          <div class="compat-row"><div class="compat-lbl">Wyświetlenia</div><div class="compat-bar"><div class="compat-fill" style="width:82%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div><div class="compat-pct">247</div></div>
+          <div class="compat-row"><div class="compat-lbl">Polubienia</div><div class="compat-bar"><div class="compat-fill" style="width:35%;background:linear-gradient(90deg,var(--flame),var(--gold))"></div></div><div class="compat-pct">23</div></div>
+          <div class="compat-row"><div class="compat-lbl">Dopasowania</div><div class="compat-bar"><div class="compat-fill" style="width:12%;background:linear-gradient(90deg,var(--success),#27AE60)"></div></div><div class="compat-pct">7</div></div>
+          <div class="compat-row"><div class="compat-lbl">Wiadomości</div><div class="compat-bar"><div class="compat-fill" style="width:5%;background:linear-gradient(90deg,#B07FD4,#9B59B6)"></div></div><div class="compat-pct">3</div></div>
+          <div class="divider"></div>
+          <div style="font-size:12px;color:var(--text-faint);">Aktywność w ostatnich 7 dniach</div>
+          <div class="activity-grid" style="margin-top:8px;">
+            <div class="ac-day l2"></div><div class="ac-day l1"></div><div class="ac-day l3"></div>
+            <div class="ac-day l4"></div><div class="ac-day l2"></div><div class="ac-day l3"></div>
+            <div class="ac-day l1"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎯 Wskaźniki profilu</div></div>
+          <div class="pref-row"><div class="pref-key">Atrakcyjność profilu</div><div class="pref-val" style="color:var(--gold);">⭐ 89/100</div></div>
+          <div class="pref-row"><div class="pref-key">Kompletność</div><div class="pref-val" style="color:var(--flame-light);">72%</div></div>
+          <div class="pref-row"><div class="pref-key">Czas odpowiedzi</div><div class="pref-val" style="color:var(--success);">~2h</div></div>
+          <div class="pref-row"><div class="pref-key">Wskaźnik odpisów</div><div class="pref-val">85%</div></div>
+          <div class="pref-row" style="border:none;"><div class="pref-key">Popularność dzisiaj</div><div class="pref-val" style="color:var(--flame-light);">🔥 Top 15%</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">👥 Demografika oglądających</div></div>
+          <div class="pref-row"><div class="pref-key">Wiek 18–25</div><div class="pref-val">28%</div></div>
+          <div class="pref-row"><div class="pref-key">Wiek 26–32</div><div class="pref-val">41%</div></div>
+          <div class="pref-row"><div class="pref-key">Wiek 33–40</div><div class="pref-val">22%</div></div>
+          <div class="pref-row" style="border:none;"><div class="pref-key">Wiek 40+</div><div class="pref-val">9%</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">💡 Rekomendacje SparkAI</div></div>
+          <div class="q-card" style="border-left-color:var(--gold);">
+            <div class="q-card-prompt">Dodaj więcej zdjęć</div>
+            <div class="q-card-answer" style="font-style:normal;font-size:12px;color:var(--text-muted);">Profile z 7+ zdjęciami otrzymują 3× więcej dopasowań.</div>
+          </div>
+          <div class="q-card" style="border-left-color:var(--success);">
+            <div class="q-card-prompt">Uzupełnij orientację seksualną</div>
+            <div class="q-card-answer" style="font-style:normal;font-size:12px;color:var(--text-muted);">Zwiększa trafność dopasowań algorytmu o 35%.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: PRYWATNOŚĆ ────────────────────────────────── -->
+  <div id="tab-prywatnosc" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔐 Widoczność profilu</div></div>
+          <div class="privacy-grid">
+            <div class="privacy-opt sel"><div class="privacy-opt-icon">🌍</div><div class="privacy-opt-label">Publiczny</div></div>
+            <div class="privacy-opt"><div class="privacy-opt-icon">🤝</div><div class="privacy-opt-label">Tylko dopasowania</div></div>
+            <div class="privacy-opt"><div class="privacy-opt-icon">👻</div><div class="privacy-opt-label">Tryb incognito</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">👁 Co widzą inni</div></div>
+          <div class="notif-row"><div class="notif-icon">📍</div><div class="notif-text"><strong>Lokalizacja</strong> — pokazuj w promieniu miast</div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">🎂</div><div class="notif-text"><strong>Dokładny wiek</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">💼</div><div class="notif-text"><strong>Zawód</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">🌈</div><div class="notif-text"><strong>Orientacja seksualna</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">📏</div><div class="notif-text"><strong>Wzrost</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">🟢</div><div class="notif-text"><strong>Status online</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row" style="border:none;"><div class="notif-icon">💋</div><div class="notif-text"><strong>Dane intymne 18+</strong> — widoczne tylko dla dopasowań</div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🚫 Blokady & Zgłoszenia</div></div>
+          <div class="pref-row"><div class="pref-key">Zablokowane osoby</div><div class="pref-val">2</div></div>
+          <div class="pref-row" style="border:none;"><div class="pref-key">Zgłoszenia</div><div class="pref-val">0</div></div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;">Zarządzaj blokowaniem</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📸 Ochrona zdjęć</div></div>
+          <div class="notif-row"><div class="notif-icon">🛡</div><div class="notif-text"><strong>Blokuj screenshoty</strong> (Android)</div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row" style="border:none;"><div class="notif-icon">💧</div><div class="notif-text"><strong>Watermark na zdjęciach</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: POWIADOMIENIA ────────────────────────────────── -->
+  <div id="tab-powiadomienia" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔔 Powiadomienia push</div></div>
+        <div class="notif-row"><div class="notif-icon">❤️</div><div class="notif-text"><strong>Nowe dopasowanie</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row"><div class="notif-icon">💌</div><div class="notif-text"><strong>Nowa wiadomość</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row"><div class="notif-icon">⚡</div><div class="notif-text"><strong>Ktoś Cię polubił</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row"><div class="notif-icon">👁</div><div class="notif-text"><strong>Ktoś wyświetlił profil</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row"><div class="notif-icon">⭐</div><div class="notif-text"><strong>Super Like od kogoś</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row" style="border:none;"><div class="notif-icon">📊</div><div class="notif-text"><strong>Tygodniowy raport</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📧 Email & SMS</div></div>
+        <div class="notif-row"><div class="notif-icon">📧</div><div class="notif-text"><strong>Email: nowe dopasowania</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row"><div class="notif-icon">📱</div><div class="notif-text"><strong>SMS: ważne powiadomienia</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        <div class="notif-row" style="border:none;"><div class="notif-icon">📰</div><div class="notif-text"><strong>Newsletter SparkConnect</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────── TAB: USTAWIENIA ────────────────────────────────── -->
+  <div id="tab-ustawienia" class="tab-panel">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">👤 Konto</div></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="maya@email.com" /></div>
+          <div class="form-group"><label class="form-label">Numer telefonu</label><input class="form-input" value="+48 *** *** 789" /></div>
+          <div class="form-group"><label class="form-label">Hasło</label><input class="form-input" type="password" value="••••••••" /></div>
+          <div class="form-group"><label class="form-label">Język aplikacji</label><select class="form-select"><option selected>Polski</option><option>English</option><option>Deutsch</option><option>Español</option></select></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:4px;">Zapisz zmiany</button>
+        </div>
+        <div class="card" style="border-color:rgba(232,67,26,0.2);">
+          <div class="card-header"><div class="card-title" style="color:var(--flame);">⚠️ Strefa niebezpieczna</div></div>
+          <div style="display:flex;gap:8px;flex-direction:column;">
+            <button class="btn btn-ghost btn-sm">Dezaktywuj konto tymczasowo</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--flame);border-color:rgba(232,67,26,0.3);">Usuń konto na zawsze</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔒 Bezpieczeństwo</div></div>
+          <div class="notif-row"><div class="notif-icon">📱</div><div class="notif-text"><strong>Weryfikacja 2FA</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">🌐</div><div class="notif-text"><strong>Logowanie przez Google</strong></div><div class="toggle-switch" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row" style="border:none;"><div class="notif-icon">🔐</div><div class="notif-text"><strong>Powiadom o nowym logowaniu</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🤖 Algorytm SparkAI™</div></div>
+          <div class="notif-row"><div class="notif-icon">📊</div><div class="notif-text"><strong>Analiza osobowości</strong> — AI analizuje styl pisania</div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row"><div class="notif-icon">🎯</div><div class="notif-text"><strong>Smart matching</strong> — waga preferencji</div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+          <div class="notif-row" style="border:none;"><div class="notif-icon">📈</div><div class="notif-text"><strong>Boost w godzinach szczytu</strong></div><div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'19px':'3px'"><div class="toggle-knob"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+<script>
+function switchTab(id) {
+  // tabs content
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('tab-' + id);
+  if (panel) panel.classList.add('active');
+
+  // tab buttons
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.getAttribute('onclick')?.includes(id));
+  if (btn) btn.classList.add('active');
+
+  // sidebar
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const nav = [...document.querySelectorAll('.nav-item')].find(n => n.getAttribute('onclick')?.includes(id));
+  if (nav) nav.classList.add('active');
+}
+
+// Toggle chips
+document.querySelectorAll('.toggle-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('selected');
+  });
+});
+
+// Bio counter
+const bioArea = document.querySelector('textarea.form-input');
+if (bioArea) {
+  bioArea.addEventListener('input', () => {
+    const el = document.getElementById('bioCount');
+    if (el) el.textContent = bioArea.value.length + ' / 500';
+  });
+}
+
+// Toggle switches
+document.querySelectorAll('.toggle-switch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    sw.classList.toggle('on');
+    const knob = sw.querySelector('.toggle-knob');
+    if (knob) knob.style.left = sw.classList.contains('on') ? '19px' : '3px';
+  });
+});
+</script>
+</body>
+</html>
