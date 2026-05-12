@@ -9,7 +9,11 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
+const ADMIN_EMAILS = [
+  'hardbanrecordslab.pl@gmail.com', 
+  'spark-connect@hardbanrecordslab.online',
+  'skomrakus84@gmail.com'
+];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -500,7 +504,7 @@ function SettingsSection() {
         </div>
         <div className="space-y-1.5 text-xs text-muted-foreground">
           <div className="flex justify-between"><span>Wersja app</span><span className="text-foreground">v1.4.2</span></div>
-          <div className="flex justify-between"><span>Admin email</span><span className="text-primary">{ADMIN_EMAIL}</span></div>
+          <div className="flex justify-between"><span>Admin email</span><span className="text-primary">{ADMIN_EMAILS[0]}</span></div>
           <div className="flex justify-between"><span>Baza danych</span><span className="text-green-400">● Online</span></div>
           <div className="flex justify-between"><span>Supabase</span><span className="text-green-400">● Połączony</span></div>
           <div className="flex justify-between"><span>Środowisko</span><span className="text-foreground">Production</span></div>
@@ -762,7 +766,7 @@ export default function AdminPanel() {
             </button>
           </form>
           <p className="text-center text-xs text-muted-foreground mt-6">
-            🔒 Dostęp tylko dla: <span className="text-primary">{ADMIN_EMAIL}</span>
+            🔒 Dostęp tylko dla: <span className="text-primary">{ADMIN_EMAILS[0]}</span>
           </p>
         </div>
       </div>
@@ -790,7 +794,7 @@ export default function AdminPanel() {
             </div>
             <div>
               <h1 className="font-bold text-sm">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">{ADMIN_EMAIL}</p>
+              <p className="text-xs text-muted-foreground">{ADMIN_EMAILS[0]}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -903,7 +907,7 @@ export default function AdminPanel() {
         {section === 'settings' && <SettingsSection />}
 
         <div className="text-center py-4">
-          <p className="text-xs text-muted-foreground">Spark Connect 18+ Admin · {ADMIN_EMAIL}</p>
+          <p className="text-xs text-muted-foreground">Spark Connect 18+ Admin · {ADMIN_EMAILS[0]}</p>
         </div>
       </div>
     </div>

@@ -19,15 +19,24 @@ export function useAuth() {
 
   useEffect(() => {
     async function checkAdmin(userId: string) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const db = supabase as any;
-      const { data } = await db
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
-      return !!data;
+      try {
+        const db = supabase as any;
+        const { data, error } = await db
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Admin check query error:', error);
+          return false;
+        }
+        return !!data;
+      } catch (err) {
+        console.error('Admin check failed:', err);
+        return false;
+      }
     }
 
     // Set up auth listener BEFORE getting session
@@ -36,8 +45,13 @@ export function useAuth() {
       if (session?.user) {
         isAdmin = await checkAdmin(session.user.id);
         // Fallback for hardcoded admin emails
-        const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
+        const ADMIN_EMAILS = [
+          'hardbanrecordslab.pl@gmail.com', 
+          'spark-connect@hardbanrecordslab.online',
+          'skomrakus84@gmail.com'
+        ];
         if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+          console.log('User identified as admin via fallback list');
           isAdmin = true;
         }
       }
@@ -49,7 +63,11 @@ export function useAuth() {
       let isAdmin = false;
       if (session?.user) {
         isAdmin = await checkAdmin(session.user.id);
-        const ADMIN_EMAILS = ['hardbanrecordslab.pl@gmail.com', 'spark-connect@hardbanrecordslab.online'];
+        const ADMIN_EMAILS = [
+          'hardbanrecordslab.pl@gmail.com', 
+          'spark-connect@hardbanrecordslab.online',
+          'skomrakus84@gmail.com'
+        ];
         if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
           isAdmin = true;
         }
