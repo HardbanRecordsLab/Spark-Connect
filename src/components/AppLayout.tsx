@@ -42,7 +42,6 @@ const NOTIFICATIONS = [
   { id: 'n5', emoji: '🎁', text: 'Marco wysłał prezent', time: '3 godz. temu', unread: false },
 ];
 
-// Group chat panel (slide-in)
 function GroupChatPanel({ name, emoji, onClose }: { name: string; emoji: string; onClose: () => void }) {
   const [text, setText] = useState('');
   const [msgs, setMsgs] = useState([
@@ -80,9 +79,6 @@ function GroupChatPanel({ name, emoji, onClose }: { name: string; emoji: string;
         <button className="w-8 h-8 glass rounded-full flex items-center justify-center text-xs text-muted-foreground">⋯</button>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hidden">
-        <div className="text-center">
-          <span className="text-xs glass px-3 py-1 rounded-full text-muted-foreground italic">Dołączyłeś do grupy {name}</span>
-        </div>
         {msgs.map(m => (
           <div key={m.id} className={`flex gap-2 items-end ${m.me ? 'flex-row-reverse' : ''}`}>
             <img src={`https://i.pravatar.cc/26?img=${m.img}`} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-border" />
@@ -102,11 +98,6 @@ function GroupChatPanel({ name, emoji, onClose }: { name: string; emoji: string;
         ))}
       </div>
       <div className="p-3 border-t border-border glass-strong">
-        <div className="flex gap-2 mb-2">
-          {['📷','🎁','👻','🎤','😊'].map(ic => (
-            <button key={ic} className="w-7 h-7 glass rounded-full flex items-center justify-center text-xs text-muted-foreground border border-border hover:border-primary transition-colors">{ic}</button>
-          ))}
-        </div>
         <div className="flex gap-2">
           <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
             placeholder="Napisz wiadomość..."
@@ -159,78 +150,90 @@ export default function AppLayout() {
   }, [user, subscribed, permission]);
 
   const openChat = (name: string) => {
-    // Switch to chats tab — the chat will open from there
     setActiveTab('chats');
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-background overflow-hidden relative">
+    <div className="app-container app-noise shadow-2xl border-x border-white/5">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-safe pt-3 pb-3 glass-strong sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0" style={{ background: '#000' }}>
-            <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-full h-full object-contain" />
+      <div className="flex flex-col px-4 pt-safe pt-4 pb-3 glass-strong sticky top-0 z-40 border-b border-white/10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg border border-white/10 bg-black p-1.5">
+              <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg gradient-text tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Spark Connect</h1>
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Premium Social</span>
+              </div>
+            </div>
           </div>
-          <span className="font-bold text-base gradient-text" style={{ fontFamily: 'serif' }}>Spark Connect</span>
+          
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowStreak(true)}
+              className="flex items-center gap-1.5 glass px-3 py-1.5 rounded-full border border-white/10 hover:border-primary/40 transition-colors">
+              <span className="text-sm">🔥</span>
+              <span className="font-bold text-sm text-primary">{currentStreak}</span>
+            </button>
+            <div className="relative">
+              <button onClick={() => { setShowNotifs(v => !v); setNotifsSeen(true); }}
+                className="relative w-10 h-10 glass rounded-2xl flex items-center justify-center border border-white/10 hover:bg-white/5 transition-all active:scale-95">
+                <Bell className="w-4 h-4 text-primary" />
+                {unreadNotifs > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 gradient-fire rounded-full text-[10px] flex items-center justify-center text-primary-foreground font-black shadow-lg border-2 border-background">
+                    {unreadNotifs}
+                  </span>
+                )}
+              </button>
+              <AnimatePresence>
+                {showNotifs && (
+                  <motion.div initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }} transition={{ duration: 0.15 }}
+                    className="absolute top-12 right-0 w-72 glass-strong rounded-2xl border border-white/10 overflow-hidden z-50 shadow-2xl">
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="font-bold text-sm">Powiadomienia</p>
+                    </div>
+                    {NOTIFICATIONS.map(n => (
+                      <div key={n.id} className={`flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 ${n.unread ? 'bg-primary/5' : ''}`}>
+                        <span className="text-xl">{n.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium">{n.text}</p>
+                          <p className="text-xs text-muted-foreground">{n.time}</p>
+                        </div>
+                        {n.unread && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-medium text-primary border border-primary/20">
+
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 glass px-3 py-1.5 rounded-full text-xs font-bold text-primary border border-primary/20 whitespace-nowrap hover:bg-primary/10 transition-colors">
             <LayoutDashboard className="w-3.5 h-3.5" />
             Dashboard
           </button>
           <button onClick={() => setShowVibeRooms(true)}
-            className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-medium text-primary border border-primary/20">
+            className="flex items-center gap-1.5 glass px-3 py-1.5 rounded-full text-xs font-bold text-white border border-white/10 whitespace-nowrap hover:bg-white/5 transition-colors">
             🎲 Rooms
           </button>
           <button onClick={() => setShowSpeedDating(true)}
-            className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-semibold text-accent border border-accent/30">
-            ⚡ Speed
+            className="flex items-center gap-1.5 glass px-3 py-1.5 rounded-full text-xs font-black text-accent border border-accent/30 whitespace-nowrap">
+            ⚡ Speed Dating
           </button>
           <button onClick={() => setActiveTab('hotnot' as AppTab)}
-            className="flex items-center gap-1 glass px-2.5 py-1.5 rounded-full text-xs font-semibold text-rose-400 border border-rose-500/30">
+            className="flex items-center gap-1.5 glass px-3 py-1.5 rounded-full text-xs font-black text-rose-400 border border-rose-500/30 whitespace-nowrap hover:bg-rose-500/10 transition-colors">
             🔥 Hot/Not
           </button>
-          <button onClick={() => setShowStreak(true)}
-            className="flex items-center gap-1 glass px-2 py-1.5 rounded-full text-xs">
-            🔥<span className="font-semibold text-accent">{currentStreak}</span>
-          </button>
           {settings.invisible_mode && (
-            <div className="w-8 h-8 glass rounded-full flex items-center justify-center border border-primary/30 animate-pulse" title="Ghost Mode Active">
+            <div className="w-8 h-8 glass rounded-full flex items-center justify-center border border-primary/30 animate-pulse flex-shrink-0" title="Ghost Mode Active">
               <Ghost className="w-4 h-4 text-primary" />
             </div>
           )}
-          <div className="relative">
-            <button onClick={() => { setShowNotifs(v => !v); setNotifsSeen(true); }}
-              className="relative w-8 h-8 glass rounded-full flex items-center justify-center border border-border">
-              <Bell className="w-3.5 h-3.5 text-muted-foreground" />
-              {unreadNotifs > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full text-xs flex items-center justify-center text-primary-foreground font-bold">
-                  {unreadNotifs}
-                </span>
-              )}
-            </button>
-            <AnimatePresence>
-              {showNotifs && (
-                <motion.div initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }} transition={{ duration: 0.15 }}
-                  className="absolute top-10 right-0 w-72 glass-strong rounded-2xl border border-border overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-border">
-                    <p className="font-bold text-sm">Powiadomienia</p>
-                  </div>
-                  {NOTIFICATIONS.map(n => (
-                    <div key={n.id} className={`flex items-center gap-3 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-secondary/40 ${n.unread ? 'bg-primary/5' : ''}`}>
-                      <span className="text-xl">{n.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium">{n.text}</p>
-                        <p className="text-xs text-muted-foreground">{n.time}</p>
-                      </div>
-                      {n.unread && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
       </div>
 
@@ -275,11 +278,11 @@ export default function AppLayout() {
                   transition={{ type: 'spring', bounce: 0.3, duration: 0.4 }} />
               )}
               <span className="text-xl">{tab.emoji}</span>
-              <span className={`text-xs font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                 {tab.label}
               </span>
               {badge > 0 && (
-                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-primary rounded-full text-xs flex items-center justify-center text-primary-foreground font-bold">
+                <span className="absolute -top-1 right-1 w-5 h-5 gradient-fire rounded-full text-[10px] flex items-center justify-center text-primary-foreground font-black shadow-lg border-2 border-background">
                   {badge}
                 </span>
               )}

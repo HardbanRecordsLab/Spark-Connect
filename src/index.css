@@ -227,6 +227,46 @@
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
+  /* App Container - fixes the "wide" issue */
+  .app-container {
+    @apply w-full h-full mx-auto overflow-hidden relative flex flex-col;
+    max-width: 500px;
+    background: hsl(var(--background));
+    box-shadow: 0 0 100px rgba(0,0,0,0.5);
+  }
+
+  @media (min-width: 501px) {
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at center, hsl(347 40% 12%) 0%, hsl(240 15% 2%) 100%);
+    }
+    
+    /* Background decoration for desktop */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3仿真%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  /* Noise texture for the app itself */
+  .app-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 99;
+    opacity: 0.02;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
   /* Neon border */
   .neon-border {
     box-shadow: 0 0 0 1px hsl(347 100% 65% / 0.3), 0 0 20px hsl(347 100% 65% / 0.1);
