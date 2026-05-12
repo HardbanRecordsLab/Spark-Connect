@@ -59,17 +59,18 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               animate={{ opacity: 1, x: 0 }}
               className="space-y-4"
             >
-              <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/20">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-green-400">{onlineCount} OSÓB ONLINE TERAZ</span>
+              <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(255,26,78,0.3)]">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-red-400">{onlineCount} NAPALONYCH OSÓB ONLINE</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-black leading-[0.9] tracking-tighter">
-                ZNAJDŹ SWOJĄ <br />
-                <span className="gradient-text">ISKRE</span> DZISIAJ.
+              <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
+                SPEŁNIJ <br />
+                <span className="gradient-text">FANTZJE</span> <br />
+                BEZ LIMITU.
               </h1>
-              <p className="text-xl text-white/70 max-w-md leading-relaxed">
-                Najszybciej rozwijający się portal randkowy 18+. <br />
-                Prawdziwi ludzie. Prawdziwe emocje. Bez opłat.
+              <p className="text-xl md:text-2xl text-white/80 max-w-md leading-tight font-medium">
+                Najodważniejszy portal 18+ w Polsce. <br />
+                <span className="text-primary font-bold italic">Zero tabu. Prawdziwe spotkania.</span>
               </p>
             </motion.div>
 
@@ -80,14 +81,14 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               className="grid sm:grid-cols-3 gap-6"
             >
               {[
-                { icon: <Zap className="text-primary" />, label: 'Speed Dating', desc: 'Szybkie wideo' },
-                { icon: <Heart className="text-primary" />, label: 'Chemistry', desc: 'Dopasowanie' },
-                { icon: <Shield className="text-primary" />, label: 'Bezpieczeństwo', desc: 'Weryfikacja' },
+                { icon: <Zap className="text-primary fill-primary w-5 h-5" />, label: 'Fast Sex', desc: 'Szybkie akcje' },
+                { icon: <Heart className="text-primary fill-primary w-5 h-5" />, label: 'No Limits', desc: 'Bez zahamowań' },
+                { icon: <Shield className="text-primary w-5 h-5" />, label: 'Dyskrecja', desc: '100% Prywatnie' },
               ].map((item, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="w-10 h-10 rounded-xl glass border border-white/5 flex items-center justify-center">{item.icon}</div>
-                  <p className="text-sm font-bold">{item.label}</p>
-                  <p className="text-xs text-white/40">{item.desc}</p>
+                <div key={i} className="space-y-2 p-4 glass rounded-2xl border border-white/5 hover:border-primary/30 transition-all">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center">{item.icon}</div>
+                  <p className="text-sm font-black uppercase italic">{item.label}</p>
+                  <p className="text-[10px] text-white/40 uppercase font-bold">{item.desc}</p>
                 </div>
               ))}
             </motion.div>
@@ -161,9 +162,9 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
           <div>
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Serwis</h4>
             <ul className="space-y-3 text-sm text-white/60">
-              <li><button className="hover:text-primary transition-colors">O nas</button></li>
-              <li><button className="hover:text-primary transition-colors">Bezpieczeństwo</button></li>
-              <li><button className="hover:text-primary transition-colors">Premium</button></li>
+              <li><button onClick={() => navigate('/about')} className="hover:text-primary transition-colors">O nas</button></li>
+              <li><button onClick={() => navigate('/safety')} className="hover:text-primary transition-colors">Bezpieczeństwo</button></li>
+              <li><button onClick={() => navigate('/premium-info')} className="hover:text-primary transition-colors">Premium</button></li>
             </ul>
           </div>
           <div>
@@ -171,7 +172,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             <ul className="space-y-3 text-sm text-white/60">
               <li><button onClick={() => navigate('/terms')} className="hover:text-primary transition-colors">Regulamin</button></li>
               <li><button onClick={() => navigate('/privacy')} className="hover:text-primary transition-colors">Prywatność</button></li>
-              <li><button className="hover:text-primary transition-colors">Rodo</button></li>
+              <li><button onClick={() => navigate('/gdpr')} className="hover:text-primary transition-colors">Rodo</button></li>
             </ul>
           </div>
         </div>

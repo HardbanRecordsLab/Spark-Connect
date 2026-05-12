@@ -9,9 +9,12 @@ import AdminPanel from "./components/AdminPanel";
 import ProfileDashboard from "./components/ProfileDashboard";
 import ProfilePage from "./components/ProfilePage";
 import ProfilePageV2 from "./components/ProfilePageV2";
-import ProfileWizard from "./components/ProfileWizard";
 import PrivacyPolicy from "./pages/Privacy";
 import TermsOfService from "./pages/Terms";
+import AboutUs from "./pages/AboutUs";
+import Safety from "./pages/Safety";
+import PremiumInfo from "./pages/PremiumInfo";
+import GDPR from "./pages/GDPR";
 import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
@@ -30,8 +33,11 @@ const App = () => (
           <Route path="/profile-v2" element={<ProfilePageV2 />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/safety" element={<Safety />} />
+          <Route path="/premium-info" element={<PremiumInfo />} />
+          <Route path="/gdpr" element={<GDPR />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
