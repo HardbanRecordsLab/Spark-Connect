@@ -667,7 +667,16 @@ export default function ProfilePage() {
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
 
-          <button onClick={async () => { await supabase.auth.signOut(); setView('landing'); }}
+          <button onClick={async () => { 
+            try {
+              await supabase.auth.signOut(); 
+            } catch (err) {
+              console.error('Sign out error:', err);
+            } finally {
+              setView('landing'); 
+              window.location.href = '/'; // Full refresh to clear any stuck state
+            }
+          }}
             className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3 border border-destructive/20">
             <div className="w-9 h-9 rounded-xl bg-destructive/20 flex items-center justify-center">
               <LogOut className="w-4 h-4 text-destructive" />

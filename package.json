@@ -15,12 +15,12 @@
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
     "typecheck": "tsc --noEmit",
-    "db:push": "supabase db push",
-    "db:reset": "supabase db reset",
-    "functions:deploy": "supabase functions deploy",
-    "functions:deploy:chemistry": "supabase functions deploy calculate-chemistry",
-    "functions:deploy:gdpr": "supabase functions deploy gdpr-export",
-    "functions:deploy:push": "supabase functions deploy send-push-notification"
+    "db:push": "npx supabase db push",
+    "db:reset": "npx supabase db reset",
+    "functions:deploy": "npx supabase functions deploy",
+    "functions:deploy:chemistry": "npx supabase functions deploy calculate-chemistry",
+    "functions:deploy:gdpr": "npx supabase functions deploy gdpr-export",
+    "functions:deploy:push": "npx supabase functions deploy send-push-notification"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
