@@ -154,7 +154,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="app-container app-noise shadow-2xl border-x border-white/5">
+    <div className="h-full w-full flex flex-col overflow-hidden relative">
       {/* Header */}
       <div className="flex flex-col px-4 pt-safe pt-4 pb-3 glass-strong sticky top-0 z-40 border-b border-white/10">
         <div className="flex items-center justify-between mb-3">

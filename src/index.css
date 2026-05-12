@@ -227,10 +227,10 @@
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-  /* App Container - fixes the "wide" issue */
+  /* App Container - fixes the "wide" issue but keeps room for Grid */
   .app-container {
     @apply w-full h-full mx-auto overflow-hidden relative flex flex-col;
-    max-width: 500px;
+    max-width: 800px;
     background: hsl(var(--background));
     box-shadow: 0 0 100px rgba(0,0,0,0.5);
   }

@@ -613,7 +613,7 @@ export default function AdminPanel() {
           .eq('role', 'admin')
           .maybeSingle();
 
-        if (roleData || ADMIN_EMAILS.includes(session.user.email || '')) {
+        if (roleData || ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
           setAuthed(true);
           loadUsers();
         }
@@ -642,7 +642,7 @@ export default function AdminPanel() {
       .eq('role', 'admin')
       .maybeSingle();
 
-    if (!roleData && !ADMIN_EMAILS.includes(data.user.email || '')) {
+    if (!roleData && !ADMIN_EMAILS.some(e => e.toLowerCase() === data.user.email?.toLowerCase())) {
       setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
       await supabase.auth.signOut();
       setLoading(false);

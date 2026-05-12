@@ -50,7 +50,7 @@ export function useAuth() {
           'spark-connect@hardbanrecordslab.online',
           'skomrakus84@gmail.com'
         ];
-        if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+        if (!isAdmin && session.user.email && ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
           console.log('User identified as admin via fallback list');
           isAdmin = true;
         }
@@ -68,7 +68,7 @@ export function useAuth() {
           'spark-connect@hardbanrecordslab.online',
           'skomrakus84@gmail.com'
         ];
-        if (!isAdmin && session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
+        if (!isAdmin && session.user.email && ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
           isAdmin = true;
         }
       }
