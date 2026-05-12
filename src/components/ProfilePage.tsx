@@ -307,6 +307,8 @@ export default function ProfilePage() {
   const displayPhotos = rawPhotos.filter((p: string) => !p.startsWith('video:'));
   const profileVideoUrl = (rawPhotos.find((p: string) => p.startsWith('video:')) ?? '').replace('video:', '') || null;
 
+  const [showReferral, setShowReferral] = useState(false);
+
   if (activeSection === 'settings') {
     return <div className="h-full"><SettingsPage onClose={() => setActiveSection('main')} /></div>;
   }
@@ -315,23 +317,12 @@ export default function ProfilePage() {
     return <div className="h-full"><ReferralSystem onClose={() => setActiveSection('main')} /></div>;
   }
 
-  if (activeSection === 'quiz') {
-    return (
-      <CompatibilityQuiz
-        onClose={() => setActiveSection('main')}
-        onSave={(type, score) => {
-          setActiveSection('main');
-        }}
-      />
-    );
-  }
-
-  if (activeSection === 'donation') {
-    return <div className="h-full"><DonationPage onClose={() => setActiveSection('main')} /></div>;
-  }
-
   return (
     <div className="h-full overflow-y-auto scrollbar-hidden pb-8">
+      <AnimatePresence>
+        {showReferral && <ReferralSystem onClose={() => setShowReferral(false)} />}
+      </AnimatePresence>
+      
       {/* Hero */}
       <div className="relative h-64">
         <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -363,6 +354,26 @@ export default function ProfilePage() {
       </div>
 
       <div className="px-5 pt-4 space-y-4">
+        {/* Referral / Elite Status CTA */}
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowReferral(true)}
+          className="w-full relative group overflow-hidden rounded-[2rem] p-[1px] shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-200 to-amber-500 animate-tilt opacity-70 group-hover:opacity-100 transition duration-500"></div>
+          <div className="relative glass-strong flex items-center gap-4 p-5 rounded-[2rem]">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl">
+              <Crown className="text-white w-6 h-6" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-black text-sm text-amber-400 uppercase tracking-tight">Zostań Ambasadorem Elite</p>
+              <p className="text-[10px] text-white/60 uppercase font-bold tracking-widest">Odblokuj Złotą Ramkę i Szepty</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-amber-500" />
+          </div>
+        </motion.button>
+
         {/* Verification prompt */}
         {!isVerified && (
           <motion.button initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}

@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
 import { WhisperModal } from '@/components/WhisperMessage';
+import ReferralSystem from '@/components/ReferralSystem';
+import { Crown } from 'lucide-react';
 
 const db = supabase as any;
 
@@ -84,6 +86,7 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'online' | 'new' | 'nearby'>('all');
   const [showWhisper, setShowWhisper] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [showReferral, setShowReferral] = useState(false);
 
   useEffect(() => {
     if (dbProfiles.length > 0) {
@@ -167,6 +170,40 @@ export default function DiscoverPage() {
           </span>
         </div>
 
+        {filteredProfiles.length < 10 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 relative group"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-yellow-200 to-amber-500 rounded-[2rem] blur opacity-40 group-hover:opacity-70 transition duration-1000"></div>
+            <div className="relative glass-strong p-6 rounded-[2rem] border border-amber-500/20 overflow-hidden">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/40">
+                  <Crown className="text-amber-500 w-7 h-7" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-black text-amber-500 uppercase tracking-tighter">Bądź Pierwszy w Okolicy! 👑</h3>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    Spark Connect to portal <strong>bez botów</strong>. Jeśli w Twojej okolicy jest jeszcze mało osób, zaproś kogoś i odblokuj elitarny status <strong>Ambassador Elite</strong>.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <button 
+                  onClick={() => setShowReferral(true)}
+                  className="flex-1 gradient-fire text-white font-black py-3 rounded-xl text-[10px] uppercase tracking-widest shadow-xl"
+                >
+                  Zostań Ambasadorem 🔥
+                </button>
+                <div className="px-4 glass rounded-xl flex items-center justify-center text-[10px] font-bold text-white/40 uppercase">
+                  No Bots Policy
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {loadingProfiles ? (
           <div className="grid grid-cols-2 gap-3">
             {[1,2,3,4,5,6].map(i => (
@@ -176,13 +213,13 @@ export default function DiscoverPage() {
         ) : filteredProfiles.length === 0 ? (
           <div className="py-20 text-center">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-lg font-bold mb-2">Brak wyników</h3>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">Spróbuj zmienić filtry lub przełączyć się na inną zakładkę.</p>
+            <h3 className="text-lg font-bold mb-2">Brak wyników w Twojej okolicy</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">Budujemy społeczność od zera, bez sztucznych profili. Zaproś znajomych, aby ożywić swoją okolicę!</p>
             <button 
-              onClick={() => { setFilters(DEFAULT_FILTERS); setActiveTab('all'); }}
+              onClick={() => setShowReferral(true)}
               className="mt-6 gradient-fire text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-bold"
             >
-              Resetuj filtry
+              Zaproś znajomych 🚀
             </button>
           </div>
         ) : (
@@ -196,6 +233,10 @@ export default function DiscoverPage() {
 
       <AnimatePresence>
         {showFilters && <FilterPanel filters={filters} onApply={f => { setFilters(f); setShowFilters(false); }} onClose={() => setShowFilters(false)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReferral && <ReferralSystem onClose={() => setShowReferral(false)} />}
       </AnimatePresence>
 
       {/* Selected Profile Preview Modal */}
