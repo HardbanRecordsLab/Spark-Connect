@@ -6,7 +6,7 @@ const Index = () => {
   const { view } = useAppStore();
   
   return (
-    <div className="app-container app-noise shadow-2xl border-x border-white/5 h-screen">
+    <div className="app-container min-h-screen">
       {view === 'app' ? <AppLayout /> : <AuthFlow />}
     </div>
   );

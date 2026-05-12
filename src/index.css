@@ -227,12 +227,27 @@
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-  /* App Container - fixes the "wide" issue but keeps room for Grid */
+  /* App Container - Expanded to Portal Width (Erodate/Datezone Style) */
   .app-container {
-    @apply w-full h-full mx-auto overflow-hidden relative flex flex-col;
-    max-width: 800px;
-    background: hsl(var(--background));
-    box-shadow: 0 0 100px rgba(0,0,0,0.5);
+    @apply w-full mx-auto relative flex flex-col min-h-screen;
+    max-width: 1200px;
+    background: transparent;
+  }
+
+  @media (min-width: 1201px) {
+    body {
+      background: hsl(240 15% 2%);
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top right, hsl(347 60% 12%) 0%, transparent 40%),
+                  radial-gradient(circle at bottom left, hsl(45 60% 10%) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: -1;
+    }
   }
 
   @media (min-width: 501px) {
