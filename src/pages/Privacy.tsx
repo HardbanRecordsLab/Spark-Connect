@@ -129,7 +129,7 @@ const Privacy = () => {
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400">
               <Lock className="w-3 h-3" /> Twoje dane są szyfrowane
             </div>
-            <button onClick={() => navigate(-1)} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs shadow-xl transition-all">
+            <button onClick={() => navigate('/')} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs shadow-xl transition-all">
               Rozumiem i akceptuję
             </button>
           </div>

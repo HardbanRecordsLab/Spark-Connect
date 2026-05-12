@@ -10,8 +10,8 @@ import ProfileDashboard from "./components/ProfileDashboard";
 import ProfilePage from "./components/ProfilePage";
 import ProfilePageV2 from "./components/ProfilePageV2";
 import ProfileWizard from "./components/ProfileWizard";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/Privacy";
+import TermsOfService from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();

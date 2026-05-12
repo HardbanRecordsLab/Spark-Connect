@@ -104,7 +104,7 @@ const Terms = () => {
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
               <AlertCircle className="w-3 h-3" /> Minimum 18 lat
             </div>
-            <button onClick={() => navigate(-1)} className="gradient-fire px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs shadow-xl">
+            <button onClick={() => navigate('/')} className="gradient-fire px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs shadow-xl">
               Akceptuję i wracam
             </button>
           </div>

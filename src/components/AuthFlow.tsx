@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Star, Users, Zap, Heart } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
@@ -21,6 +22,7 @@ function ErrorAlert({ msg }: { msg: string }) {
 // ── LANDING VIEW (MIX OF ERODATE / DATEZONE) ─────────────────────────
 function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin: () => void }) {
   const onlineCount = 2481; // Mocked real-time count
+  const navigate = useNavigate();
   
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white overflow-x-hidden">
@@ -167,8 +169,8 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
           <div>
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Prawne</h4>
             <ul className="space-y-3 text-sm text-white/60">
-              <li><button className="hover:text-primary transition-colors">Regulamin</button></li>
-              <li><button className="hover:text-primary transition-colors">Prywatność</button></li>
+              <li><button onClick={() => navigate('/terms')} className="hover:text-primary transition-colors">Regulamin</button></li>
+              <li><button onClick={() => navigate('/privacy')} className="hover:text-primary transition-colors">Prywatność</button></li>
               <li><button className="hover:text-primary transition-colors">Rodo</button></li>
             </ul>
           </div>

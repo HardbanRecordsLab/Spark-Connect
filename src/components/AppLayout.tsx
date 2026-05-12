@@ -83,16 +83,27 @@ export default function AppLayout() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative px-5 py-2 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${
-                  activeTab === tab.id ? 'text-primary' : 'text-white/60 hover:text-white hover:bg-white/5'
+                className={`relative px-5 py-2 rounded-xl text-sm font-bold uppercase tracking-widest transition-all duration-300 ${
+                  activeTab === tab.id 
+                    ? 'text-primary shadow-[0_0_20px_rgba(255,26,78,0.1)]' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {tab.label}
+                <span className="relative z-10">{tab.label}</span>
                 {activeTab === tab.id && (
-                  <motion.div layoutId="nav-underline" className="absolute bottom-0 left-5 right-5 h-0.5 gradient-fire rounded-full" />
+                  <motion.div 
+                    layoutId="nav-glow"
+                    className="absolute inset-0 bg-primary/5 rounded-xl blur-sm"
+                  />
+                )}
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="nav-underline" 
+                    className="absolute bottom-0 left-5 right-5 h-0.5 gradient-fire rounded-full shadow-[0_0_10px_rgba(255,26,78,0.5)]" 
+                  />
                 )}
                 {tab.id === 'chats' && totalUnread > 0 && (
-                  <span className="absolute top-1 right-2 w-4 h-4 gradient-fire rounded-full text-[8px] flex items-center justify-center text-white font-black">
+                  <span className="absolute top-1 right-2 w-4 h-4 gradient-fire rounded-full text-[8px] flex items-center justify-center text-white font-black shadow-lg">
                     {totalUnread}
                   </span>
                 )}
@@ -180,7 +191,14 @@ export default function AppLayout() {
       </header>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-6 pb-24 lg:pb-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 pt-4 pb-24 lg:pb-12">
+        {/* Dynamic Breadcrumbs */}
+        <div className="flex items-center gap-2 mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+          <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => setActiveTab('discover')}>Spark</span>
+          <span className="text-white/10">/</span>
+          <span className="text-primary/80">{tabs.find(t => t.id === activeTab)?.label || activeTab}</span>
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab}
