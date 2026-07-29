@@ -86,43 +86,40 @@ serve(async (req: Request) => {
   const { data: { user }, error: authErr } = await supabaseUser.auth.getUser();
   if (authErr || !user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: cors });
 
-  const { key, photo_id } = await req.json() as { key?: string; photo_id?: string };
+  const { photo_id } = await req.json() as { photo_id?: string };
+  if (!photo_id) return new Response(JSON.stringify({ error: "photo_id required" }), { status: 400, headers: cors });
 
-  // Use service role to bypass RLS for cross-user check
+  // Use service role to bypass RLS for the cross-user grant check below —
+  // the R2 key itself is NEVER accepted from the client, only resolved
+  // server-side from a photo_id whose access has been verified here.
+  // This is the only path into this function: no photo_id, no signed URL.
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  let photoKey = key;
+  const { data: photo } = await supabase
+    .from("private_photos")
+    .select("key, user_id")
+    .eq("id", photo_id)
+    .single();
 
-  // If photo_id provided, look up the key and verify access
-  if (photo_id && !key) {
-    const { data: photo } = await supabase
-      .from("private_photos")
-      .select("key, user_id")
-      .eq("id", photo_id)
-      .single();
+  if (!photo) return new Response(JSON.stringify({ error: "Photo not found" }), { status: 404, headers: cors });
 
-    if (!photo) return new Response(JSON.stringify({ error: "Photo not found" }), { status: 404, headers: cors });
+  // Own photo — always allowed
+  if (photo.user_id !== user.id) {
+    const { data: access } = await supabase
+      .from("private_photo_requests")
+      .select("status")
+      .eq("requester_id", user.id)
+      .eq("owner_id", photo.user_id)
+      .eq("status", "granted")
+      .maybeSingle();
 
-    // Own photo — always allowed
-    if (photo.user_id !== user.id) {
-      // Check if requester has granted access
-      const { data: access } = await supabase
-        .from("private_photo_requests")
-        .select("status")
-        .eq("requester_id", user.id)
-        .eq("owner_id", photo.user_id)
-        .eq("status", "granted")
-        .maybeSingle();
-
-      if (!access) {
-        return new Response(JSON.stringify({ error: "Access denied" }), { status: 403, headers: cors });
-      }
+    if (!access) {
+      return new Response(JSON.stringify({ error: "Access denied" }), { status: 403, headers: cors });
     }
-
-    photoKey = photo.key;
   }
 
-  if (!photoKey) return new Response(JSON.stringify({ error: "key or photo_id required" }), { status: 400, headers: cors });
+  const photoKey = photo.key;
+  if (!photoKey) return new Response(JSON.stringify({ error: "Photo has no stored key" }), { status: 500, headers: cors });
 
   try {
     const signedUrl = await generateSignedGetUrl({

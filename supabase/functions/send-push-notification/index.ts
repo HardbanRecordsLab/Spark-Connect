@@ -34,16 +34,75 @@ async function generateVapidJWT(audience: string, subject: string, privateKeyJwk
   return `${unsigned}.${sigB64}`;
 }
 
+// Only these in-app deep links may be used — client-supplied URLs are
+// never trusted directly (that would let anyone phish via a fake
+// "new match" push pointing anywhere they like).
+const ALLOWED_URLS = new Set(["/", "/?tab=chats", "/?tab=discover"]);
+
+function sanitizeText(input: unknown, maxLen: number): string {
+  const s = typeof input === "string" ? input : "";
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/<[^>]*>/g, "").replace(/[\x00-\x1f\x7f]/g, "").trim().slice(0, maxLen);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { user_id, title, body, url, tag } = await req.json();
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user: caller }, error: authErr } = await supabaseUser.auth.getUser();
+    if (authErr || !caller) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body_ = await req.json();
+    const user_id: string | undefined = body_.user_id;
+    const tag: string | undefined = body_.tag;
+    const title = sanitizeText(body_.title, 80) || "Spark Connect";
+    const notifBody = sanitizeText(body_.body, 160);
+    const url = ALLOWED_URLS.has(body_.url) ? body_.url : "/";
+
+    if (!user_id) {
+      return new Response(JSON.stringify({ error: "user_id required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Authorization: you may only trigger a push for yourself, or for
+    // someone you're actually matched with (the two real use cases —
+    // "you got a new match" / "you got a new message"). This stops
+    // any authenticated stranger from pushing arbitrary notifications
+    // to an arbitrary account.
+    if (user_id !== caller.id) {
+      const { data: match } = await supabase
+        .from("matches")
+        .select("id")
+        .or(`and(user1_id.eq.${caller.id},user2_id.eq.${user_id}),and(user1_id.eq.${user_id},user2_id.eq.${caller.id})`)
+        .maybeSingle();
+      if (!match) {
+        return new Response(JSON.stringify({ error: "Not authorized to notify this user" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Fetch all subscriptions for this user
     const { data: subs, error } = await supabase
@@ -59,7 +118,7 @@ serve(async (req) => {
 
     const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
     const VAPID_PRIVATE_KEY_JWK = Deno.env.get("VAPID_PRIVATE_KEY_JWK");
-    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") || "mailto:admin@ignite.app";
+    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") || "mailto:spark-connect@hardbanrecordslab.online";
 
     if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY_JWK) {
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
@@ -69,7 +128,7 @@ serve(async (req) => {
     }
 
     const privateKeyJwk = JSON.parse(VAPID_PRIVATE_KEY_JWK) as JsonWebKey;
-    const notification = JSON.stringify({ title, body, url: url || "/", tag: tag || "ignite" });
+    const notification = JSON.stringify({ title, body: notifBody, url, tag: tag || "spark-connect" });
 
     let sent = 0;
     const expired: string[] = [];

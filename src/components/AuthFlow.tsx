@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Star, Users, Zap, Heart } from 'lucide-react';
+import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Star, Users, Zap, Heart, Flame } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { User } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,9 +19,9 @@ function ErrorAlert({ msg }: { msg: string }) {
   );
 }
 
-// ── LANDING VIEW (MIX OF ERODATE / DATEZONE) ─────────────────────────
+// ── LANDING VIEW (SEX DATING PORTAL STYLE) ─────────────────────────
 function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin: () => void }) {
-  const onlineCount = 2481; // Mocked real-time count
+  const onlineCount = 2481; 
   const navigate = useNavigate();
   
   return (
@@ -29,7 +29,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
       {/* Background Image Wrapper */}
       <div className="fixed inset-0 z-0">
         <img 
-          src="spark_connect_landing_bg_1778562729956.png" 
+          src="spark_connect_sensual_adult_bg_1778594594092.png" 
           alt="" 
           className="w-full h-full object-cover opacity-60" 
         />
@@ -40,8 +40,8 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
       {/* Portal Header */}
       <header className="relative z-20 px-6 py-6 max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(255,26,78,0.5)]" />
-          <span className="text-2xl font-black tracking-tighter gradient-text uppercase">Spark Connect</span>
+          <img src="/spark-connect-logo.png" alt="Spark Connect" className="w-10 h-10 object-contain drop-shadow-[0_0_15px_rgba(255,26,78,0.6)]" />
+          <span className="text-2xl font-black tracking-tighter gradient-text uppercase italic">Spark Connect</span>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={onLogin} className="text-sm font-bold hover:text-primary transition-colors hidden sm:block">Zaloguj się</button>
@@ -82,7 +82,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             >
               {[
                 { icon: <Zap className="text-primary fill-primary w-5 h-5" />, label: 'Fast Sex', desc: 'Szybkie akcje' },
-                { icon: <Heart className="text-primary fill-primary w-5 h-5" />, label: 'No Limits', desc: 'Bez zahamowań' },
+                { icon: <Flame className="text-primary fill-primary w-5 h-5" />, label: 'No Limits', desc: 'Bez zahamowań' },
                 { icon: <Shield className="text-primary w-5 h-5" />, label: 'Dyskrecja', desc: '100% Prywatnie' },
               ].map((item, i) => (
                 <div key={i} className="space-y-2 p-4 glass rounded-2xl border border-white/5 hover:border-primary/30 transition-all">
@@ -96,52 +96,40 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
 
           {/* Right Side: Quick Action Card */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }} 
-            animate={{ opacity: 1, y: 0 }} 
+            initial={{ opacity: 0, scale: 0.9 }} 
+            animate={{ opacity: 1, scale: 1 }} 
             transition={{ delay: 0.2 }}
             className="lg:ml-auto w-full max-w-md"
           >
-            <div className="glass-strong p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <Star className="w-6 h-6 text-amber-500 fill-amber-500 opacity-20" />
+            <div className="glass-strong p-10 rounded-[3rem] border border-primary/30 shadow-[0_0_50px_rgba(255,26,78,0.2)] relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 blur-[60px] rounded-full" />
+              
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-xs font-black text-white/40 uppercase tracking-widest">Wchodzisz na własną odpowiedzialność</span>
+                <div className="h-[1px] flex-1 bg-white/10" />
               </div>
+
+              <h2 className="text-4xl font-black mb-8 italic uppercase tracking-tighter text-white">Gotowy na <br /><span className="text-primary">Ogień? 🔥</span></h2>
               
-              <h2 className="text-3xl font-black mb-6">Zacznij przygodę 🔥</h2>
-              
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <button 
                   onClick={onRegister}
-                  className="w-full gradient-fire text-white font-black py-5 rounded-2xl text-lg uppercase tracking-widest shadow-2xl transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
+                  className="w-full gradient-fire text-white font-black py-6 rounded-2xl text-xl uppercase tracking-widest shadow-[0_10px_40px_rgba(255,26,78,0.4)] transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-4"
                 >
-                  Dołącz za darmo <ArrowRight />
+                  WEJDŹ TERAZ <ArrowRight className="w-6 h-6" />
                 </button>
-                
-                <div className="flex items-center gap-4 py-2">
-                  <div className="h-[1px] flex-1 bg-white/10" />
-                  <span className="text-xs text-white/40 uppercase font-bold tracking-widest">LUB</span>
-                  <div className="h-[1px] flex-1 bg-white/10" />
-                </div>
                 
                 <button 
                   onClick={onLogin}
-                  className="w-full glass py-4 rounded-2xl font-bold border border-white/5 hover:bg-white/5 transition-all"
+                  className="w-full glass py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] border border-white/10 hover:bg-white/5 transition-all text-white/60"
                 >
-                  Zaloguj się
+                  MAM JUŻ KONTO
                 </button>
               </div>
 
-              <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="flex -space-x-2">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-black bg-muted overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" />
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-bold text-white/60">NOWI UŻYTKOWNICY DZISIAJ (+412)</span>
-                </div>
-              </div>
+              <p className="mt-8 text-center text-[9px] text-white/30 font-black uppercase tracking-widest leading-relaxed">
+                Wchodząc potwierdzasz ukończenie 18 lat <br /> i akceptujesz zmysłowy charakter portalu.
+              </p>
             </div>
           </motion.div>
         </div>
@@ -153,10 +141,10 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
           <div className="space-y-4 col-span-1 md:col-span-2">
             <div className="flex items-center gap-2">
               <img src="/spark-connect-logo.png" alt="" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-black gradient-text">Spark Connect</span>
+              <span className="text-xl font-black gradient-text uppercase italic">Spark Connect</span>
             </div>
             <p className="text-sm text-white/40 max-w-sm">
-              Najbezpieczniejszy i najbardziej innowacyjny portal dla dorosłych szukających autentycznych połączeń. Owned by Studio HRL Adult.
+              Najodważniejszy portal dla dorosłych szukających autentycznych połączeń bez tabu. Owned by Studio HRL Adult.
             </p>
           </div>
           <div>
@@ -180,9 +168,14 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
           <p className="text-[10px] text-white/20 uppercase tracking-widest font-black">
             Wszelkie prawa zastrzeżone © 2026 Studio HRL Adult
           </p>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-white/40 px-2 py-1 glass rounded-lg">18+ ADULT ONLY</span>
-            <span className="text-[10px] font-bold text-white/40 px-2 py-1 glass rounded-lg uppercase">Spark v2.0-Portal</span>
+          <div className="flex flex-col items-center md:items-end gap-4">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] animate-pulse">Uwaga: Tylko dla dorosłych</span>
+              <div className="px-6 py-2 glass border border-red-500/50 rounded-2xl shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                <span className="text-2xl font-black text-red-500 italic">18+ ADULT ONLY</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold text-white/40 px-2 py-1 glass rounded-lg uppercase tracking-widest">Spark v2.0-Elite / Studio HRL</span>
           </div>
         </div>
       </footer>
@@ -219,8 +212,8 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center bg-black">
         <div className="max-w-md w-full glass-strong p-12 rounded-[3rem] border border-white/10 shadow-2xl">
           <div className="text-6xl mb-6">📧</div>
-          <h2 className="text-3xl font-black mb-4">Sprawdź email!</h2>
-          <p className="text-white/60 text-base mb-8">Wysłaliśmy link weryfikacyjny na <strong>{email}</strong>. Kliknij go, aby odblokować portal.</p>
+          <h2 className="text-3xl font-black mb-4 uppercase tracking-tighter">Sprawdź email!</h2>
+          <p className="text-white/60 text-base mb-8 italic">Wysłaliśmy link weryfikacyjny. Kliknij go, aby odblokować portal i zacząć przygodę.</p>
           <button 
             onClick={onSuccess} 
             className="w-full gradient-fire text-white font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95"
@@ -242,7 +235,7 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <img src="/spark-connect-logo.png" alt="" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-black gradient-text">Spark Connect</span>
+            <span className="text-2xl font-black gradient-text uppercase italic">Spark Connect</span>
           </div>
           <button onClick={onLogin} className="text-xs font-bold text-white/40 hover:text-primary transition-colors">MAM JUŻ KONTO</button>
         </div>
@@ -252,15 +245,15 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
           animate={{ opacity: 1, y: 0 }}
           className="glass-strong p-10 rounded-[3rem] border border-white/10 shadow-2xl"
         >
-          <h1 className="text-4xl font-black mb-2">Stwórz profil 🔥</h1>
-          <p className="text-white/40 mb-8 font-medium">Rejestracja trwa tylko 30 sekund. Całkowicie bezpłatnie.</p>
+          <h1 className="text-4xl font-black mb-2 uppercase tracking-tighter">Dołącz do nas 🔥</h1>
+          <p className="text-white/40 mb-8 font-bold italic uppercase tracking-widest text-[10px]">Prywatność. Dyskrecja. Czysta erotyka.</p>
 
           {error && <ErrorAlert msg={error} />}
 
           <form onSubmit={handleRegister} className="space-y-6">
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-white/60 ml-2">Email</label>
+                <label className="text-xs font-black uppercase tracking-widest text-white/60 ml-2">Twój Email</label>
                 <input value={email} onChange={e => setEmail(e.target.value)} type="email" required placeholder="twoj@email.com"
                   className="w-full glass rounded-2xl px-6 py-4 text-sm border border-white/5 focus:border-primary outline-none transition-all" />
               </div>
@@ -282,7 +275,7 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
                 <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${agreed ? 'gradient-fire' : 'border border-white/10'}`}>
                   {agreed && <Check className="w-3 h-3 text-white" />}
                 </div>
-                <p className="text-xs text-white/60 leading-relaxed">Akceptuję Regulamin i Politykę Prywatności portalu.</p>
+                <p className="text-xs text-white/60 leading-relaxed uppercase font-bold tracking-tighter">Akceptuję Regulamin 18+</p>
               </button>
               
               <button type="button" onClick={() => setAgreedAdult(v => !v)}
@@ -295,7 +288,7 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
             </div>
 
             <button type="submit" disabled={loading} className="w-full gradient-fire text-white font-black py-5 rounded-2xl text-lg uppercase tracking-widest shadow-2xl transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50">
-              {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Dołącz teraz 🔥'}
+              {loading ? <Loader2 className="animate-spin mx-auto" /> : 'STWÓRZ PROFIL 🔥'}
             </button>
           </form>
         </motion.div>
@@ -325,8 +318,8 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
     <div className="min-h-screen bg-black flex items-center justify-center p-6">
       <div className="max-w-md w-full">
         <div className="flex flex-col items-center mb-10">
-          <img src="/spark-connect-logo.png" alt="" className="w-16 h-16 mb-4 drop-shadow-[0_0_15px_rgba(255,26,78,0.4)]" />
-          <h1 className="text-2xl font-black gradient-text">Witaj ponownie</h1>
+          <img src="/spark-connect-logo.png" alt="" className="w-16 h-16 mb-4 drop-shadow-[0_0_20px_rgba(255,26,78,0.6)]" />
+          <h1 className="text-3xl font-black gradient-text uppercase italic tracking-tighter">Witaj w klubie</h1>
         </div>
 
         <motion.div 
@@ -338,14 +331,14 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-white/60 ml-2">Twój email</label>
+              <label className="text-xs font-black uppercase tracking-widest text-white/60 ml-2">Twój Email</label>
               <input value={email} onChange={e => setEmail(e.target.value)} type="email" required placeholder="twoj@email.com"
                 className="w-full glass rounded-2xl px-6 py-4 text-sm border border-white/5 focus:border-primary outline-none transition-all" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center px-2">
                 <label className="text-xs font-black uppercase tracking-widest text-white/60">Hasło</label>
-                <button type="button" className="text-[10px] text-primary/60 font-bold uppercase hover:text-primary transition-colors">Zapomniałeś?</button>
+                <button type="button" className="text-[10px] text-primary/60 font-bold uppercase hover:text-primary transition-colors">Odzyskaj</button>
               </div>
               <div className="relative">
                 <input value={password} onChange={e => setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} required placeholder="********"
@@ -357,12 +350,12 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
             </div>
 
             <button type="submit" disabled={loading} className="w-full gradient-fire text-white font-black py-5 rounded-2xl text-lg uppercase tracking-widest shadow-2xl transition-all active:scale-95">
-              {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Zaloguj się'}
+              {loading ? <Loader2 className="animate-spin mx-auto" /> : 'ZALOGUJ SIĘ'}
             </button>
           </form>
 
           <p className="mt-8 text-center text-xs text-white/40 font-bold uppercase tracking-tighter">
-            Nie masz jeszcze konta? <button onClick={onRegister} className="text-primary hover:underline">Zarejestruj się</button>
+            Nie masz konta? <button onClick={onRegister} className="text-primary hover:underline">Dołącz teraz 🔥</button>
           </p>
         </motion.div>
       </div>
@@ -419,7 +412,7 @@ export default function AuthFlow() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <img src="/spark-connect-logo.png" alt="Logo" className="w-16 h-16 object-contain mx-auto mb-6 drop-shadow-[0_0_15px_rgba(255,26,78,0.5)] animate-pulse" />
+          <img src="/spark-connect-logo.png" alt="Logo" className="w-16 h-16 object-contain mx-auto mb-6 drop-shadow-[0_0_20px_rgba(255,26,78,0.6)] animate-pulse" />
           <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
         </div>
       </div>

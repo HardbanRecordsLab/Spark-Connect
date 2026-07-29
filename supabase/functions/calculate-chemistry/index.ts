@@ -57,9 +57,23 @@ function calcProfileCompleteness(profile: Record<string, unknown>): number {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // This is a nightly batch job meant to be triggered exclusively by
+  // pg_cron with the service role key (see migration
+  // 20260317000007 / KROK 6e in LAUNCH_GUIDE.md) — it recomputes
+  // chemistry scores for every profile pair (O(n^2)) and was
+  // previously callable by anyone with just the public anon key,
+  // making it a cheap, unauthenticated way to hammer the database.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const authHeader = req.headers.get("Authorization") ?? "";
+  if (authHeader !== `Bearer ${serviceKey}`) {
+    return new Response(JSON.stringify({ error: "Forbidden — service role only" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    serviceKey
   );
 
   try {

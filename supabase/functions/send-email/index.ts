@@ -58,29 +58,38 @@ function layout(title: string, body: string): string {
 </html>`;
 }
 
+// HTML-escape any value interpolated into a template — data.* used to be
+// inserted into the email body raw, so any caller could inject arbitrary
+// markup into a mail sent from a trusted domain.
+function esc(input: unknown): string {
+  return String(input ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 // ── Templates (Bez zmian w treści) ─────────────────────────────────────────────
 const templates: Record<string, (data: Record<string, string>) => { subject: string; html: string }> = {
   welcome: (d) => ({
     subject: "Witaj w Spark Connect 🔥",
     html: layout("Witaj w Spark Connect", `
-      <h2>Cześć, ${d.name}! 👋</h2>
+      <h2>Cześć, ${esc(d.name)}! 👋</h2>
       <p>Cieszemy się że jesteś z nami. Spark Connect to pierwsza w Polsce w pełni darmowa aplikacja randkowa 18+.</p>
       <div style="text-align:center;margin:24px 0"><a href="${APP_URL}" class="btn">Uzupełnij profil →</a></div>
       <p style="font-size:13px;color:#888">Pamiętaj: Twój profil wymaga weryfikacji przez administratora zanim będzie widoczny dla innych.</p>
     `),
   }),
   "new-match": (d) => ({
-    subject: `Nowe dopasowanie z ${d.matchName} 🔥`,
+    subject: `Nowe dopasowanie z ${esc(d.matchName)} 🔥`,
     html: layout("Nowe dopasowanie!", `
       <h2>Macie chemię! 💘</h2>
-      <p>Ty i <strong>${d.matchName}</strong> (${d.matchAge} lat, ${d.matchCity}) polubiliście się wzajemnie.</p>
-      <div style="text-align:center;margin:24px 0"><a href="${APP_URL}?tab=chats" class="btn">Napisz do ${d.matchName} →</a></div>
+      <p>Ty i <strong>${esc(d.matchName)}</strong> (${esc(d.matchAge)} lat, ${esc(d.matchCity)}) polubiliście się wzajemnie.</p>
+      <div style="text-align:center;margin:24px 0"><a href="${APP_URL}?tab=chats" class="btn">Napisz do ${esc(d.matchName)} →</a></div>
     `),
   }),
   "profile-view": (d) => ({
-    subject: `${d.viewerName} odwiedził/a Twój profil 👀`,
+    subject: `${esc(d.viewerName)} odwiedził/a Twój profil 👀`,
     html: layout("Ktoś Cię sprawdził", `
-      <h2>${d.viewerName} zajrzał/a na Twój profil 👀</h2>
+      <h2>${esc(d.viewerName)} zajrzał/a na Twój profil 👀</h2>
       <div style="text-align:center;margin:24px 0"><a href="${APP_URL}" class="btn">Sprawdź kto Cię odwiedził →</a></div>
     `),
   }),
@@ -135,14 +144,24 @@ serve(async (req: Request) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: cors });
 
-  const body = await req.json() as { template: string; to: string; data?: Record<string, string> };
+  const body = await req.json() as { template: string; to?: string; data?: Record<string, string> };
   const tpl = templates[body.template];
-  
+
   if (!tpl) return new Response(JSON.stringify({ error: `Unknown template: ${body.template}` }), { status: 400, headers: cors });
+
+  // The recipient is always the authenticated caller's own verified email —
+  // never the client-supplied `to`. This used to accept an arbitrary
+  // recipient, turning this into an open relay for phishing emails sent
+  // from a trusted domain. When a template needs to notify someone ELSE
+  // (e.g. "X viewed your profile"), that must be triggered server-side
+  // (cron/DB trigger/service role), not by the viewer's own client.
+  if (!user.email) {
+    return new Response(JSON.stringify({ error: "No verified email on account" }), { status: 400, headers: cors });
+  }
 
   try {
     const { subject, html } = tpl(body.data ?? {});
-    const result = await sendEmail({ to: body.to, subject, html });
+    const result = await sendEmail({ to: user.email, subject, html });
     return new Response(JSON.stringify({ ok: true, id: result.id }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });

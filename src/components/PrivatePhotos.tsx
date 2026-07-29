@@ -13,8 +13,20 @@ type AccessStatus = 'none' | 'pending' | 'granted' | 'rejected';
 
 interface PrivatePhoto {
   id: string;
-  url: string;
-  thumbnail?: string;
+  signedUrl: string;
+}
+
+// Resolve signed URLs for a batch of private photo ids in parallel.
+// Any photo whose signed URL fails to resolve (e.g. access revoked
+// between listing and fetch) is silently dropped rather than shown broken.
+async function resolvePhotoUrls(ids: string[]): Promise<PrivatePhoto[]> {
+  const results = await Promise.allSettled(ids.map(id => getPrivatePhotoUrl(id)));
+  return ids
+    .map((id, i) => {
+      const r = results[i];
+      return r.status === 'fulfilled' ? { id, signedUrl: r.value } : null;
+    })
+    .filter((p): p is PrivatePhoto => p !== null);
 }
 
 // ── Component used on OTHER user's profile ─────────────────────
@@ -63,10 +75,10 @@ export function PrivatePhotoViewer({ ownerId, ownerName, ownerPhoto }: PrivatePh
   const loadPhotos = async () => {
     const { data } = await db
       .from('private_photos')
-      .select('id, url')
+      .select('id')
       .eq('user_id', ownerId)
       .order('created_at', { ascending: false });
-    setPhotos(data ?? []);
+    setPhotos(await resolvePhotoUrls((data ?? []).map((p: { id: string }) => p.id)));
   };
 
   const requestAccess = async () => {
@@ -138,10 +150,10 @@ export function PrivatePhotoViewer({ ownerId, ownerName, ownerPhoto }: PrivatePh
             {photos.map(photo => (
               <div
                 key={photo.id}
-                onClick={() => setLightbox(photo.url)}
+                onClick={() => setLightbox(photo.signedUrl)}
                 className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                <img src={photo.signedUrl} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -190,8 +202,8 @@ export function MyPrivatePhotos({ userId }: MyPrivatePhotosProps) {
   }, [userId]);
 
   const loadPhotos = async () => {
-    const { data } = await db.from('private_photos').select('id, url').eq('user_id', userId).order('created_at', { ascending: false });
-    setPhotos(data ?? []);
+    const { data } = await db.from('private_photos').select('id').eq('user_id', userId).order('created_at', { ascending: false });
+    setPhotos(await resolvePhotoUrls((data ?? []).map((p: { id: string }) => p.id)));
   };
 
   const loadRequests = async () => {
@@ -226,7 +238,7 @@ export function MyPrivatePhotos({ userId }: MyPrivatePhotosProps) {
     if (e.target) e.target.value = '';
   };
 
-  const removePhoto = async (id: string, url: string) => {
+  const removePhoto = async (id: string) => {
     await db.from('private_photos').delete().eq('id', id);
     // Note: R2 cleanup should be done via admin/Edge Function
     // For now mark as deleted in DB — R2 object cleanup via lifecycle rule
@@ -289,9 +301,9 @@ export function MyPrivatePhotos({ userId }: MyPrivatePhotosProps) {
                 <div className="grid grid-cols-3 gap-1.5">
                   {photos.map(photo => (
                     <div key={photo.id} className="aspect-square relative rounded-xl overflow-hidden group">
-                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                      <img src={photo.signedUrl} alt="" className="w-full h-full object-cover" />
                       <button
-                        onClick={() => removePhoto(photo.id, photo.url)}
+                        onClick={() => removePhoto(photo.id)}
                         className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                       >
                         <X className="w-5 h-5 text-destructive" />

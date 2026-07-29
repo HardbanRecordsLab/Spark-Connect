@@ -136,11 +136,20 @@ export function useDiscoverProfiles(userId: string | null) {
         }
       }
 
-      // 2. Fallback: standard query without distance if geo results are exhausted
+      // 2. Fallback: standard query without distance if geo results are exhausted.
+      // Explicit column whitelist — NOT select('*') — so internal/admin-only
+      // columns (bot_score, coin_balance, admin_rejected, rejection_reason,
+      // is_bot_blocked, raw lat/lng, ...) never reach other users' clients.
       if (!rows || rows.length === 0) {
         let query = db
           .from('profiles')
-          .select('*, chemistry_score')
+          .select(`id, display_name, age, city, bio, photos, avatar_url, interests,
+            relationship_type, mood_status, is_verified, donor_badge, chemistry_score,
+            gender, orientation, height, body_type, eye_color, hair_color, smoking,
+            drinking, children, education, occupation, languages, looking_for,
+            last_online_at, profile_views, total_likes, breast_size, pubic_hair,
+            sexual_role, safe_sex, likes, dislikes, relationship_goal,
+            looking_for_gender, lifestyle_18, tattoos, piercing, created_at`)
           .eq('profile_complete', true)
           .eq('admin_approved', true)
           .order('created_at', { ascending: false })

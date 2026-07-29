@@ -177,6 +177,19 @@ const ProfileWizard: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    // Spark Connect is an 18+-only platform — enforce it client-side too
+    // (the database also rejects age < 18 via a CHECK constraint, but a
+    // clear in-app error is much better UX than a raw DB error).
+    const parsedAge = parseInt(f.age, 10);
+    if (!f.age || Number.isNaN(parsedAge) || parsedAge < 18) {
+      toast.error('Musisz mieć ukończone 18 lat, aby korzystać ze Spark Connect.');
+      return;
+    }
+    if (parsedAge > 120) {
+      toast.error('Podaj prawidłowy wiek.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -315,29 +328,29 @@ const ProfileWizard: React.FC = () => {
       case 0: return (
         <div className="text-center py-6">
           <div className="text-7xl mb-5">🔥</div>
-          <h2 className="text-3xl font-bold mb-3">Witaj w <span className="text-primary">SparkConnect</span></h2>
-          <p className="text-muted-foreground mb-6 max-w-sm mx-auto leading-relaxed">
-            Portal randkowy 18+ gdzie szczerość i dopasowanie idą w parze. Stwórz szczegółowy profil i znajdź kogoś wyjątkowego.
+          <h2 className="text-4xl font-black mb-3 uppercase italic tracking-tighter text-white">Witaj w Świecie <br /><span className="text-primary">Bez Zahamowań</span></h2>
+          <p className="text-white/60 mb-6 max-w-sm mx-auto leading-relaxed font-medium">
+            To Twoja przestrzeń na spełnienie najskrytszych fantazji. Stwórz autentyczny profil i pozwól SparkAI™ połączyć Cię z ludźmi, którzy pragną tego samego co Ty.
           </p>
-          <div className="glass rounded-2xl border border-primary/20 p-4 text-xs text-muted-foreground mb-6 max-w-sm mx-auto">
-            ⚠️ Serwis wyłącznie dla osób 18+. Zakładając konto potwierdzasz pełnoletność.
+          <div className="bg-red-500/10 rounded-2xl border border-red-500/20 p-4 text-[10px] font-black uppercase tracking-widest text-red-400 mb-6 max-w-sm mx-auto animate-pulse">
+            🔞 Portal przeznaczony wyłącznie dla dorosłych. Zero tabu.
           </div>
           <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto mb-8">
             {[
-              { i: <Zap className="w-6 h-6 text-primary" />, t: 'Precyzyjne dopasowanie', d: 'Algorytm SparkAI™ analizuje 200+ parametrów' },
-              { i: <Shield className="w-6 h-6 text-primary" />, t: 'Pełna prywatność', d: 'Dane intymne tylko dla dopasowań' },
-              { i: <Sparkles className="w-6 h-6 text-primary" />, t: 'Bez limitów', d: 'Wszystkie funkcje dostępne dla każdego' },
+              { i: <Flame className="w-6 h-6 text-primary" />, t: 'Czysta Erotyka', d: 'Dopasowania oparte na pożądaniu i preferencjach' },
+              { i: <Shield className="w-6 h-6 text-primary" />, t: 'Pełna Dyskrecja', d: 'Twoje intymne dane są bezpieczne i szyfrowane' },
+              { i: <Zap className="w-6 h-6 text-primary" />, t: 'Szybka Akcja', d: 'Znajdź kogoś na teraz dzięki Vibe Rooms' },
             ].map(x => (
-              <div key={x.t} className="glass rounded-2xl border border-border p-4 text-left">
+              <div key={x.t} className="glass rounded-2xl border border-white/5 p-4 text-left hover:border-primary/30 transition-all">
                 <div className="mb-2">{x.i}</div>
-                <p className="text-xs font-semibold mb-1">{x.t}</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">{x.d}</p>
+                <p className="text-[10px] font-black uppercase mb-1 leading-tight">{x.t}</p>
+                <p className="text-[9px] text-white/40 leading-relaxed font-bold italic">{x.d}</p>
               </div>
             ))}
           </div>
           <button onClick={() => goStep(1)}
-            className="px-10 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/85 transition-all shadow-lg shadow-primary/30">
-            Zacznijmy 🔥
+            className="px-12 py-5 gradient-fire text-white rounded-2xl font-black text-xl uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,26,78,0.4)]">
+            ODBLOKUJ PRAGNIENIA 🔥
           </button>
         </div>
       );
@@ -584,19 +597,18 @@ const ProfileWizard: React.FC = () => {
   const stepTitles = ['','Podstawowe informacje','Styl życia','Pasje & Zainteresowania','Relacje & Intencje','Orientacja & Tożsamość','Preferencje intymne 18+','Kogo szukasz?','Zdjęcia & Media','Prywatność & Ustawienia'];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black text-white">
       {/* Top bar */}
-      <div className="sticky top-0 z-50 glass-strong border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, hsl(347 100% 60%), hsl(45 100% 55%))' }}>
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center gradient-fire shadow-[0_0_15px_rgba(255,26,78,0.5)]">
                 <span className="text-sm">🔥</span>
               </div>
-              <span className="text-sm font-bold">SparkConnect</span>
+              <span className="text-sm font-black uppercase tracking-tighter gradient-text italic">Spark Connect</span>
             </div>
-            <span className="text-xs text-muted-foreground font-mono">
+            <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">
               {step === 0 ? 'Wprowadzenie' : step >= 10 ? 'Ukończone!' : `Krok ${step} / ${STEPS.length - 1}`}
               <span className="text-primary font-bold ml-2">{Math.round((step / (STEPS.length - 1)) * 100)}%</span>
             </span>

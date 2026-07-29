@@ -7,6 +7,7 @@ export interface AuthState {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  adminRole: 'admin' | 'moderator' | 'support' | null;
 }
 
 export function useAuth() {
@@ -15,64 +16,58 @@ export function useAuth() {
     session: null,
     loading: true,
     isAdmin: false,
+    adminRole: null,
   });
 
   useEffect(() => {
-    async function checkAdmin(userId: string) {
+    async function checkAdminStatus(session: Session | null) {
+      if (!session?.user) {
+        return { isAdmin: false, adminRole: null };
+      }
+
       try {
-        const db = supabase as any;
-        const { data, error } = await db
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Admin check query error:', error);
-          return false;
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!currentSession) {
+          return { isAdmin: false, adminRole: null };
         }
-        return !!data;
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-admin`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${currentSession.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error('Admin check failed:', response.status);
+          return { isAdmin: false, adminRole: null };
+        }
+
+        const data = await response.json();
+        return {
+          isAdmin: data.isAdmin || false,
+          adminRole: data.role || null,
+        };
       } catch (err) {
         console.error('Admin check failed:', err);
-        return false;
+        return { isAdmin: false, adminRole: null };
       }
     }
 
     // Set up auth listener BEFORE getting session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      let isAdmin = false;
-      if (session?.user) {
-        isAdmin = await checkAdmin(session.user.id);
-        // Fallback for hardcoded admin emails
-        const ADMIN_EMAILS = [
-          'hardbanrecordslab.pl@gmail.com', 
-          'spark-connect@hardbanrecordslab.online',
-          'skomrakus84@gmail.com'
-        ];
-        if (!isAdmin && session.user.email && ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
-          console.log('User identified as admin via fallback list');
-          isAdmin = true;
-        }
-      }
-      setState({ user: session?.user ?? null, session, loading: false, isAdmin });
+      const { isAdmin, adminRole } = await checkAdminStatus(session);
+      setState({ user: session?.user ?? null, session, loading: false, isAdmin, adminRole });
     });
 
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      let isAdmin = false;
-      if (session?.user) {
-        isAdmin = await checkAdmin(session.user.id);
-        const ADMIN_EMAILS = [
-          'hardbanrecordslab.pl@gmail.com', 
-          'spark-connect@hardbanrecordslab.online',
-          'skomrakus84@gmail.com'
-        ];
-        if (!isAdmin && session.user.email && ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
-          isAdmin = true;
-        }
-      }
-      setState({ user: session?.user ?? null, session, loading: false, isAdmin });
+      const { isAdmin, adminRole } = await checkAdminStatus(session);
+      setState({ user: session?.user ?? null, session, loading: false, isAdmin, adminRole });
     });
 
     return () => subscription.unsubscribe();

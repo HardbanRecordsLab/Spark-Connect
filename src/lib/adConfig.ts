@@ -21,7 +21,12 @@ export interface AdSlot {
 export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsterra'; // → Włączono Adsterra dla monetyzacji
 
 // ── Google AdSense ────────────────────────────────────────────
-export const ADSENSE_PUBLISHER_ID = 'ca-pub-9458765432109876'; // ← Prawdziwy Publisher ID
+// NIE UŻYWAJ na tej apce: AdSense zakazuje treści dla dorosłych 18+ w
+// swoich zasadach programu — aktywacja tej platformy na Spark Connect
+// grozi trwałym banem konta AdSense (i powiązanych usług Google).
+// Zostaw ACTIVE_AD_PLATFORM na 'adsterra' (lub innej sieci akceptującej
+// adult content) i nie wypełniaj poniższego prawdziwym Publisher ID.
+export const ADSENSE_PUBLISHER_ID = 'ca-pub-PLACEHOLDER-DO-NOT-USE-ADULT-CONTENT';
 export const ADSENSE_SLOTS: Record<string, AdSlot> = {
   discover_strip:   { platform: 'adsense', slotId: '9458765432109876', format: 'banner',      width: 320, height: 50  },
   chats_card:       { platform: 'adsense', slotId: '9458765432109877', format: 'rectangle',   width: 300, height: 100 },

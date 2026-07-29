@@ -110,10 +110,21 @@ export function useProfile(user: User | null) {
     return { data: null, error: new Error('Max retries exceeded') };
   };
 
-  const addCoins = async (amount: number) => {
-    if (!user || !profile) return;
-    const newBalance = Math.max(0, profile.coin_balance + amount);
-    await updateProfile({ coin_balance: newBalance });
+  // Coin balance changes always go through the server-side
+  // adjust_coin_balance RPC — it's the only write path the database
+  // still accepts for this column (see migration
+  // 20260729000002_profiles_security_hardening.sql). This also fixes
+  // a pre-existing bug where `profile.coin_balance` was read here even
+  // though the local Profile type only has `coinBalance`, silently
+  // writing NaN to the database on every call.
+  const addCoins = async (amount: number, reason?: string) => {
+    if (!user) return;
+    const { data, error } = await db.rpc('adjust_coin_balance', { p_delta: amount, p_reason: reason ?? null });
+    if (error) {
+      console.error('addCoins failed:', error);
+      return;
+    }
+    setProfile(prev => prev ? { ...prev, coinBalance: data as number } : prev);
   };
 
   return { profile, loading, updateProfile, addCoins, refetch: fetchProfile };

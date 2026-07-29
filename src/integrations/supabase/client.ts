@@ -25,44 +25,12 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      storageKey: 'spark-connect-auth-' + Math.random().toString(36).substr(2, 9),
+      // Musi być stała wartość — losowy klucz przy każdym załadowaniu modułu
+      // sprawiał, że sesja zapisana pod poprzednim kluczem stawała się
+      // nieosiągalna i użytkownik był wylogowywany przy każdym odświeżeniu.
+      storageKey: 'spark-connect-auth',
       // Disable locking to prevent lock conflicts in React Strict Mode
       lock: false as boolean | undefined,
-      // Add timeout to prevent hanging locks
-      db: {
-        save: (data: unknown) => {
-          // Custom save with timeout to prevent lock issues
-          return new Promise<void>((resolve) => {
-            setTimeout(() => {
-              try {
-                localStorage.setItem('spark-connect-auth', JSON.stringify(data));
-                resolve();
-              } catch (error) {
-                console.warn('Failed to save auth data:', error);
-                resolve();
-              }
-            }, 100);
-          });
-        },
-        load: () => {
-          try {
-            const item = localStorage.getItem('spark-connect-auth');
-            return item ? JSON.parse(item) : null;
-          } catch (error) {
-            console.warn('Failed to load auth data:', error);
-            return null;
-          }
-        },
-        remove: () => {
-          try {
-            localStorage.removeItem('spark-connect-auth');
-          } catch (error) {
-            console.warn('Failed to remove auth data:', error);
-          }
-        }
-      }
     },
   }
 );
-
-console.log('⚡ Supabase client initialized');

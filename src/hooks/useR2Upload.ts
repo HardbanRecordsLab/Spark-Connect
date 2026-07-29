@@ -127,7 +127,10 @@ export function useR2Upload() {
 }
 
 // ── Helper: pobierz signed URL dla prywatnego zdjęcia ─────────────────────────
-export async function getPrivatePhotoUrl(key: string): Promise<string> {
+// Zawsze przez photo_id — serwer sam rozwiązuje klucz R2 i weryfikuje dostęp
+// (właściciel albo zaakceptowany private_photo_requests.status='granted').
+// Nigdy nie wysyłamy surowego klucza R2 z klienta — to omijało weryfikację dostępu.
+export async function getPrivatePhotoUrl(photoId: string): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('Brak sesji');
 
@@ -138,7 +141,7 @@ export async function getPrivatePhotoUrl(key: string): Promise<string> {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify({ key }),
+    body: JSON.stringify({ photo_id: photoId }),
   });
 
   if (!res.ok) throw new Error('Brak dostępu do zdjęcia');

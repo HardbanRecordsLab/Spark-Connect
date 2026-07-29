@@ -293,14 +293,13 @@ export default function ProfilePage() {
   const avatarUrl = profile?.avatar_url || profile?.photos?.[0] || currentUser?.avatarUrl || currentUser?.photos?.[0]
     || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80';
 
-  const handleVerified = async () => {
-    try {
-      setShowFaceVerify(false);
-      await safeUpdateProfile({ is_verified: true }, 'Weryfikacja zakończona pomyślnie!');
-    } catch (error) {
-      toast.error('Błąd weryfikacji');
-      console.error('Verification failed:', error);
-    }
+  const handleVerified = () => {
+    // is_verified is admin-only server-side (see migration
+    // 20260729000002_profiles_security_hardening.sql) — face
+    // verification isn't wired to a real review pipeline yet, so we
+    // no longer claim instant success here.
+    setShowFaceVerify(false);
+    toast.success('Zgłoszenie wysłane do weryfikacji przez administratora.');
   };
 
   const rawPhotos = profile?.photos ?? currentUser?.photos ?? [];

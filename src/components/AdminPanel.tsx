@@ -5,15 +5,10 @@ import {
   Users, Clock, RefreshCw, LogOut, Filter,
   Mail, Calendar, Image as ImageIcon, MessageSquare,
   TrendingUp, UserCheck, UserX, Map, Flame, Settings,
-  Bell, Lock, Globe, ChevronRight, Activity, Database
+  Bell, Lock, Globe, ChevronRight, Activity, Database, Loader2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-
-const ADMIN_EMAILS = [
-  'hardbanrecordslab.pl@gmail.com', 
-  'spark-connect@hardbanrecordslab.online',
-  'skomrakus84@gmail.com'
-];
+import { useAuth } from '@/hooks/useAuth';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -438,7 +433,7 @@ function ReportsSection() {
 }
 
 // ── Settings Section ───────────────────────────────────────────
-function SettingsSection() {
+function SettingsSection({ adminRole }: { adminRole: 'admin' | 'moderator' | 'support' | null }) {
   const [liveEnabled, setLiveEnabled] = useState(true);
   const [mapEnabled, setMapEnabled] = useState(true);
   const [hotnotEnabled, setHotnotEnabled] = useState(true);
@@ -504,7 +499,7 @@ function SettingsSection() {
         </div>
         <div className="space-y-1.5 text-xs text-muted-foreground">
           <div className="flex justify-between"><span>Wersja app</span><span className="text-foreground">v1.4.2</span></div>
-          <div className="flex justify-between"><span>Admin email</span><span className="text-primary">{ADMIN_EMAILS[0]}</span></div>
+          <div className="flex justify-between"><span>Admin role</span><span className="text-primary">{adminRole || 'None'}</span></div>
           <div className="flex justify-between"><span>Baza danych</span><span className="text-green-400">● Online</span></div>
           <div className="flex justify-between"><span>Supabase</span><span className="text-green-400">● Połączony</span></div>
           <div className="flex justify-between"><span>Środowisko</span><span className="text-foreground">Production</span></div>
@@ -594,6 +589,7 @@ function BlacklistSection() {
 
 // ── Main AdminPanel ────────────────────────────────────────────
 export default function AdminPanel() {
+  const { isAdmin, adminRole, user } = useAuth();
   const [authed, setAuthed] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -605,23 +601,14 @@ export default function AdminPanel() {
   useEffect(() => {
     async function checkExistingSession() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: roleData } = await db
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        if (roleData || ADMIN_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
-          setAuthed(true);
-          loadUsers();
-        }
+      if (session?.user && isAdmin) {
+        setAuthed(true);
+        loadUsers();
       }
       setChecking(false);
     }
     checkExistingSession();
-  }, []);
+  }, [isAdmin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -634,23 +621,17 @@ export default function AdminPanel() {
       return;
     }
 
-    // Check if user has admin role in database
-    const { data: roleData } = await db
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', data.user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (!roleData && !ADMIN_EMAILS.some(e => e.toLowerCase() === data.user.email?.toLowerCase())) {
-      setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
-      await supabase.auth.signOut();
+    // Wait for auth state to update and check admin status
+    setTimeout(() => {
+      if (isAdmin) {
+        setAuthed(true);
+        loadUsers();
+      } else {
+        setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
+        supabase.auth.signOut();
+      }
       setLoading(false);
-      return;
-    }
-    setAuthed(true);
-    setLoading(false);
-    loadUsers();
+    }, 500);
   };
 
   const [users, setUsers] = useState<PendingUser[]>([]);
@@ -766,7 +747,7 @@ export default function AdminPanel() {
             </button>
           </form>
           <p className="text-center text-xs text-muted-foreground mt-6">
-            🔒 Dostęp tylko dla: <span className="text-primary">{ADMIN_EMAILS[0]}</span>
+            🔒 Dostęp tylko dla administratorów
           </p>
         </div>
       </div>
@@ -794,7 +775,7 @@ export default function AdminPanel() {
             </div>
             <div>
               <h1 className="font-bold text-sm">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">{ADMIN_EMAILS[0]}</p>
+              <p className="text-xs text-muted-foreground">{user?.email || 'Admin'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -904,10 +885,10 @@ export default function AdminPanel() {
         {section === 'groups' && <GroupsSection />}
         {section === 'reports' && <ReportsSection />}
         {section === 'blacklist' && <BlacklistSection />}
-        {section === 'settings' && <SettingsSection />}
+        {section === 'settings' && <SettingsSection adminRole={adminRole} />}
 
         <div className="text-center py-4">
-          <p className="text-xs text-muted-foreground">Spark Connect 18+ Admin · {ADMIN_EMAILS[0]}</p>
+          <p className="text-xs text-muted-foreground">Spark Connect 18+ Admin · {user?.email || 'Admin'}</p>
         </div>
       </div>
     </div>
