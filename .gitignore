@@ -27,3 +27,6 @@ dist-ssr
 .env
 .env.local
 .env.production
+
+# Supabase CLI local link/session cache (machine-specific, not source)
+supabase/.temp
