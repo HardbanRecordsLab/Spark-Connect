@@ -1,20 +1,26 @@
 // send-email — Supabase Edge Function
-// Sends branded transactional emails via MailerLite API.
+// Sends branded transactional emails via SMTP (home.pl mailbox).
 //
 // Deploy: supabase functions deploy send-email
-// Secrets: supabase secrets set MAILERLITE_API_KEY=ml_xxxxxxxxxxxx
+// Secrets:
+//   supabase secrets set SMTP_HOST=poczta2663497.home.pl
+//   supabase secrets set SMTP_PORT=465
+//   supabase secrets set SMTP_USER=spark-connect@hardbanrecordslab.online
+//   supabase secrets set SMTP_PASSWORD=xxxxxxxx
 
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM_EMAIL = "no-reply@hardbanrecordslab.online";
+const FROM_EMAIL = "spark-connect@hardbanrecordslab.online";
 const FROM_NAME  = "Spark Connect";
 const REPLY_TO   = "spark-connect@hardbanrecordslab.online";
 const APP_URL    = "https://spark-connect.hardbanrecordslab.online";
@@ -95,36 +101,47 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
   }),
 };
 
-// ── MailerLite API call ────────────────────────────────────────────
+// ── SMTP (home.pl mailbox) ───────────────────────────────────────
 async function sendEmail(opts: { to: string; subject: string; html: string }) {
   // @ts-ignore
-  const apiKey = Deno.env.get("MAILERLITE_API_KEY");
-  if (!apiKey) throw new Error("MAILERLITE_API_KEY not set in Supabase Secrets");
+  const host = Deno.env.get("SMTP_HOST");
+  // @ts-ignore
+  const port = Number(Deno.env.get("SMTP_PORT") ?? "465");
+  // @ts-ignore
+  const username = Deno.env.get("SMTP_USER");
+  // @ts-ignore
+  const password = Deno.env.get("SMTP_PASSWORD");
 
-  const res = await fetch("https://connect.mailerlite.com/api/emails/transactional", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
+  if (!host || !username || !password) {
+    throw new Error("SMTP_HOST / SMTP_USER / SMTP_PASSWORD not set in Supabase Secrets");
+  }
+
+  const client = new SMTPClient({
+    connection: {
+      hostname: host,
+      port,
+      // Port 465 is implicit TLS; 587 is STARTTLS — denomailer's `tls`
+      // flag means "connect with TLS from the start", so only set it
+      // for the 465 case.
+      tls: port === 465,
+      auth: { username, password },
     },
-    body: JSON.stringify({
-      from: {
-        email: FROM_EMAIL,
-        name:  FROM_NAME,
-      },
-      to:       opts.to,
-      subject:  opts.subject,
-      html:     opts.html,
-      reply_to: REPLY_TO,
-    }),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`MailerLite error ${res.status}: ${err}`);
+  try {
+    await client.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: opts.to,
+      replyTo: REPLY_TO,
+      subject: opts.subject,
+      content: "auto",
+      html: opts.html,
+    });
+  } finally {
+    await client.close();
   }
-  return res.json();
+
+  return { id: crypto.randomUUID() };
 }
 
 // ── Handler ────────────────────────────────────────────────────
