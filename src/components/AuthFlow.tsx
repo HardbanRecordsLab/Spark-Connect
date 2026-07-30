@@ -76,7 +76,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               )}
               <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
                 SPEŁNIJ <br />
-                <span className="gradient-text">FANTZJE</span> <br />
+                <span className="gradient-text">FANTAZJE</span> <br />
                 BEZ LIMITU.
               </h1>
               <p className="text-xl md:text-2xl text-white/80 max-w-md leading-tight font-medium">
