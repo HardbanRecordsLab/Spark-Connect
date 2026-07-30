@@ -30,6 +30,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useIncomingCallListener } from '@/hooks/useCallSignaling';
+import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 
 const tabs: { id: AppTab; label: string; emoji: string; icon: any; badge?: number }[] = [
   { id: 'discover', label: 'Odkryj', emoji: '🔍', icon: Search },
@@ -67,6 +68,7 @@ export default function AppLayout() {
   const [notifsSeen, setNotifsSeen] = useState(false);
   const { settings } = useUserSettings(user);
   useIncomingCallListener(user?.id);
+  usePresenceHeartbeat(user?.id);
 
   const unreadNotifs = notifsSeen ? 0 : NOTIFICATIONS.filter(n => n.unread).length;
   const currentStreak = 7;

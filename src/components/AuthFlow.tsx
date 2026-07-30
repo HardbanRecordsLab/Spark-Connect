@@ -21,8 +21,17 @@ function ErrorAlert({ msg }: { msg: string }) {
 
 // ── LANDING VIEW (SEX DATING PORTAL STYLE) ─────────────────────────
 function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin: () => void }) {
-  const onlineCount = 2481; 
+  const [onlineCount, setOnlineCount] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    const db = supabase as any;
+    db.rpc('get_online_users_count').then(({ data }: { data: number | null }) => {
+      if (!cancelled && typeof data === 'number') setOnlineCount(data);
+    });
+    return () => { cancelled = true; };
+  }, []);
   
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white overflow-x-hidden">
@@ -59,10 +68,12 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               animate={{ opacity: 1, x: 0 }}
               className="space-y-4"
             >
-              <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(255,26,78,0.3)]">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-red-400">{onlineCount} NAPALONYCH OSÓB ONLINE</span>
-              </div>
+              {onlineCount !== null && onlineCount > 0 && (
+                <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(255,26,78,0.3)]">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-red-400">{onlineCount} {onlineCount === 1 ? 'OSOBA' : 'OSÓB'} ONLINE TERAZ</span>
+                </div>
+              )}
               <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
                 SPEŁNIJ <br />
                 <span className="gradient-text">FANTZJE</span> <br />

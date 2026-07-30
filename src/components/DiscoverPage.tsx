@@ -15,8 +15,14 @@ import { Crown } from 'lucide-react';
 
 const db = supabase as any;
 
+const ONLINE_WINDOW_MS = 5 * 60 * 1000;
+function isProfileOnline(lastOnlineAt?: string): boolean {
+  if (!lastOnlineAt) return false;
+  return Date.now() - new Date(lastOnlineAt).getTime() < ONLINE_WINDOW_MS;
+}
+
 function ProfileGridItem({ profile, onSelect }: { profile: Profile; onSelect: (p: Profile) => void }) {
-  const isOnline = !!profile.lastOnlineAt; // In a real app, check if lastOnlineAt < 5 mins ago
+  const isOnline = isProfileOnline(profile.lastOnlineAt);
   
   return (
     <motion.div 
@@ -100,7 +106,7 @@ export default function DiscoverPage() {
     if (!p) return false;
     
     // Tab filtering
-    if (activeTab === 'online' && !p.lastOnlineAt) return false;
+    if (activeTab === 'online' && !isProfileOnline(p.lastOnlineAt)) return false;
     if (activeTab === 'nearby' && p.distance && p.distance > 50) return false;
     
     // Custom filters

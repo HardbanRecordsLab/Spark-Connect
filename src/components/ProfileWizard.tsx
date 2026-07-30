@@ -331,9 +331,10 @@ const ProfileWizard: React.FC = () => {
           <p className="text-white/60 mb-6 max-w-sm mx-auto leading-relaxed font-medium">
             To Twoja przestrzeń na spełnienie najskrytszych fantazji. Stwórz autentyczny profil i pozwól SparkAI™ połączyć Cię z ludźmi, którzy pragną tego samego co Ty.
           </p>
-          <div className="bg-red-500/10 rounded-2xl border border-red-500/20 p-4 text-[10px] font-black uppercase tracking-widest text-red-400 mb-6 max-w-sm mx-auto animate-pulse">
+          <div className="bg-red-500/10 rounded-2xl border border-red-500/20 p-4 text-[10px] font-black uppercase tracking-widest text-red-400 mb-4 max-w-sm mx-auto animate-pulse">
             🔞 Portal przeznaczony wyłącznie dla dorosłych. Zero tabu.
           </div>
+          <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-6">Tylko 2 minuty do startu — reszta jest opcjonalna</p>
           <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto mb-8">
             {[
               { i: <Flame className="w-6 h-6 text-primary" />, t: 'Czysta Erotyka', d: 'Dopasowania oparte na pożądaniu i preferencjach' },
@@ -366,6 +367,20 @@ const ProfileWizard: React.FC = () => {
               <Inp label="Miasto / Region" value={f.city} set={s('city')} placeholder="Warszawa" />
             </div>
             <Textarea label="Bio — krótko o sobie" value={f.bio} set={s('bio')} placeholder="Co Cię wyróżnia? Czym żyjesz? Co chcesz żeby ludzie wiedzieli o Tobie na starcie?" max={300} rows={3} />
+          </Block>
+          <Block title="Zdjęcie profilowe" icon="📸">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-20 h-20 rounded-full border-2 border-dashed border-primary/30 flex flex-col items-center justify-center bg-secondary/30 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all overflow-hidden flex-shrink-0"
+                onClick={() => document.getElementById('avInput')?.click()}>
+                {avatarFile
+                  ? <img src={URL.createObjectURL(avatarFile)} className="w-full h-full rounded-full object-cover" alt="avatar" />
+                  : <Camera className="w-6 h-6 text-muted-foreground" />
+                }
+              </div>
+              <input id="avInput" type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) setAvatarFile(e.target.files[0]); }} />
+              <p className="text-xs text-muted-foreground leading-relaxed">Wymagane, aby wejść do aplikacji. Wybierz zdjęcie, na którym wyraźnie widać Twoją twarz — to jedyna rzecz, której naprawdę potrzebujemy na start.</p>
+            </div>
           </Block>
           <Block title="Wygląd" icon="🪞">
             <div className="grid grid-cols-3 gap-3 mb-3">
@@ -527,21 +542,7 @@ const ProfileWizard: React.FC = () => {
 
       case 8: return (
         <>
-          <Block title="Zdjęcie profilowe" icon="📸">
-            <div className="flex flex-col items-center gap-4">
-              <div
-                className="w-28 h-28 rounded-full border-2 border-dashed border-primary/30 flex flex-col items-center justify-center bg-secondary/30 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all overflow-hidden"
-                onClick={() => document.getElementById('avInput')?.click()}>
-                {avatarFile
-                  ? <img src={URL.createObjectURL(avatarFile)} className="w-full h-full rounded-full object-cover" alt="avatar" />
-                  : <><Camera className="w-8 h-8 text-muted-foreground mb-1" /><span className="text-xs text-muted-foreground">Zdjęcie główne</span></>
-                }
-              </div>
-              <input id="avInput" type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) setAvatarFile(e.target.files[0]); }} />
-              <p className="text-xs text-muted-foreground">Kliknij aby wybrać główne zdjęcie profilowe</p>
-            </div>
-          </Block>
-          <Block title="Galeria zdjęć (do 6)" icon="🖼">
+          <Block title="Dodatkowe zdjęcia (do 6)" icon="🖼">
             <p className="text-xs text-muted-foreground mb-4">Profile z 4+ zdjęciami dostają 8× więcej dopasowań.</p>
             <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 6 }).map((_, i) => {
@@ -593,7 +594,17 @@ const ProfileWizard: React.FC = () => {
     }
   };
 
-  const stepTitles = ['','Podstawowe informacje','Styl życia','Pasje & Zainteresowania','Relacje & Intencje','Orientacja & Tożsamość','Preferencje intymne 18+','Kogo szukasz?','Zdjęcia & Media','Prywatność & Ustawienia'];
+  const stepTitles = ['','Podstawowe informacje','Styl życia (opcjonalnie)','Pasje & Zainteresowania (opcjonalnie)','Relacje & Intencje (opcjonalnie)','Orientacja & Tożsamość (opcjonalnie)','Preferencje intymne 18+ (opcjonalnie)','Kogo szukasz? (opcjonalnie)','Dodatkowe zdjęcia (opcjonalnie)','Prywatność & Ustawienia (opcjonalnie)'];
+
+  // Only identity + a profile photo are required to enter the app — everything
+  // past step 1 is enrichment the user can finish later from their profile.
+  // This mirrors how competitor dating sites get users into the product in
+  // a handful of steps instead of forcing a full questionnaire upfront.
+  const parsedAgeForCheck = parseInt(f.age, 10);
+  const essentialsComplete = !!(
+    f.displayName.trim() && f.gender && f.city.trim() && avatarFile &&
+    !Number.isNaN(parsedAgeForCheck) && parsedAgeForCheck >= 18
+  );
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -654,6 +665,18 @@ const ProfileWizard: React.FC = () => {
             <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-1">{STEPS[step]?.icon} Krok {step} / {STEPS.length - 1}</p>
             <h2 className="text-2xl font-bold">{stepTitles[step]}</h2>
           </div>
+        )}
+
+        {step >= 1 && essentialsComplete && step < STEPS.length - 1 && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex items-center gap-3 glass rounded-2xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3">
+            <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <p className="text-xs text-emerald-300/90 flex-1">Masz już komplet niezbędnych danych — możesz wejść do aplikacji teraz, a resztę uzupełnić później w Profilu.</p>
+            <button onClick={handleSubmit} disabled={submitting}
+              className="flex-shrink-0 text-[10px] font-black uppercase tracking-widest text-emerald-300 border border-emerald-500/40 rounded-xl px-3 py-2 hover:bg-emerald-500/10 transition-all disabled:opacity-50">
+              Wejdź teraz →
+            </button>
+          </motion.div>
         )}
 
         <AnimatePresence mode="wait">
