@@ -230,7 +230,7 @@ export default function AppLayout() {
             {activeTab === 'chats' && <ChatsPage />}
             {activeTab === 'live' && <LivePage />}
             {activeTab === 'profile' && <ProfilePage />}
-            {activeTab === 'groups' && <GroupsPage onOpenGroupChat={() => {}} />}
+            {activeTab === 'groups' && <GroupsPage />}
             {activeTab === 'map' && <MapPage onOpenChat={() => setActiveTab('chats')} onSafety={() => {}} />}
             {activeTab === 'visitors' && <VisitorsPage onOpenChat={() => setActiveTab('chats')} />}
             {activeTab === ('hotnot' as any) && <HotOrNotPage />}

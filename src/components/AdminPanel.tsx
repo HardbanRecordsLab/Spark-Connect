@@ -334,40 +334,56 @@ function StatsSection() {
 }
 
 // ── Groups Section ─────────────────────────────────────────────
+interface AdminGroup { id: string; name: string; category: string; is_live: boolean; members: number }
+
 function GroupsSection() {
-  const groups = [
-    { name: 'Jazz & Vinyl ♫', members: 847, msgs: 1240, active: true, cat: 'Muzyka' },
-    { name: 'Kawa i filozofia ☕', members: 1204, msgs: 2880, active: true, cat: 'Lifestyle' },
-    { name: 'Kino Niezależne 🎬', members: 562, msgs: 890, active: true, cat: 'Film' },
-    { name: 'Bieganie Warszawa 🏃', members: 389, msgs: 430, active: false, cat: 'Sport' },
-    { name: 'Wino & Sery 🍷', members: 213, msgs: 320, active: false, cat: 'Food' },
-  ];
+  const [groups, setGroups] = useState<AdminGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data: groupRows }, { data: memberRows }] = await Promise.all([
+      db.from('groups').select('id, name, category, is_live').order('created_at', { ascending: true }),
+      db.from('group_members').select('group_id'),
+    ]);
+    const counts: Record<string, number> = {};
+    for (const r of (memberRows ?? []) as { group_id: string }[]) counts[r.group_id] = (counts[r.group_id] ?? 0) + 1;
+    setGroups((groupRows ?? []).map((g: { id: string; name: string; category: string; is_live: boolean }) => ({ ...g, members: counts[g.id] ?? 0 })));
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Usunąć grupę "${name}"? Wiadomości i członkostwa też zostaną usunięte.`)) return;
+    const { error } = await db.from('groups').delete().eq('id', id);
+    if (error) { toast.error('Nie udało się usunąć grupy.'); return; }
+    setGroups(prev => prev.filter(g => g.id !== id));
+  };
+
+  if (loading) return <div className="text-center py-10 opacity-50 text-sm">Ładowanie grup...</div>;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">✦ Grupy dyskusyjne</h2>
-        <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="text-xs text-primary">+ Utwórz grupę</button>
-      </div>
-      <div className="glass rounded-xl px-3 py-2 border border-amber-500/30 text-xs text-amber-400">
-        Podgląd przykładowy — grupy nie są jeszcze podłączone do bazy danych.
+        <button onClick={() => toast('Tworzenie grup z panelu admina już wkrótce 🚧')} className="text-xs text-primary">+ Utwórz grupę</button>
       </div>
       <div className="space-y-2">
-        {groups.map((g, i) => (
-          <div key={i} className="glass rounded-xl p-3 flex items-center gap-3 border border-border opacity-70">
+        {groups.map(g => (
+          <div key={g.id} className="glass rounded-xl p-3 flex items-center gap-3 border border-border">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="font-medium text-sm truncate">{g.name}</span>
-                {g.active && <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />}
+                {g.is_live && <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />}
               </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>👥 {g.members}</span>
-                <span>💬 {g.msgs} wiad.</span>
-                <span className="glass px-1.5 py-0.5 rounded-full">{g.cat}</span>
+                <span className="glass px-1.5 py-0.5 rounded-full">{g.category}</span>
               </div>
             </div>
             <div className="flex gap-1.5">
-              <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-primary">✏️</button>
-              <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-destructive">🗑️</button>
+              <button onClick={() => handleDelete(g.id, g.name)} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-destructive">🗑️</button>
             </div>
           </div>
         ))}
