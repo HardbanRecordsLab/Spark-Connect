@@ -18,12 +18,15 @@ import IncomingCallModal from './IncomingCallModal';
 
 // livekit-client alone accounts for ~500kB — only pull it into the
 // bundle when a call is actually starting, not on first page load.
+// SpeedDating now uses LiveKit too (real video pairing), so it needs
+// the same lazy treatment or it drags livekit-client into the eager
+// main bundle.
 const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
 const RoulettePage = lazy(() => import('./RoulettePage'));
+const SpeedDating = lazy(() => import('./SpeedDating'));
 import VibeRooms from './VibeRooms';
 import WhoLikedMe from './WhoLikedMe';
 import DailyStreak from './DailyStreak';
-import SpeedDating from './SpeedDating';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useProfile } from '@/hooks/useProfile';
@@ -273,7 +276,11 @@ export default function AppLayout() {
         {showVibeRooms && <VibeRooms onClose={() => setShowVibeRooms(false)} />}
         {showWhoLikedMe && <WhoLikedMe onClose={() => setShowWhoLikedMe(false)} />}
         {showStreak && <DailyStreak currentStreak={currentStreak} onClose={() => setShowStreak(false)} />}
-        {showSpeedDating && <SpeedDating onClose={() => setShowSpeedDating(false)} />}
+        {showSpeedDating && (
+          <Suspense fallback={<div className="fixed inset-0 z-40 bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+            <SpeedDating onClose={() => setShowSpeedDating(false)} />
+          </Suspense>
+        )}
         {showSafety && <SafetyCenter onClose={() => setShowSafety(false)} />}
       </AnimatePresence>
     </div>

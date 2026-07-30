@@ -25,7 +25,10 @@ export interface RoulettePeer {
 
 export type RouletteStatus = 'idle' | 'searching' | 'matched';
 
-export function useRouletteMatch(userId: string | null | undefined) {
+// eventId scopes the waiting pool to a speed-dating event (only
+// candidates/waiters with the same event_id are considered) instead
+// of ordinary Roulette (event_id IS NULL).
+export function useRouletteMatch(userId: string | null | undefined, eventId?: string | null) {
   const [status, setStatus] = useState<RouletteStatus>('idle');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [peer, setPeer] = useState<RoulettePeer | null>(null);
@@ -49,7 +52,7 @@ export function useRouletteMatch(userId: string | null | undefined) {
     setPeer(null);
     cleanupChannel();
 
-    const { data: candidates } = await db
+    let candidateQuery = db
       .from('roulette_sessions')
       .select('id, user_a')
       .eq('status', 'waiting')
@@ -57,6 +60,8 @@ export function useRouletteMatch(userId: string | null | undefined) {
       .neq('user_a', userId)
       .order('created_at', { ascending: true })
       .limit(5);
+    candidateQuery = eventId ? candidateQuery.eq('event_id', eventId) : candidateQuery.is('event_id', null);
+    const { data: candidates } = await candidateQuery;
 
     for (const c of candidates ?? []) {
       const { data: claimed } = await db
@@ -76,7 +81,7 @@ export function useRouletteMatch(userId: string | null | undefined) {
 
     const { data: mine } = await db
       .from('roulette_sessions')
-      .insert({ user_a: userId, status: 'waiting' })
+      .insert({ user_a: userId, status: 'waiting', event_id: eventId ?? null })
       .select('id')
       .single();
     if (!mine) { setStatus('idle'); return; }
@@ -100,7 +105,7 @@ export function useRouletteMatch(userId: string | null | undefined) {
       )
       .subscribe();
     channelRef.current = channel;
-  }, [userId]);
+  }, [userId, eventId]);
 
   // Leaves whatever state we're currently in — deletes an unclaimed
   // waiting row, or marks an active session ended.
