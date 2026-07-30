@@ -23,19 +23,16 @@ test.describe('Spark Connect - Smoke Tests', () => {
     // Check SEO metadata
     const description = await page.locator('meta[name="description"]').getAttribute('content');
     expect(description).toContain('randkowa');
-    
-    // Check if noscript static content is present (for SEO bots)
-    const noscriptH1 = page.locator('h1').filter({ hasText: 'Spark Connect – Rewolucyjna Darmowa Aplikacja Ran' });
-    // Only check noscript h1 if React h1 is not visible (fallback for SEO)
-    const reactH1Visible = await page.locator('h1.text-6xl.font-black.mb-3.gradient-text').isVisible();
-    if (!reactH1Visible) {
-      await expect(noscriptH1).toBeVisible();
-    }
-    
-    // Check React app h1
-    const reactH1 = page.locator('h1.text-6xl.font-black.mb-3.gradient-text');
-    await expect(reactH1).toBeVisible();
-    await expect(reactH1).toContainText('Spark Connect');
+
+    // The React landing hero should render *some* non-empty h1 inside
+    // <main> — not pinned to exact marketing copy/classes, which
+    // change often and shouldn't break this smoke test every time.
+    // Scoped to <main> to skip the hidden #seo-content h1 (a static,
+    // display:none fallback for JS-disabled crawlers, which none of
+    // these browser projects run with).
+    const heroH1 = page.locator('main h1').first();
+    await expect(heroH1).toBeVisible();
+    await expect(heroH1).not.toBeEmpty();
   });
 
   test('Login page is accessible', async ({ page }) => {
