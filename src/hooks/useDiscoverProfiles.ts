@@ -89,11 +89,21 @@ export function useDiscoverProfiles(userId: string | null) {
   const fetchingRef = useRef(false);
   const myLocationRef = useRef<{ lat: number; lng: number } | null>(null);
 
-  // Load already-swiped IDs once
+  const blockedIdsRef = useRef<Set<string>>(new Set());
+
+  // Load already-swiped IDs and blocked users (both directions) once
   const loadSwipedIds = useCallback(async () => {
     if (!userId) return;
-    const { data } = await db.from('swipes').select('swiped_id').eq('swiper_id', userId);
-    swipedIdsRef.current = new Set((data ?? []).map((r: { swiped_id: string }) => r.swiped_id));
+    const [{ data: swipes }, { data: blocksMade }, { data: blocksReceived }] = await Promise.all([
+      db.from('swipes').select('swiped_id').eq('swiper_id', userId),
+      db.from('user_blocks').select('blocked_id').eq('blocker_id', userId),
+      db.from('user_blocks').select('blocker_id').eq('blocked_id', userId),
+    ]);
+    swipedIdsRef.current = new Set((swipes ?? []).map((r: { swiped_id: string }) => r.swiped_id));
+    blockedIdsRef.current = new Set([
+      ...(blocksMade ?? []).map((r: { blocked_id: string }) => r.blocked_id),
+      ...(blocksReceived ?? []).map((r: { blocker_id: string }) => r.blocker_id),
+    ]);
   }, [userId]);
 
   const recordSwipe = useCallback((swipedId: string) => {
@@ -109,7 +119,7 @@ export function useDiscoverProfiles(userId: string | null) {
     }
 
     try {
-      const excludeIds = [userId, ...Array.from(swipedIdsRef.current)];
+      const excludeIds = [userId, ...Array.from(swipedIdsRef.current), ...Array.from(blockedIdsRef.current)];
 
       // Get user location for spatial query and distance calculation
       if (!myLocationRef.current) {

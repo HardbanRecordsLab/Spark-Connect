@@ -5,6 +5,7 @@ import {
   MoreVertical, Clock, Ghost, Eye, Timer, X, Play, Film,
   Upload, Pause, MicOff, CornerUpLeft, Reply, Search, Wand2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import type { Conversation } from '@/store/appStore';
 import { GiftPicker, GiftReveal, GiftBubble, type GiftItem } from '@/components/GiftSystem';
@@ -12,6 +13,7 @@ import AdBanner from '@/components/AdBanner';
 import EmojiPicker from '@/components/EmojiPicker';
 import ChatContextMenu from '@/components/ChatContextMenu';
 import IcebreakerModal from '@/components/IcebreakerModal';
+import ReportUserModal from '@/components/ReportUserModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useAuth } from '@/hooks/useAuth';
@@ -614,6 +616,8 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
   // Context menu (MoreVertical)
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [showIcebreaker, setShowIcebreaker] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [actionPending, setActionPending] = useState(false);
 
   const { startVideoCall } = useAppStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -947,6 +951,28 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
     }
   };
 
+  const handleBlock = async () => {
+    if (!user || actionPending) return;
+    setActionPending(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { error } = await db.from('user_blocks').insert({ blocker_id: user.id, blocked_id: conv.user.id });
+    setActionPending(false);
+    if (error) { toast.error('Nie udało się zablokować użytkownika.'); return; }
+    toast.success(`Zablokowano ${conv.user.displayName}. Nie zobaczycie się już w aplikacji.`);
+    onBack();
+  };
+
+  const handleUnmatch = async () => {
+    if (!user || actionPending) return;
+    setActionPending(true);
+    const { error } = await supabase.from('matches').delete().eq('id', conv.matchId);
+    setActionPending(false);
+    if (error) { toast.error('Nie udało się usunąć dopasowania.'); return; }
+    toast.success('Dopasowanie usunięte.');
+    onBack();
+  };
+
   const handleGiftSent = (gift: GiftItem) => {
     setGiftMessages(prev => [...prev, { id: `gift-${Date.now()}`, gift }]);
     setTimeout(() => setRevealGift(gift), 800);
@@ -1005,11 +1031,11 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
             {showContextMenu && (
               <ChatContextMenu
                 userName={conv.user.displayName}
-                onBlock={() => {}}
-                onReport={() => {}}
-                onUnmatch={() => {}}
-                onArchive={() => {}}
-                onMute={() => {}}
+                onBlock={handleBlock}
+                onReport={() => setShowReportModal(true)}
+                onUnmatch={handleUnmatch}
+                onArchive={() => toast('Archiwizacja rozmów już wkrótce 🚧')}
+                onMute={() => toast('Wyciszanie rozmów już wkrótce 🚧')}
                 onClearChat={() => setMessages([])}
                 onClose={() => setShowContextMenu(false)}
               />
@@ -1272,6 +1298,16 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showReportModal && (
+          <ReportUserModal
+            userId={conv.user.id}
+            userName={conv.user.displayName}
+            onClose={() => setShowReportModal(false)}
+            onReported={() => setShowReportModal(false)}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {showGiftPicker && <GiftPicker userId={user?.id} onSend={handleGiftSent} onClose={() => setShowGiftPicker(false)} />}
       </AnimatePresence>
