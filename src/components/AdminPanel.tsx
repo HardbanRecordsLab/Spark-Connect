@@ -14,7 +14,16 @@ import { useAuth } from '@/hooks/useAuth';
 const db = supabase as any;
 
 type VerifyStatus = 'pending' | 'approved' | 'rejected' | 'all';
-type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings' | 'blacklist';
+type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings' | 'blacklist' | 'verification';
+
+interface VerificationRequest {
+  id: string;
+  user_id: string;
+  photo_key: string;
+  status: string;
+  created_at: string;
+  display_name?: string;
+}
 
 interface PendingUser {
   id: string;
@@ -587,6 +596,93 @@ function BlacklistSection() {
   );
 }
 
+// ── Verification Section ───────────────────────────────────────
+function VerificationSection() {
+  const [requests, setRequests] = useState<VerificationRequest[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await db
+      .from('verification_requests')
+      .select('id, user_id, photo_key, status, created_at, profiles!user_id(display_name)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+    const rows: VerificationRequest[] = (data ?? []).map((r: VerificationRequest & { profiles?: { display_name?: string } }) => ({
+      ...r, display_name: r.profiles?.display_name,
+    }));
+    setRequests(rows);
+    setLoading(false);
+
+    // Resolve signed preview URLs in parallel.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const entries = await Promise.all(rows.map(async (r) => {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-verification-photo-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ requestId: r.id }),
+      });
+      if (!res.ok) return null;
+      const { signedUrl } = await res.json();
+      return [r.id, signedUrl] as const;
+    }));
+    setPhotoUrls(Object.fromEntries(entries.filter((e): e is readonly [string, string] => e !== null)));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const review = async (id: string, approve: boolean) => {
+    setBusyId(id);
+    const reason = approve ? null : prompt('Powód odrzucenia (widoczny dla użytkownika)') ?? '';
+    const { error } = await db.rpc('admin_review_verification', { p_request_id: id, p_approve: approve, p_reason: reason });
+    setBusyId(null);
+    if (!error) setRequests(prev => prev.filter(r => r.id !== id));
+  };
+
+  if (loading) return <div className="text-center py-10 opacity-50 text-sm">Ładowanie…</div>;
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">🛡️ Weryfikacja profili</h2>
+      {requests.length === 0 ? (
+        <div className="text-center py-12 opacity-50">
+          <div className="text-4xl mb-3">✓</div>
+          <p className="text-sm text-muted-foreground">Brak zgłoszeń do weryfikacji</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {requests.map(r => (
+            <div key={r.id} className="glass rounded-2xl overflow-hidden border border-border">
+              <div className="aspect-square bg-secondary flex items-center justify-center">
+                {photoUrls[r.id]
+                  ? <img src={photoUrls[r.id]} alt="" className="w-full h-full object-cover" />
+                  : <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />}
+              </div>
+              <div className="p-3 space-y-2">
+                <p className="text-sm font-semibold">{r.display_name || 'Użytkownik'}</p>
+                <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString('pl-PL')}</p>
+                <div className="flex gap-2">
+                  <button onClick={() => review(r.id, true)} disabled={busyId === r.id}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 py-2 rounded-xl text-xs font-semibold disabled:opacity-50">
+                    <Check className="w-3.5 h-3.5" /> Zatwierdź
+                  </button>
+                  <button onClick={() => review(r.id, false)} disabled={busyId === r.id}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 py-2 rounded-xl text-xs font-semibold disabled:opacity-50">
+                    <X className="w-3.5 h-3.5" /> Odrzuć
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main AdminPanel ────────────────────────────────────────────
 export default function AdminPanel() {
   const { isAdmin, adminRole, user } = useAuth();
@@ -761,6 +857,7 @@ export default function AdminPanel() {
     { id: 'groups', icon: <MessageSquare className="w-4 h-4" />, label: 'Grupy' },
     { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: 4 },
     { id: 'blacklist', icon: <Ban className="w-4 h-4" />, label: 'Blacklista' },
+    { id: 'verification', icon: <Shield className="w-4 h-4" />, label: 'Weryfikacja' },
     { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Ustawienia' },
   ];
 
@@ -885,6 +982,7 @@ export default function AdminPanel() {
         {section === 'groups' && <GroupsSection />}
         {section === 'reports' && <ReportsSection />}
         {section === 'blacklist' && <BlacklistSection />}
+        {section === 'verification' && <VerificationSection />}
         {section === 'settings' && <SettingsSection adminRole={adminRole} />}
 
         <div className="text-center py-4">

@@ -705,7 +705,7 @@ export default function ProfilePage() {
       </div>
 
       <AnimatePresence>
-        {showFaceVerify && <FaceVerify onVerified={handleVerified} onClose={() => setShowFaceVerify(false)} />}
+        {showFaceVerify && <FaceVerify userId={user?.id} onVerified={handleVerified} onClose={() => setShowFaceVerify(false)} />}
         {showRewardedAd && (
           <RewardedAd 
             reward={rewardType} 
