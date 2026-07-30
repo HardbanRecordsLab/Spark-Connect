@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Loader2 } from 'lucide-react';
+import { X, Gift, Loader2, PlayCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
+import RewardedAd from '@/components/RewardedAd';
 
 // ── Gift catalogue ─────────────────────────────────────────────────────────────
 
@@ -54,14 +56,22 @@ interface GiftPickerProps {
 }
 
 export function GiftPicker({ userId, onSend, onClose }: GiftPickerProps) {
-  const { balance: rawBalance, spend } = useCoinBalance(userId);
+  const { balance: rawBalance, spend, claimAdReward } = useCoinBalance(userId);
   const [category, setCategory] = useState<GiftItem['category'] | 'all'>('all');
   const [selected, setSelected] = useState<GiftItem | null>(null);
   const [insufficient, setInsufficient] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showAd, setShowAd] = useState(false);
 
   const filtered = category === 'all' ? GIFTS : GIFTS.filter(g => g.category === category);
   const balance = rawBalance ?? 0;
+
+  const handleAdComplete = async () => {
+    setShowAd(false);
+    const result = await claimAdReward();
+    if ('error' in result) toast.error(result.error);
+    else toast.success(`+20 coinów! Nowe saldo: ${result.balance} 🪙`);
+  };
 
   const handleConfirm = async () => {
     if (!selected || sending) return;
@@ -115,9 +125,17 @@ export function GiftPicker({ userId, onSend, onClose }: GiftPickerProps) {
             <div className="font-bold">Send a Gift 🎁</div>
             <div className="text-xs text-muted-foreground">Balance: <span className="text-accent font-semibold">🪙 {balance}</span></div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 glass rounded-full flex items-center justify-center">
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAd(true)}
+              className="flex items-center gap-1.5 glass rounded-full px-3 py-1.5 text-xs font-semibold text-accent border border-accent/30"
+            >
+              <PlayCircle className="w-3.5 h-3.5" /> +20
+            </button>
+            <button onClick={onClose} className="w-8 h-8 glass rounded-full flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Category filter */}
@@ -173,8 +191,18 @@ export function GiftPicker({ userId, onSend, onClose }: GiftPickerProps) {
                 exit={{ opacity: 0 }}
                 className="text-center text-xs text-destructive mb-2"
               >
-                Not enough coins! Earn more by logging in daily 🪙
+                Not enough coins! Watch an ad above for +20 🪙
               </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {showAd && (
+              <RewardedAd
+                reward="coins_ad"
+                onComplete={handleAdComplete}
+                onSkip={() => setShowAd(false)}
+                onClose={() => setShowAd(false)}
+              />
             )}
           </AnimatePresence>
           <button

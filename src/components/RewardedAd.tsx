@@ -8,7 +8,8 @@ export type RewardType =
   | 'who_liked_me_24h'
   | 'super_like_x5'
   | 'boost_24h'
-  | 'unlock_blur';
+  | 'unlock_blur'
+  | 'coins_ad';
 
 const REWARD_LABELS: Record<RewardType, { title: string; desc: string; icon: string; durationS: number }> = {
   incognito_1h:      { title: 'Tryb Incognito — 1 godzina',       desc: 'Przeglądaj profile anonimowo',          icon: '👻', durationS: 30 },
@@ -16,6 +17,7 @@ const REWARD_LABELS: Record<RewardType, { title: string; desc: string; icon: str
   super_like_x5:     { title: '5 Super Like\'ów',                  desc: 'Wyróżnij się w talii kart',             icon: '⭐', durationS: 20 },
   boost_24h:         { title: 'Boost profilu — 24 godziny',        desc: '10× więcej wyświetleń',                 icon: '🚀', durationS: 60 },
   unlock_blur:       { title: 'Odblokuj zdjęcie',                  desc: 'Zobacz kto Cię polubił',                icon: '🔓', durationS: 15 },
+  coins_ad:          { title: '+20 coinów',                        desc: 'Doładuj konto oglądając reklamę',       icon: '🪙', durationS: 20 },
 };
 
 // Adsterra Direct Link (Smartlink) for spark-connect.hardbanrecordslab.online

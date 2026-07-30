@@ -48,5 +48,18 @@ export function useCoinBalance(userId: string | null | undefined) {
     return data as number;
   }, [userId]);
 
-  return { balance, loading, spend, earn, refetch };
+  // Earn a small, server-capped amount of coins for watching a
+  // rewarded ad (see migration 20260730000001_ad_coin_rewards.sql —
+  // 20 coins/watch, hard cap of 5 claims/day enforced in the RPC
+  // itself via rate_limits, not just a client-side timer). Throws a
+  // readable error (e.g. daily limit reached) the caller can show.
+  const claimAdReward = useCallback(async (): Promise<{ balance: number } | { error: string }> => {
+    if (!userId) return { error: 'Musisz być zalogowany/a' };
+    const { data, error } = await db.rpc('claim_ad_coins');
+    if (error) return { error: error.message?.includes('limit') ? 'Dzienny limit reklam osiągnięty — wróć jutro po więcej coinów.' : 'Nie udało się przyznać nagrody.' };
+    setBalance(data as number);
+    return { balance: data as number };
+  }, [userId]);
+
+  return { balance, loading, spend, earn, claimAdReward, refetch };
 }
