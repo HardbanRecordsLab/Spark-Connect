@@ -215,6 +215,14 @@ function RealAdUnit({ placement, format }: { placement: string; format: 'strip' 
   }
 }
 
+// A slot with a still-unfilled "YOUR_..." placeholder ID would inject a
+// script pointing at a nonexistent host (e.g. //plYOUR_BANNER_ID...) --
+// broken and blank, not just unmonetized. Fall back to the mock ad
+// instead so the UI never shows dead space, until real zone IDs are set.
+function isPlaceholderSlot(slotId: string): boolean {
+  return !slotId || slotId.startsWith('YOUR_');
+}
+
 // ── Main export ───────────────────────────────────────────────
 export default function AdBanner({ placement = 'discover', onClose }: AdBannerProps) {
   const { currentUser } = useAppStore();
@@ -224,7 +232,8 @@ export default function AdBanner({ placement = 'discover', onClose }: AdBannerPr
   if (currentUser?.donorBadge || dismissed) return null;
 
   const handleDismiss = () => { setDismissed(true); onClose?.(); };
-  const isMock = ACTIVE_AD_PLATFORM === 'mock';
+  const slotKey = placement === 'interstitial' ? 'interstitial' : `${placement}_${placement === 'live' || placement === 'chats' ? 'card' : 'strip'}`;
+  const isMock = ACTIVE_AD_PLATFORM === 'mock' || isPlaceholderSlot(getAdSlot(slotKey).slotId);
 
   if (placement === 'interstitial') {
     return (
