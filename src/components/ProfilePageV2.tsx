@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
-import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles, User, Heart, MessageSquare, Camera, Search, Bell, Menu, Home, BarChart3, Users, Target, Award, Lock, Eye, Globe, Smartphone, Mail, Database } from 'lucide-react';
+import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles, User, Heart, MessageSquare, Camera, Search, Bell, Menu, Home, BarChart3, Users, Target, Award, Lock, Eye, Globe, Smartphone, Mail, Database, Coins, PlayCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import { MyPrivatePhotos } from '@/components/PrivatePhotos';
 import CompatibilityQuiz from '@/components/CompatibilityQuiz';
 import DonationPage from '@/components/DonationPage';
 import RewardedAd from '@/components/RewardedAd';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
 
 const moodOptions = [
   { value: 'Szukam zabawy 🔥',   emoji: '🔥' },
@@ -250,11 +251,12 @@ export default function ProfilePageV2() {
   const { user, isAdmin } = useAuth();
   const { profile, updateProfile, refetch } = useProfile(user);
   const { requestLocation, loading: geoLoading } = useGeolocation();
+  const { balance: coinBalance, claimAdReward } = useCoinBalance(user?.id);
   const [activeSection, setActiveSection] = useState<'main' | 'settings' | 'referral' | 'quiz' | 'donation' | 'analytics' | 'privacy' | 'notifications' | 'advanced'>('main');
   const [activeTab, setActiveTab] = useState<'profil' | 'preferencje' | 'pytania' | 'statystyki' | 'prywatnosc' | 'powiadomienia' | 'ustawienia'>('profil');
   const [showFaceVerify, setShowFaceVerify] = useState(false);
   const [showRewardedAd, setShowRewardedAd] = useState(false);
-  const [rewardType, setRewardType] = useState<'boost_24h' | 'who_liked_me_24h'>('boost_24h');
+  const [rewardType, setRewardType] = useState<'boost_24h' | 'who_liked_me_24h' | 'coins_ad'>('boost_24h');
   const [isBoosted, setIsBoosted] = useState(false);
 
   // Helper function for safe profile updates with error handling
@@ -455,6 +457,23 @@ export default function ProfilePageV2() {
           {/* PROFIL TAB */}
           {activeTab === 'profil' && (
             <div className="space-y-4">
+              {/* Coin balance + earn via ad */}
+              <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center">
+                  <Coins className="w-4 h-4 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">Saldo coinów</p>
+                  <p className="font-bold text-sm">🪙 {coinBalance ?? '—'}</p>
+                </div>
+                <button
+                  onClick={() => { setRewardType('coins_ad'); setShowRewardedAd(true); }}
+                  className="flex items-center gap-1.5 glass rounded-full px-3 py-1.5 text-xs font-semibold text-accent border border-accent/30"
+                >
+                  <PlayCircle className="w-3.5 h-3.5" /> +20
+                </button>
+              </div>
+
               {/* Stats Cards */}
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -1025,10 +1044,19 @@ export default function ProfilePageV2() {
       <AnimatePresence>
         {showFaceVerify && <FaceVerify userId={user?.id} onVerified={handleVerified} onClose={() => setShowFaceVerify(false)} />}
         {showRewardedAd && (
-          <RewardedAd 
-            reward={rewardType} 
-            onComplete={() => { setShowRewardedAd(false); setIsBoosted(true); }} 
-            onSkip={() => setShowRewardedAd(false)} 
+          <RewardedAd
+            reward={rewardType}
+            onComplete={async () => {
+              setShowRewardedAd(false);
+              if (rewardType === 'coins_ad') {
+                const result = await claimAdReward();
+                if ('error' in result) toast.error(result.error);
+                else toast.success(`+20 coinów! Nowe saldo: ${result.balance} 🪙`);
+              } else {
+                setIsBoosted(true);
+              }
+            }}
+            onSkip={() => setShowRewardedAd(false)}
           />
         )}
       </AnimatePresence>
