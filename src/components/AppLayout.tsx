@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost, LayoutDashboard, Search, Shield, Menu, Star } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DiscoverPage from './DiscoverPage';
 import FeedPage from './FeedPage';
@@ -15,7 +15,11 @@ import VisitorsPage from './VisitorsPage';
 import HotOrNotPage from './HotOrNotPage';
 import SafetyCenter from './SafetyCenter';
 import MatchModal from './MatchModal';
-import VideoCallOverlay from './VideoCallOverlay';
+import IncomingCallModal from './IncomingCallModal';
+
+// livekit-client alone accounts for ~500kB — only pull it into the
+// bundle when a call is actually starting, not on first page load.
+const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
 import VibeRooms from './VibeRooms';
 import WhoLikedMe from './WhoLikedMe';
 import DailyStreak from './DailyStreak';
@@ -25,6 +29,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import { useIncomingCallListener } from '@/hooks/useCallSignaling';
 
 const tabs: { id: AppTab; label: string; emoji: string; icon: any; badge?: number }[] = [
   { id: 'discover', label: 'Odkryj', emoji: '🔍', icon: Search },
@@ -61,6 +66,7 @@ export default function AppLayout() {
   const [showSafety, setShowSafety] = useState(false);
   const [notifsSeen, setNotifsSeen] = useState(false);
   const { settings } = useUserSettings(user);
+  useIncomingCallListener(user?.id);
 
   const unreadNotifs = notifsSeen ? 0 : NOTIFICATIONS.filter(n => n.unread).length;
   const currentStreak = 7;
@@ -250,9 +256,14 @@ export default function AppLayout() {
       </nav>
 
       {/* OVERLAYS */}
+      <IncomingCallModal />
       <AnimatePresence>
         {showMatch && <MatchModal />}
-        {showVideoCall && <VideoCallOverlay />}
+        {showVideoCall && (
+          <Suspense fallback={null}>
+            <VideoCallOverlay />
+          </Suspense>
+        )}
         {showVibeRooms && <VibeRooms onClose={() => setShowVibeRooms(false)} />}
         {showWhoLikedMe && <WhoLikedMe onClose={() => setShowWhoLikedMe(false)} />}
         {showStreak && <DailyStreak currentStreak={currentStreak} onClose={() => setShowStreak(false)} />}

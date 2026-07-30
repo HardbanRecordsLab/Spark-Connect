@@ -96,6 +96,15 @@ export interface Profile {
   piercing?: string;
 }
 
+// Minimal shape needed to display "who's calling" — video call state
+// doesn't need the full dating-profile fields, just enough to render
+// a name + avatar.
+export interface CallPeer {
+  id: string;
+  displayName: string;
+  photos: string[];
+}
+
 export interface Message {
   id: string;
   senderId: string;
@@ -138,7 +147,10 @@ interface AppStore {
   showMatch: boolean;
   matchedProfile: Profile | null;
   showVideoCall: boolean;
-  videoCallUser: Profile | null;
+  videoCallUser: CallPeer | null;
+  videoCallMatchId: string | null;
+  videoCallDirection: 'outgoing' | 'incoming' | null;
+  incomingCall: { matchId: string; user: CallPeer } | null;
   showRoulette: boolean;
   coinAnimation: boolean;
 
@@ -149,8 +161,10 @@ interface AppStore {
   swipeRight: () => void;
   superLike: () => void;
   dismissMatch: () => void;
-  startVideoCall: (user: Profile) => void;
+  startVideoCall: (user: CallPeer, matchId: string) => void;
   endVideoCall: () => void;
+  setIncomingCall: (call: { matchId: string; user: CallPeer } | null) => void;
+  acceptIncomingCall: () => void;
   addCoins: (amount: number) => void;
 }
 
@@ -263,6 +277,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
   matchedProfile: null,
   showVideoCall: false,
   videoCallUser: null,
+  videoCallMatchId: null,
+  videoCallDirection: null,
+  incomingCall: null,
   showRoulette: false,
   coinAnimation: false,
 
@@ -298,8 +315,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   
   dismissMatch: () => set({ showMatch: false, matchedProfile: null }),
-  startVideoCall: (user) => set({ showVideoCall: true, videoCallUser: user }),
-  endVideoCall: () => set({ showVideoCall: false, videoCallUser: null }),
+  startVideoCall: (user, matchId) => set({ showVideoCall: true, videoCallUser: user, videoCallMatchId: matchId, videoCallDirection: 'outgoing' }),
+  endVideoCall: () => set({ showVideoCall: false, videoCallUser: null, videoCallMatchId: null, videoCallDirection: null }),
+  setIncomingCall: (call) => set({ incomingCall: call }),
+  acceptIncomingCall: () => {
+    const { incomingCall } = get();
+    if (!incomingCall) return;
+    set({ showVideoCall: true, videoCallUser: incomingCall.user, videoCallMatchId: incomingCall.matchId, videoCallDirection: 'incoming', incomingCall: null });
+  },
   addCoins: (amount) => {
     const { currentUser } = get();
     if (currentUser) {

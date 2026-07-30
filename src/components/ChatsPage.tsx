@@ -994,7 +994,7 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
         <button onClick={() => setIsAnonMode(v => !v)} className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isAnonMode ? 'bg-secondary border border-primary/50' : 'glass'}`}>
           <Ghost className={`w-4 h-4 ${isAnonMode ? 'text-primary' : 'text-muted-foreground'}`} />
         </button>
-        <button onClick={() => startVideoCall(conv.user)} className="w-9 h-9 glass rounded-full flex items-center justify-center">
+        <button onClick={() => startVideoCall(conv.user, conv.matchId)} className="w-9 h-9 glass rounded-full flex items-center justify-center">
           <Video className="w-4 h-4 text-primary" />
         </button>
         <div className="relative">
