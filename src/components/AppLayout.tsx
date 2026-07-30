@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost, LayoutDashboard, Search, Shield, Menu, Star } from 'lucide-react';
+import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost, LayoutDashboard, Search, Shield, Menu, Star, Loader2 } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,6 @@ import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
 import LivePage from './LivePage';
 import ProfilePage from './ProfilePage';
-import RoulettePage from './RoulettePage';
 import GroupsPage from './GroupsPage';
 import MapPage from './MapPage';
 import VisitorsPage from './VisitorsPage';
@@ -20,6 +19,7 @@ import IncomingCallModal from './IncomingCallModal';
 // livekit-client alone accounts for ~500kB — only pull it into the
 // bundle when a call is actually starting, not on first page load.
 const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
+const RoulettePage = lazy(() => import('./RoulettePage'));
 import VibeRooms from './VibeRooms';
 import WhoLikedMe from './WhoLikedMe';
 import DailyStreak from './DailyStreak';
@@ -220,7 +220,11 @@ export default function AppLayout() {
           >
             {activeTab === 'discover' && <DiscoverPage />}
             {activeTab === 'feed' && <FeedPage />}
-            {activeTab === 'roulette' && <RoulettePage />}
+            {activeTab === 'roulette' && (
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+                <RoulettePage />
+              </Suspense>
+            )}
             {activeTab === 'chats' && <ChatsPage />}
             {activeTab === 'live' && <LivePage />}
             {activeTab === 'profile' && <ProfilePage />}
