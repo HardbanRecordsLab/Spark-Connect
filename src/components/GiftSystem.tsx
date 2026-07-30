@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift } from 'lucide-react';
-import { useAppStore } from '@/store/appStore';
+import { X, Gift, Loader2 } from 'lucide-react';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
 
 // ── Gift catalogue ─────────────────────────────────────────────────────────────
 
@@ -48,27 +48,39 @@ const CATEGORIES: { id: GiftItem['category'] | 'all'; label: string; emoji: stri
 // ── Gift Picker (sheet) ────────────────────────────────────────────────────────
 
 interface GiftPickerProps {
+  userId: string | null | undefined;
   onSend: (gift: GiftItem) => void;
   onClose: () => void;
 }
 
-export function GiftPicker({ onSend, onClose }: GiftPickerProps) {
-  const { currentUser, addCoins } = useAppStore();
+export function GiftPicker({ userId, onSend, onClose }: GiftPickerProps) {
+  const { balance: rawBalance, spend } = useCoinBalance(userId);
   const [category, setCategory] = useState<GiftItem['category'] | 'all'>('all');
   const [selected, setSelected] = useState<GiftItem | null>(null);
   const [insufficient, setInsufficient] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const filtered = category === 'all' ? GIFTS : GIFTS.filter(g => g.category === category);
-  const balance = currentUser?.coinBalance ?? 0;
+  const balance = rawBalance ?? 0;
 
-  const handleConfirm = () => {
-    if (!selected) return;
+  const handleConfirm = async () => {
+    if (!selected || sending) return;
     if (balance < selected.priceCoin) {
       setInsufficient(true);
       setTimeout(() => setInsufficient(false), 2000);
       return;
     }
-    addCoins(-selected.priceCoin);
+    setSending(true);
+    // Server-side check is authoritative — the balance shown client-side
+    // is only for UX, adjust_coin_balance rejects the spend atomically
+    // if the real balance turns out to be insufficient (e.g. stale cache).
+    const ok = await spend(selected.priceCoin, `gift:${selected.id}`);
+    setSending(false);
+    if (!ok) {
+      setInsufficient(true);
+      setTimeout(() => setInsufficient(false), 2000);
+      return;
+    }
     onSend(selected);
     onClose();
   };
@@ -167,13 +179,14 @@ export function GiftPicker({ onSend, onClose }: GiftPickerProps) {
           </AnimatePresence>
           <button
             onClick={handleConfirm}
-            disabled={!selected}
-            className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${
+            disabled={!selected || sending}
+            className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
               selected
                 ? 'gradient-fire text-primary-foreground'
                 : 'bg-secondary text-muted-foreground cursor-not-allowed'
             }`}
           >
+            {sending && <Loader2 className="w-4 h-4 animate-spin" />}
             {selected ? `Send ${selected.emoji} ${selected.name} · 🪙${selected.priceCoin}` : 'Select a gift'}
           </button>
         </div>

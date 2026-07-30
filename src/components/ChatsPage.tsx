@@ -1273,7 +1273,7 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
       </AnimatePresence>
 
       <AnimatePresence>
-        {showGiftPicker && <GiftPicker onSend={handleGiftSent} onClose={() => setShowGiftPicker(false)} />}
+        {showGiftPicker && <GiftPicker userId={user?.id} onSend={handleGiftSent} onClose={() => setShowGiftPicker(false)} />}
       </AnimatePresence>
       <AnimatePresence>
         {revealGift && <GiftReveal gift={revealGift} senderName="You" onDismiss={() => setRevealGift(null)} />}

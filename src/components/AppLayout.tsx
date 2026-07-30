@@ -44,7 +44,11 @@ const NOTIFICATIONS = [
 export default function AppLayout() {
   const { activeTab, setActiveTab, showMatch, showVideoCall } = useAppStore();
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id ?? null);
+  // Bug fix: useProfile expects the Supabase User object, not just its
+  // id string — passing `user?.id` silently broke profile fetching
+  // (the hook does `.eq('id', user.id)`, so a string here resolves to
+  // `.eq('id', undefined)`).
+  const { profile } = useProfile(user);
   const { conversations } = useConversations(user?.id ?? null);
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
   const navigate = useNavigate();

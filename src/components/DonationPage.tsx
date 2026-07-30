@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, Crown, Coins, Check, ExternalLink } from 'lucide-react';
-import { useAppStore } from '@/store/appStore';
+import { ArrowLeft, Heart, Crown, Coins, Check, Clock } from 'lucide-react';
 
 const SUPPORTERS = [
   { name: 'Marek W.', amount: 20, date: '2 days ago', emoji: '💎' },
@@ -23,40 +22,35 @@ interface DonationPageProps {
 }
 
 export default function DonationPage({ onClose }: DonationPageProps) {
-  const { currentUser, addCoins } = useAppStore();
   const [selected, setSelected] = useState(DONATION_OPTIONS[1]);
-  const [step, setStep] = useState<'pick' | 'success'>('pick');
-  const alreadyDonor = currentUser?.donorBadge;
+  const [step, setStep] = useState<'pick' | 'soon'>('pick');
 
+  // Spark Connect is ad-supported and free for now — there's no real
+  // payment processor wired up yet, so this can no longer pretend to
+  // charge money and instantly grant coins/a badge (that would let
+  // anyone mint themselves free coins with zero verification). Show
+  // an honest "coming soon" instead of a fake successful payment.
   const handleDonate = () => {
-    addCoins(selected.coins);
-    setStep('success');
+    setStep('soon');
   };
 
-  if (step === 'success') {
+  if (step === 'soon') {
     return (
       <div className="h-full flex flex-col items-center justify-center px-8 text-center gap-6">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', bounce: 0.5 }}
-          className="text-7xl"
-        >💖</motion.div>
+          className="w-20 h-20 rounded-full glass border border-accent/30 flex items-center justify-center"
+        ><Clock className="w-9 h-9 text-accent" /></motion.div>
         <div>
-          <h2 className="text-2xl font-black gradient-text mb-2">Thank you so much!</h2>
+          <h2 className="text-2xl font-black gradient-text mb-2">Wsparcie już wkrótce</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            You donated <strong>€{selected.amount}</strong> and received <strong>{selected.coins} coins</strong> + the exclusive <strong>Donor Badge 💎</strong>
+            Spark Connect jest teraz w pełni darmowy i utrzymuje się z reklam — płatne wsparcie i odznaka Donora pojawią się, gdy podepniemy prawdziwą płatność. Dzięki za chęć wsparcia! 🔥
           </p>
         </div>
-        <div className="glass neon-border rounded-2xl p-4 text-center w-full">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <Crown className="w-5 h-5 text-accent" />
-            <span className="font-bold text-accent">Donor Badge Earned!</span>
-          </div>
-          <p className="text-xs text-muted-foreground">Displayed on your profile. No more ads. Spark Connect. ❤️</p>
-        </div>
         <button onClick={onClose} className="w-full gradient-fire text-primary-foreground py-4 rounded-2xl font-bold">
-          Back to App 🔥
+          Wróć do aplikacji 🔥
         </button>
       </div>
     );
@@ -71,7 +65,7 @@ export default function DonationPage({ onClose }: DonationPageProps) {
         </button>
         <div>
           <h2 className="font-bold">Support Spark Connect ❤️</h2>
-          <p className="text-xs text-muted-foreground">100% voluntary · earns you coins + badge</p>
+          <p className="text-xs text-muted-foreground">Płatne wsparcie — już wkrótce</p>
         </div>
       </div>
 
@@ -84,17 +78,6 @@ export default function DonationPage({ onClose }: DonationPageProps) {
             No paywalls. No locked features. Your donation keeps the servers running, the developers fed, and the community alive. In return you get coins + the prestigious <span className="text-accent font-semibold">Donor Badge 💎</span>.
           </p>
         </div>
-
-        {/* Already donor */}
-        {alreadyDonor && (
-          <div className="glass border border-accent/30 rounded-2xl p-4 flex items-center gap-3">
-            <Crown className="w-6 h-6 text-accent" />
-            <div>
-              <p className="font-bold text-sm text-accent">You're already a Donor! 💎</p>
-              <p className="text-xs text-muted-foreground">Thank you for your support. You can donate again for more coins.</p>
-            </div>
-          </div>
-        )}
 
         {/* Amount picker */}
         <div>
@@ -157,11 +140,10 @@ export default function DonationPage({ onClose }: DonationPageProps) {
           className="w-full gradient-fire text-primary-foreground py-4 rounded-2xl font-bold text-base glow-red flex items-center justify-center gap-2"
         >
           <Heart className="w-5 h-5" />
-          Donate €{selected.amount} via Ko-fi
-          <ExternalLink className="w-4 h-4" />
+          Wesprzyj €{selected.amount}
         </button>
         <p className="text-xs text-center text-muted-foreground">
-          Secure payment via Ko-fi · 0% platform fee · No account required
+          Płatności wkrótce · na razie Spark Connect jest w pełni darmowy
         </p>
 
         {/* Supporters */}
