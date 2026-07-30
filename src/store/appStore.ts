@@ -163,6 +163,7 @@ interface AppStore {
   swipeRight: () => void;
   superLike: () => void;
   dismissMatch: () => void;
+  triggerMatch: (profile: Profile) => void;
   startVideoCall: (user: CallPeer, matchId: string) => void;
   endVideoCall: () => void;
   setIncomingCall: (call: { matchId: string; user: CallPeer } | null) => void;
@@ -317,6 +318,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   
   dismissMatch: () => set({ showMatch: false, matchedProfile: null }),
+
+  // Real match trigger — used by DiscoverPage after record_swipe() confirms
+  // a genuine reciprocal like, as opposed to swipeRight/superLike above
+  // which are the older mock-driven card-stack flow (still used by
+  // WhoLikedMe.tsx, left untouched).
+  triggerMatch: (profile: Profile) => set({ showMatch: true, matchedProfile: profile }),
   startVideoCall: (user, matchId) => set({ showVideoCall: true, videoCallUser: user, videoCallMatchId: matchId, videoCallDirection: 'outgoing' }),
   endVideoCall: () => set({ showVideoCall: false, videoCallUser: null, videoCallMatchId: null, videoCallDirection: null }),
   setIncomingCall: (call) => set({ incomingCall: call }),

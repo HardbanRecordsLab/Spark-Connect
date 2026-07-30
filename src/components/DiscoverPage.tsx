@@ -12,6 +12,7 @@ import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
 import { WhisperModal } from '@/components/WhisperMessage';
 import ReferralSystem from '@/components/ReferralSystem';
 import { Crown } from 'lucide-react';
+import { toast } from 'sonner';
 
 const db = supabase as any;
 
@@ -83,14 +84,15 @@ function ProfileGridItem({ profile, onSelect }: { profile: Profile; onSelect: (p
 }
 
 export default function DiscoverPage() {
-  const { discoverProfiles: mockProfiles } = useAppStore();
+  const { discoverProfiles: mockProfiles, triggerMatch } = useAppStore();
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const { user } = useAuth();
-  const { profiles: dbProfiles, loading: loadingProfiles, refetch } = useDiscoverProfiles(user?.id ?? null);
+  const { profiles: dbProfiles, loading: loadingProfiles, refetch, recordSwipe: markSwiped } = useDiscoverProfiles(user?.id ?? null);
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'online' | 'new' | 'nearby'>('all');
   const [showWhisper, setShowWhisper] = useState(false);
+  const [matching, setMatching] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showReferral, setShowReferral] = useState(false);
 
@@ -101,6 +103,22 @@ export default function DiscoverPage() {
       setAllProfiles(mockProfiles);
     }
   }, [dbProfiles, loadingProfiles, mockProfiles]);
+
+  const handleMatch = async (profile: Profile) => {
+    if (!user || matching) return;
+    setMatching(true);
+    const { data, error } = await db.rpc('record_swipe', { p_swiped_id: profile.id, p_direction: 'right' });
+    setMatching(false);
+    setSelectedProfile(null);
+    if (error) { toast.error('Nie udało się zapisać polubienia. Spróbuj ponownie.'); return; }
+    markSwiped(profile.id);
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.matched) {
+      triggerMatch(profile);
+    } else {
+      toast.success(`Polubiono ${profile.displayName} 💚`);
+    }
+  };
 
   const filteredProfiles = allProfiles.filter(p => {
     if (!p) return false;
@@ -279,11 +297,12 @@ export default function DiscoverPage() {
                     <span className="flex items-center gap-1"><Video className="w-3.5 h-3.5" /> Dostępna</span>
                   </div>
                   <div className="flex gap-2">
-                    <button 
-                      onClick={() => setSelectedProfile(null)}
-                      className="flex-1 gradient-fire text-primary-foreground py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl"
+                    <button
+                      onClick={() => handleMatch(selectedProfile)}
+                      disabled={matching}
+                      className="flex-1 gradient-fire text-primary-foreground py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl disabled:opacity-60"
                     >
-                      Dopasuj 🔥
+                      {matching ? '...' : 'Dopasuj 🔥'}
                     </button>
                     <button 
                       onClick={() => setShowWhisper(true)}
