@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore
 import { motion, AnimatePresence } from 'framer-motion';
 // @ts-ignore
-import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles, User, Heart, MessageSquare, Camera, Search, Bell, Menu, Home, Coins, PlayCircle } from 'lucide-react';
+import { Settings, Edit, Shield, MapPin, ChevronRight, LogOut, Check, X, Plus, TrendingUp, Zap, LocateFixed, Loader2, Sparkles, User, Heart, MessageSquare, Camera, Search, Bell, Menu, Home, Coins, PlayCircle, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
