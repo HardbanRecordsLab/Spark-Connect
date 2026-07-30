@@ -304,6 +304,24 @@ export default function ProfilePage() {
     toast.success('Zgłoszenie wysłane do weryfikacji przez administratora.');
   };
 
+  // Real profile-completeness signal, replacing the old hardcoded
+  // "Level 4 / 850 XP" gamification card that showed the same fake
+  // numbers to every user regardless of their actual profile.
+  const completenessChecks: { label: string; done: boolean }[] = [
+    { label: 'Dodaj zdjęcie profilowe', done: !!(profile?.avatar_url || profile?.photos?.[0]) },
+    { label: 'Dodaj więcej zdjęć (min. 3)', done: (profile?.photos?.length ?? 0) >= 3 },
+    { label: 'Napisz opis o sobie', done: !!(profile?.bio && profile.bio.trim().length >= 20) },
+    { label: 'Podaj miasto', done: !!profile?.city },
+    { label: 'Ustaw orientację', done: !!profile?.orientation },
+    { label: 'Ustaw kogo szukasz', done: !!profile?.looking_for_gender },
+    { label: 'Dodaj zainteresowania', done: (interests?.length ?? 0) > 0 },
+    { label: 'Ustaw status', done: !!profile?.mood_status },
+  ];
+  const completenessDone = completenessChecks.filter(c => c.done).length;
+  const completenessPct = Math.round((completenessDone / completenessChecks.length) * 100);
+  const nextMissing = completenessChecks.filter(c => !c.done).slice(0, 2);
+  const isRecentlyActive = !!profile?.last_online_at && (Date.now() - new Date(profile.last_online_at).getTime()) < 5 * 60 * 1000;
+
   const rawPhotos = profile?.photos ?? currentUser?.photos ?? [];
   const displayPhotos = rawPhotos.filter((p: string) => !p.startsWith('video:'));
   const profileVideoUrl = (rawPhotos.find((p: string) => p.startsWith('video:')) ?? '').replace('video:', '') || null;
@@ -423,7 +441,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* Profile Strength & Gamification */}
+        {/* Profile completeness — real, computed from actual filled fields */}
         <div className="glass rounded-3xl p-5 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -431,39 +449,46 @@ export default function ProfilePage() {
                 <TrendingUp className="w-4 h-4 text-primary-foreground" />
               </div>
               <div>
-                <p className="text-sm font-bold">Poziom Profilu</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Spark Level 4</p>
+                <p className="text-sm font-bold">Uzupełnienie profilu</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pełniejszy profil = więcej dopasowań</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-black gradient-text">850 XP</p>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-medium">
-              <span className="text-muted-foreground">Do następnego poziomu</span>
-              <span className="text-primary">150 XP</span>
-            </div>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }} 
-                animate={{ width: '85%' }} 
-                className="h-full gradient-fire rounded-full" 
-              />
+              <p className="text-lg font-black gradient-text">{completenessPct}%</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center text-xs">✅</div>
-              <span className="text-[10px] font-medium">Profil 90%</span>
-            </div>
-            <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center text-xs">💬</div>
-              <span className="text-[10px] font-medium">Top Chatter</span>
-            </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${completenessPct}%` }}
+              className="h-full gradient-fire rounded-full"
+            />
           </div>
+
+          {nextMissing.length > 0 ? (
+            <div className="grid grid-cols-1 gap-2 mt-4">
+              {nextMissing.map(item => (
+                <div key={item.label} className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-xs">→</div>
+                  <span className="text-[10px] font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center text-xs">✅</div>
+                <span className="text-[10px] font-medium">Profil kompletny</span>
+              </div>
+              {isRecentlyActive && (
+                <div className="glass-dark p-2.5 rounded-2xl border border-white/5 flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center text-xs">🟢</div>
+                  <span className="text-[10px] font-medium">Aktywny/a teraz</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Profile Boost — free, ad-based */}

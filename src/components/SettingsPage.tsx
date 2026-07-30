@@ -110,13 +110,20 @@ export default function SettingsPage({ onClose }: SettingsPageProps) {
     if (deleteConfirm !== 'DELETE') return;
     setDeleting(true);
     try {
-      // Sign out first then redirect — actual data deletion would need an edge function
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session?.access_token}` },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.error) throw new Error(json.error || 'Delete failed');
+
       await supabase.auth.signOut();
       setDeleted(true);
       setTimeout(() => setView('landing'), 2000);
     } catch (err) {
       console.error('Account deletion failed:', err);
-      toast.error('Błąd usuwania konta.');
+      toast.error('Błąd usuwania konta. Spróbuj ponownie lub skontaktuj się z pomocą.');
       setDeleting(false);
     }
   };
