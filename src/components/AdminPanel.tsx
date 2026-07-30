@@ -7,8 +7,10 @@ import {
   TrendingUp, UserCheck, UserX, Map, Flame, Settings,
   Bell, Lock, Globe, ChevronRight, Activity, Database, Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -344,11 +346,14 @@ function GroupsSection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">✦ Grupy dyskusyjne</h2>
-        <button className="text-xs text-primary">+ Utwórz grupę</button>
+        <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="text-xs text-primary">+ Utwórz grupę</button>
+      </div>
+      <div className="glass rounded-xl px-3 py-2 border border-amber-500/30 text-xs text-amber-400">
+        Podgląd przykładowy — grupy nie są jeszcze podłączone do bazy danych.
       </div>
       <div className="space-y-2">
         {groups.map((g, i) => (
-          <div key={i} className="glass rounded-xl p-3 flex items-center gap-3 border border-border">
+          <div key={i} className="glass rounded-xl p-3 flex items-center gap-3 border border-border opacity-70">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="font-medium text-sm truncate">{g.name}</span>
@@ -361,8 +366,8 @@ function GroupsSection() {
               </div>
             </div>
             <div className="flex gap-1.5">
-              <button className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-primary">✏️</button>
-              <button className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-destructive">🗑️</button>
+              <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-primary">✏️</button>
+              <button onClick={() => toast('Zarządzanie grupami już wkrótce 🚧')} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-xs text-muted-foreground hover:text-destructive">🗑️</button>
             </div>
           </div>
         ))}
@@ -443,11 +448,7 @@ function ReportsSection() {
 
 // ── Settings Section ───────────────────────────────────────────
 function SettingsSection({ adminRole }: { adminRole: 'admin' | 'moderator' | 'support' | null }) {
-  const [liveEnabled, setLiveEnabled] = useState(true);
-  const [mapEnabled, setMapEnabled] = useState(true);
-  const [hotnotEnabled, setHotnotEnabled] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const { flags, loading: flagsLoading, setFlag } = useFeatureFlags();
 
   const Toggle = ({ val, onChange }: { val: boolean; onChange: (v: boolean) => void }) => (
     <button onClick={() => onChange(!val)}
@@ -456,24 +457,33 @@ function SettingsSection({ adminRole }: { adminRole: 'admin' | 'moderator' | 'su
     </button>
   );
 
+  const handleToggle = async (key: string, next: boolean) => {
+    const { error } = await setFlag(key, next);
+    if (error) toast.error('Nie udało się zapisać ustawienia.');
+  };
+
+  if (flagsLoading) {
+    return <div className="text-center py-10 opacity-50 text-sm">Ładowanie ustawień...</div>;
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">⚙️ Ustawienia aplikacji</h2>
 
       <div className="glass rounded-2xl border border-border overflow-hidden divide-y divide-border">
         {[
-          { icon: '🎥', label: 'Live Streaming', desc: 'Transmisje na żywo', val: liveEnabled, set: setLiveEnabled },
-          { icon: '📍', label: 'Mapa aktywnych', desc: 'GPS i lokalizacja', val: mapEnabled, set: setMapEnabled },
-          { icon: '🔥', label: 'Hot or Not', desc: 'Ocenianie profili', val: hotnotEnabled, set: setHotnotEnabled },
-          { icon: '🔓', label: 'Otwarta rejestracja', desc: 'Nowi użytkownicy mogą się rejestrować', val: registrationOpen, set: setRegistrationOpen },
-        ].map((s, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+          { key: 'live_streaming', icon: '🎥', label: 'Live Streaming', desc: 'Transmisje na żywo' },
+          { key: 'map_nearby', icon: '📍', label: 'Mapa aktywnych', desc: 'GPS i lokalizacja' },
+          { key: 'hot_or_not', icon: '🔥', label: 'Hot or Not', desc: 'Ocenianie profili' },
+          { key: 'open_registration', icon: '🔓', label: 'Otwarta rejestracja', desc: 'Nowi użytkownicy mogą się rejestrować' },
+        ].map(s => (
+          <div key={s.key} className="flex items-center gap-3 px-4 py-3.5">
             <span className="text-xl flex-shrink-0">{s.icon}</span>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium">{s.label}</div>
               <div className="text-xs text-muted-foreground">{s.desc}</div>
             </div>
-            <Toggle val={s.val} onChange={s.set} />
+            <Toggle val={flags[s.key] ?? true} onChange={v => handleToggle(s.key, v)} />
           </div>
         ))}
       </div>
@@ -489,12 +499,12 @@ function SettingsSection({ adminRole }: { adminRole: 'admin' | 'moderator' | 'su
             <div className="text-sm font-medium">Tryb maintenance</div>
             <div className="text-xs text-muted-foreground">Blokuje dostęp zwykłym użytkownikom</div>
           </div>
-          <button onClick={() => setMaintenanceMode(v => !v)}
-            className={`w-10 h-6 rounded-full relative transition-all ${maintenanceMode ? 'bg-destructive' : 'bg-secondary'}`}>
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${maintenanceMode ? 'left-5' : 'left-1'}`} />
+          <button onClick={() => handleToggle('maintenance_mode', !(flags.maintenance_mode ?? false))}
+            className={`w-10 h-6 rounded-full relative transition-all ${flags.maintenance_mode ? 'bg-destructive' : 'bg-secondary'}`}>
+            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${flags.maintenance_mode ? 'left-5' : 'left-1'}`} />
           </button>
         </div>
-        {maintenanceMode && (
+        {flags.maintenance_mode && (
           <div className="px-4 pb-3">
             <p className="text-xs text-destructive">⚠️ Aplikacja jest teraz niedostępna dla użytkowników!</p>
           </div>
@@ -735,6 +745,13 @@ export default function AdminPanel() {
   const [search, setSearch] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingReports, setPendingReports] = useState(0);
+
+  useEffect(() => {
+    if (!authed) return;
+    db.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+      .then(({ count }: { count: number | null }) => setPendingReports(count ?? 0));
+  }, [authed]);
 
   const loadUsers = async () => {
     setRefreshing(true);
@@ -744,9 +761,12 @@ export default function AdminPanel() {
       .eq('profile_complete', true)
       .order('created_at', { ascending: false });
 
+    // Real email, resolved below via admin-list-emails (profiles has no
+    // email column — it lives in auth.users, service-role only). Show a
+    // loading placeholder in the meantime rather than a fake address.
     const enriched: PendingUser[] = (data ?? []).map((p: PendingUser) => ({
       ...p,
-      email: `user_${p.id.slice(0, 6)}@spark.app`,
+      email: 'Ładowanie...',
     }));
 
     setUsers(enriched);
@@ -756,6 +776,25 @@ export default function AdminPanel() {
       approved: enriched.filter(u => u.admin_approved).length,
       rejected: enriched.filter(u => u.admin_rejected).length,
     });
+
+    if (enriched.length > 0) {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (!session) return;
+        try {
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-list-emails`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ userIds: enriched.map(u => u.id) }),
+          });
+          const { emails } = await res.json();
+          if (emails) {
+            setUsers(prev => prev.map(u => emails[u.id] ? { ...u, email: emails[u.id] } : { ...u, email: 'Nieznany' }));
+          }
+        } catch {
+          setUsers(prev => prev.map(u => ({ ...u, email: 'Nieznany' })));
+        }
+      });
+    }
     setRefreshing(false);
   };
 
@@ -855,7 +894,7 @@ export default function AdminPanel() {
     { id: 'users', icon: <Users className="w-4 h-4" />, label: 'Użytkownicy', badge: stats.pending },
     { id: 'stats', icon: <TrendingUp className="w-4 h-4" />, label: 'Statystyki' },
     { id: 'groups', icon: <MessageSquare className="w-4 h-4" />, label: 'Grupy' },
-    { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: 4 },
+    { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: pendingReports },
     { id: 'blacklist', icon: <Ban className="w-4 h-4" />, label: 'Blacklista' },
     { id: 'verification', icon: <Shield className="w-4 h-4" />, label: 'Weryfikacja' },
     { id: 'settings', icon: <Settings className="w-4 h-4" />, label: 'Ustawienia' },
