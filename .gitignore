@@ -33,3 +33,7 @@ supabase/.temp
 
 .vercel
 .env*
+
+# Test run artifacts — regenerate locally/in CI, not source
+playwright-report/
+test-results/

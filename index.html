@@ -46,8 +46,17 @@
     <!-- Google AdSense (Wyłączony - używamy Adsterra) -->
     <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9458765432109876" crossorigin="anonymous"></script> -->
 
-    <!-- Adsterra Popunder Anti-Adblock (Włączony dla monetyzacji) -->
-    <script src="https://deductpursue.com/87/70/43/8770435084a76ca11da21362ffa12626.js" defer></script>
+    <!-- Adsterra Popunder Anti-Adblock — DISABLED 2026-07-30.
+         Confirmed via E2E test that this script injects a full-viewport
+         invisible anchor (id="lkmgg" inside id="dc61ghj") that intercepts
+         the FIRST click anywhere on the page — including the "Zaloguj się"
+         button — and hijacks it to open an ad tab instead of the intended
+         action. This was already flagged unstable once before (see the
+         other now-removed copy of this same script, previously commented
+         out "for Chrome stability tests"). Breaking the ability to log in
+         costs more in lost signups than this ad unit earns; the banner-
+         style AdBanner placements elsewhere in the app are unaffected. -->
+    <!-- <script src="https://deductpursue.com/87/70/43/8770435084a76ca11da21362ffa12626.js" defer></script> -->
 
     </head>
   <body>
@@ -78,7 +87,5 @@
     <noscript><div style="padding:40px;text-align:center;color:#fff;background:#0a0a0f;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif"><div><div style="font-size:48px">🔥</div><h1>Spark Connect</h1><p style="color:rgba(255,255,255,.6)">Włącz JavaScript aby korzystać z aplikacji.</p></div></div></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Adsterra Popunder Anti-Adblock (Tymczasowo zakomentowane dla testów stabilności w Chrome) -->
-    <!-- <script src="https://deductpursue.com/87/70/43/8770435084a76ca11da21362ffa12626.js" defer></script> -->
   </body>
 </html>
