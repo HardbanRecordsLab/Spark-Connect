@@ -11,11 +11,14 @@ interface ChatContextMenuProps {
   onMute: () => void;
   onClearChat: () => void;
   onClose: () => void;
+  isArchived?: boolean;
+  isMuted?: boolean;
 }
 
 export default function ChatContextMenu({
   userName, onBlock, onReport, onUnmatch,
   onArchive, onMute, onClearChat, onClose,
+  isArchived = false, isMuted = false,
 }: ChatContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -30,8 +33,8 @@ export default function ChatContextMenu({
   }, [onClose]);
 
   const items = [
-    { icon: VolumeX, label: `Wycisz ${userName}`, action: onMute, variant: 'normal' },
-    { icon: Archive, label: 'Archiwizuj rozmowę', action: onArchive, variant: 'normal' },
+    { icon: VolumeX, label: isMuted ? `Cofnij wyciszenie ${userName}` : `Wycisz ${userName}`, action: onMute, variant: 'normal' },
+    { icon: Archive, label: isArchived ? 'Przywróć z archiwum' : 'Archiwizuj rozmowę', action: onArchive, variant: 'normal' },
     { icon: Trash2, label: 'Wyczyść historię', action: onClearChat, variant: 'normal' },
     { icon: Flag, label: `Zgłoś ${userName}`, action: onReport, variant: 'warning' },
     { icon: HeartOff, label: 'Usuń dopasowanie', action: onUnmatch, variant: 'danger' },

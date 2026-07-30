@@ -42,6 +42,12 @@ export function useConversations(userId: string | null) {
 
     if (!matches?.length) { setConversations([]); setLoading(false); return; }
 
+    const { data: stateRows } = await db
+      .from('match_user_state').select('match_id, archived, muted').eq('user_id', userId);
+    const stateByMatch = new Map<string, { archived: boolean; muted: boolean }>(
+      (stateRows ?? []).map((r: { match_id: string; archived: boolean; muted: boolean }) => [r.match_id, r])
+    );
+
     const convos: Conversation[] = [];
 
     for (const match of matches) {
@@ -89,6 +95,8 @@ export function useConversations(userId: string | null) {
         messages: [],
         isOnline: false,
         isTyping: false,
+        isArchived: stateByMatch.get(match.id)?.archived ?? false,
+        isMuted: stateByMatch.get(match.id)?.muted ?? false,
       });
     }
 
@@ -133,8 +141,9 @@ export function useConversations(userId: string | null) {
           // Don't push if user is actively viewing this conversation
           if (activeConversationRef.current === msg.conversation_id) return;
 
-          // Find sender name from conversations cache
+          // Find sender name from conversations cache; skip push for muted chats
           const senderConvo = conversations.find(c => c.id === msg.conversation_id);
+          if (senderConvo?.isMuted) { fetchConversations(); return; }
           const senderName = senderConvo?.user.displayName ?? 'Nowa wiadomość';
 
           const body = msg.type === 'audio'
@@ -166,5 +175,16 @@ export function useConversations(userId: string | null) {
     return () => { supabase.removeChannel(msgChannel); };
   }, [userId, conversations, fetchConversations]);
 
-  return { conversations, loading, refetch: fetchConversations, setActiveConversation };
+  const setMatchState = useCallback(async (matchId: string, updates: { archived?: boolean; muted?: boolean }) => {
+    if (!userId) return { error: 'Not authenticated' };
+    setConversations(prev => prev.map(c => c.matchId === matchId ? { ...c, ...(updates.archived !== undefined ? { isArchived: updates.archived } : {}), ...(updates.muted !== undefined ? { isMuted: updates.muted } : {}) } : c));
+    const { error } = await db.from('match_user_state').upsert(
+      { match_id: matchId, user_id: userId, ...updates, updated_at: new Date().toISOString() },
+      { onConflict: 'match_id,user_id' }
+    );
+    if (error) fetchConversations();
+    return { error };
+  }, [userId, fetchConversations]);
+
+  return { conversations, loading, refetch: fetchConversations, setActiveConversation, setMatchState };
 }

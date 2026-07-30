@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } f
 import {
   Send, Video, ArrowLeft, Image, Smile, Mic, CheckCheck,
   MoreVertical, Clock, Ghost, Eye, Timer, X, Play, Film,
-  Upload, Pause, MicOff, CornerUpLeft, Reply, Search, Wand2
+  Upload, Pause, MicOff, CornerUpLeft, Reply, Search, Wand2, VolumeX
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
@@ -560,7 +560,10 @@ function ConversationItem({ conv, onClick }: { conv: Conversation; onClick: () =
       </div>
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="font-semibold">{conv.user.displayName}</span>
+          <span className="font-semibold flex items-center gap-1.5">
+            {conv.user.displayName}
+            {conv.isMuted && <VolumeX className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+          </span>
           <span className="text-xs text-muted-foreground">{conv.lastMessageAt}</span>
         </div>
         <div className="flex items-center justify-between">
@@ -586,7 +589,10 @@ function ConversationItem({ conv, onClick }: { conv: Conversation; onClick: () =
 }
 
 // ─── ChatView ─────────────────────────────────────────────────────────────────
-function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) {
+function ChatView({ conv, onBack, setMatchState }: {
+  conv: Conversation; onBack: () => void;
+  setMatchState: (matchId: string, updates: { archived?: boolean; muted?: boolean }) => Promise<{ error: unknown }>;
+}) {
   const { user } = useAuth();
   const myId = user?.id ?? 'me';
   const { notify } = usePushNotifications(user?.id ?? null);
@@ -973,6 +979,19 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
     onBack();
   };
 
+  const handleArchive = async () => {
+    const { error } = await setMatchState(conv.matchId, { archived: !conv.isArchived });
+    if (error) { toast.error('Nie udało się zaktualizować archiwum.'); return; }
+    toast.success(conv.isArchived ? 'Przywrócono z archiwum.' : 'Rozmowa zarchiwizowana.');
+    if (!conv.isArchived) onBack();
+  };
+
+  const handleMute = async () => {
+    const { error } = await setMatchState(conv.matchId, { muted: !conv.isMuted });
+    if (error) { toast.error('Nie udało się zaktualizować powiadomień.'); return; }
+    toast.success(conv.isMuted ? 'Powiadomienia włączone.' : 'Rozmowa wyciszona.');
+  };
+
   const handleGiftSent = (gift: GiftItem) => {
     setGiftMessages(prev => [...prev, { id: `gift-${Date.now()}`, gift }]);
     setTimeout(() => setRevealGift(gift), 800);
@@ -1034,10 +1053,12 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
                 onBlock={handleBlock}
                 onReport={() => setShowReportModal(true)}
                 onUnmatch={handleUnmatch}
-                onArchive={() => toast('Archiwizacja rozmów już wkrótce 🚧')}
-                onMute={() => toast('Wyciszanie rozmów już wkrótce 🚧')}
+                onArchive={handleArchive}
+                onMute={handleMute}
                 onClearChat={() => setMessages([])}
                 onClose={() => setShowContextMenu(false)}
+                isArchived={conv.isArchived}
+                isMuted={conv.isMuted}
               />
             )}
           </AnimatePresence>
@@ -1329,24 +1350,34 @@ function ChatView({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
 
 export default function ChatsPage() {
   const { user } = useAuth();
-  const { conversations: realConvs, loading } = useConversations(user?.id ?? null);
+  const { conversations: realConvs, loading, setMatchState } = useConversations(user?.id ?? null);
   const { conversations: mockConvs } = useAppStore();
   const conversations = user ? realConvs : mockConvs;
   const [activeConv, setActiveConv] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
-  const filtered = conversations.filter(c =>
+  const scoped = conversations.filter(c => !!c.isArchived === showArchived);
+  const filtered = scoped.filter(c =>
     c.user.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const archivedCount = conversations.filter(c => c.isArchived).length;
 
   if (activeConv) {
-    return <ChatView conv={activeConv} onBack={() => setActiveConv(null)} />;
+    return <ChatView conv={activeConv} onBack={() => setActiveConv(null)} setMatchState={setMatchState} />;
   }
 
   return (
     <div className="h-full flex flex-col">
       <div className="px-5 pt-3 pb-4">
-        <h1 className="text-2xl font-bold mb-4">Wiadomości</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">{showArchived ? 'Archiwum' : 'Wiadomości'}</h1>
+          {(showArchived || archivedCount > 0) && (
+            <button onClick={() => setShowArchived(v => !v)} className="text-xs text-primary font-medium">
+              {showArchived ? '← Wróć' : `Archiwum (${archivedCount})`}
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-3 glass rounded-2xl px-4 py-3">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           <input
@@ -1387,9 +1418,9 @@ export default function ChatsPage() {
         )}
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center h-40 gap-3 opacity-50">
-            <div className="text-4xl">{searchQuery ? '🔍' : '💌'}</div>
+            <div className="text-4xl">{searchQuery ? '🔍' : showArchived ? '🗄️' : '💌'}</div>
             <p className="text-sm text-muted-foreground text-center">
-              {searchQuery ? `Brak wyników dla "${searchQuery}"` : 'Brak dopasowań.\nZacznij swipe\'ować!'}
+              {searchQuery ? `Brak wyników dla "${searchQuery}"` : showArchived ? 'Brak zarchiwizowanych rozmów.' : 'Brak dopasowań.\nZacznij swipe\'ować!'}
             </p>
           </div>
         )}

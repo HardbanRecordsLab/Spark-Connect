@@ -124,6 +124,8 @@ export interface Conversation {
   messages: Message[];
   isOnline: boolean;
   isTyping: boolean;
+  isArchived?: boolean;
+  isMuted?: boolean;
 }
 
 export interface LiveStream {
