@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, X, Star, Filter, MapPin, Shield, Eye, Ghost, Sparkles, Video, Clock } from 'lucide-react';
+import { Star, Filter, MapPin, Shield, Ghost, Sparkles, Video, Clock } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
 import { StoriesBar, mockUserStories } from '@/components/StoriesSystem';
@@ -88,7 +88,7 @@ export default function DiscoverPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const { user } = useAuth();
-  const { profiles: dbProfiles, loading: loadingProfiles, refetch, recordSwipe: markSwiped } = useDiscoverProfiles(user?.id ?? null);
+  const { profiles: dbProfiles, loading: loadingProfiles, recordSwipe: markSwiped } = useDiscoverProfiles(user?.id ?? null);
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'online' | 'new' | 'nearby'>('all');
   const [showWhisper, setShowWhisper] = useState(false);

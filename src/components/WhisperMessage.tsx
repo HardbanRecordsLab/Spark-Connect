@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ghost, Send, X, Eye, MessageCircle } from 'lucide-react';
+import { Ghost, X, Eye, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Profile } from '@/store/appStore';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Eye, Coins, Heart, Video, Radio, ArrowLeft, Send, Mic, MicOff, VideoOff, Settings, TrendingUp } from 'lucide-react';
+import { Users, Eye, Coins, Heart, Video, Radio, ArrowLeft, Send, Mic, MicOff, VideoOff, TrendingUp } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { LiveStream } from '@/store/appStore';
 import AdBanner from '@/components/AdBanner';
@@ -57,7 +57,7 @@ function StreamView({ stream, onBack }: { stream: LiveStream; onBack: () => void
   const { addCoins } = useAppStore();
 
   useEffect(() => {
-    const timers = liveComments.map((c, i) =>
+    const timers = liveComments.map(c =>
       setTimeout(() => setVisibleComments(prev => [...prev.slice(-4), c]), c.delay * 1000 + 500)
     );
     return () => timers.forEach(clearTimeout);

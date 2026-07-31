@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Search, Check, X, Eye, Ban, AlertTriangle,
-  Users, Clock, RefreshCw, LogOut, Filter,
+  Users, Clock, RefreshCw, LogOut,
   Mail, Calendar, Image as ImageIcon, MessageSquare,
-  TrendingUp, UserCheck, UserX, Map, Flame, Settings,
-  Bell, Lock, Globe, ChevronRight, Activity, Database, Loader2
+  TrendingUp, Settings,
+  Activity, Database, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';

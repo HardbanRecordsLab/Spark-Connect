@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ShieldCheck, Lock, EyeOff, UserCheck, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, ShieldCheck, Lock, EyeOff, UserCheck, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Safety = () => {

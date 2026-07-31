@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 
 const EMOJI_CATEGORIES: { label: string; emoji: string; items: string[] }[] = [

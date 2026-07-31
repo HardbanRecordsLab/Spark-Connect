@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Play, Loader2, Camera, Film, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useNSFWCheck } from '@/hooks/useNSFWCheck';
 import type { User } from '@supabase/supabase-js';
@@ -22,7 +21,7 @@ interface Props {
 export default function ProfilePhotoGallery({
   photos,
   profileVideo,
-  userId,
+  userId: _userId,
   user,
   onPhotosChange,
   onVideoChange,

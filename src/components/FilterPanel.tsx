@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, SlidersHorizontal, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { SlidersHorizontal, Check } from 'lucide-react';
 
 export interface DiscoverFilters {
   ageMin: number;

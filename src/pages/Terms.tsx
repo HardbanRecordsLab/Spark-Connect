@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ChevronLeft, Scale, FileText, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Scale, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Terms = () => {

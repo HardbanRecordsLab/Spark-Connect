@@ -336,6 +336,14 @@ export default function ProfilePage() {
     return <div className="h-full"><ReferralSystem onClose={() => setActiveSection('main')} /></div>;
   }
 
+  if (activeSection === 'quiz') {
+    return <div className="h-full"><CompatibilityQuiz onClose={() => setActiveSection('main')} /></div>;
+  }
+
+  if (activeSection === 'donation') {
+    return <div className="h-full"><DonationPage onClose={() => setActiveSection('main')} /></div>;
+  }
+
   return (
     <div className="h-full overflow-y-auto scrollbar-hidden pb-8">
       <AnimatePresence>

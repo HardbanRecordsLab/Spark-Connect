@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Bell, Shield, Trash2, FileText, Eye,
-  Globe, Lock, ChevronRight, Check, AlertTriangle, X, Loader2, Download
+  ChevronRight, Check, AlertTriangle, X, Loader2, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';

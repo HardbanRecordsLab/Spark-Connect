@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ChevronLeft, Lock, Eye, ShieldCheck, Database } from 'lucide-react';
+import { ChevronLeft, Lock, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Privacy = () => {

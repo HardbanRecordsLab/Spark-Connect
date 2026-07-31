@@ -113,8 +113,8 @@ export default function MatchModal() {
       <AnimatePresence>
         {showIcebreaker && (
           <IcebreakerModal
-            matchedProfile={matchedProfile}
-            onSend={(msg) => {
+            profile={matchedProfile}
+            onSelect={() => {
               // icebreaker sent — in production: call sendMessage(conv.id, msg)
               dismissMatch();
               setActiveTab('chats');

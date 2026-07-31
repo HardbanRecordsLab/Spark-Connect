@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  User, Settings, Heart, MessageSquare, Shield, Star, 
-  Users, Map, Camera, Edit3, Share2, ChevronRight,
-  Home, Search, Bell, LogOut, Menu, X
+import {
+  User, Settings, Heart, MessageSquare,
+  Map, Camera, Edit3,
+  Home, Search, LogOut, Menu, X
 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +26,7 @@ interface NavigationItem {
 }
 
 const ProfileDashboard: React.FC = () => {
-  const { currentUser, setView } = useAppStore();
+  const { setView } = useAppStore();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');

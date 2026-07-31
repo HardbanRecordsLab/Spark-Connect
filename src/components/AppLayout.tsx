@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, Flame as FlameIcon, Ghost, LayoutDashboard, Search, Shield, Menu, Star, Loader2 } from 'lucide-react';
+import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2 } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DiscoverPage from './DiscoverPage';
 import FeedPage from './FeedPage';
@@ -28,7 +28,6 @@ import VibeRooms from './VibeRooms';
 import WhoLikedMe from './WhoLikedMe';
 import DailyStreak from './DailyStreak';
 import { useAuth } from '@/hooks/useAuth';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserSettings } from '@/hooks/useUserSettings';
@@ -57,7 +56,7 @@ export default function AppLayout() {
   // id string — passing `user?.id` silently broke profile fetching
   // (the hook does `.eq('id', user.id)`, so a string here resolves to
   // `.eq('id', undefined)`).
-  const { profile } = useProfile(user);
+  useProfile(user);
   const { conversations } = useConversations(user?.id ?? null);
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
   const navigate = useNavigate();
@@ -69,7 +68,7 @@ export default function AppLayout() {
   const [showSpeedDating, setShowSpeedDating] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
   const [notifsSeen, setNotifsSeen] = useState(false);
-  const { settings } = useUserSettings(user);
+  useUserSettings(user);
   useIncomingCallListener(user?.id);
   usePresenceHeartbeat(user?.id);
 

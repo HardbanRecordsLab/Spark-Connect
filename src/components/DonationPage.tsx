@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, Crown, Coins, Check, Clock } from 'lucide-react';
+import { ArrowLeft, Heart, Coins, Check, Clock } from 'lucide-react';
 
 const SUPPORTERS = [
   { name: 'Marek W.', amount: 20, date: '2 days ago', emoji: '💎' },

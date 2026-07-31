@@ -18,7 +18,7 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
   const [showAd, setShowAd] = useState(false);
   const [matchedId, setMatchedId] = useState<string | null>(null);
 
-  const handleAdComplete = (reward: RewardType) => {
+  const handleAdComplete = (_reward: RewardType) => {
     setShowAd(false);
     setUnlocked(true);
   };

@@ -6,12 +6,7 @@ import { useAppStore } from '@/store/appStore';
 import {
   ACTIVE_AD_PLATFORM,
   ADSENSE_PUBLISHER_ID,
-  ADSENSE_SLOTS,
-  ADSTERRA_SLOTS,
-  PROPELLER_SLOTS,
-  YANDEX_SLOTS,
   getAdSlot,
-  type AdPlatform,
 } from '@/lib/adConfig';
 
 export type AdPlacement = 'discover' | 'roulette' | 'live' | 'chats' | 'interstitial';

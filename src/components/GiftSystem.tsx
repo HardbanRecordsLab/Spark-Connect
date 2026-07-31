@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Loader2, PlayCircle } from 'lucide-react';
+import { X, Loader2, PlayCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import RewardedAd from '@/components/RewardedAd';
@@ -201,7 +201,6 @@ export function GiftPicker({ userId, onSend, onClose }: GiftPickerProps) {
                 reward="coins_ad"
                 onComplete={handleAdComplete}
                 onSkip={() => setShowAd(false)}
-                onClose={() => setShowAd(false)}
               />
             )}
           </AnimatePresence>

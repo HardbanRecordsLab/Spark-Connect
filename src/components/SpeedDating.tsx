@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Clock, Users, Video, Heart, X, Zap,
+  ArrowLeft, Clock, Users, Video, Heart, X,
   Calendar, Timer, Mic, MicOff, VideoOff, Loader2, AlertCircle, Wifi,
 } from 'lucide-react';
 import { Room, RoomEvent, Track, type RemoteTrack } from 'livekit-client';

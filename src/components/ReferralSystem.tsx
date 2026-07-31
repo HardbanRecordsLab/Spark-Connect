@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Users, Trophy, Gift, Copy, Check, Star, Crown, Zap, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Share2, Trophy, Gift, Copy, Check, Star, Crown, Zap, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ReferralSystem({ onClose }: { onClose: () => void }) {
@@ -13,13 +13,6 @@ export default function ReferralSystem({ onClose }: { onClose: () => void }) {
     toast.success('Link skopiowany do schowka! 🚀');
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const milestones = [
-    { count: 1, label: 'Odznaka Pioniera', icon: <Zap className="w-4 h-4" />, achieved: true },
-    { count: 3, label: 'VIP na 7 dni', icon: <Star className="w-4 h-4" />, achieved: false },
-    { count: 10, label: 'Status Ambasadora', icon: <Crown className="w-4 h-4" />, achieved: false },
-    { count: 25, label: 'Spark Legend (Permanent VIP)', icon: <Trophy className="w-4 h-4" />, achieved: false },
-  ];
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black overflow-y-auto pb-20">

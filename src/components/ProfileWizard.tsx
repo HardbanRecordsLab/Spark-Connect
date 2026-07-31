@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Check, Shield, Sparkles, Lock, Camera, Zap, Flame } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Shield, Lock, Camera, Zap, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';

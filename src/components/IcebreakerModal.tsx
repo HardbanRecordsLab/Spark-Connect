@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Send, RefreshCw, Wand2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Send, RefreshCw, Wand2 } from 'lucide-react';
 import type { Profile } from '@/store/appStore';
 
 interface IcebreakerModalProps {

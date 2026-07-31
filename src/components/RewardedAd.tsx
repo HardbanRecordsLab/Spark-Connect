@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, CheckCircle2, ExternalLink, Timer, AlertCircle } from 'lucide-react';
-import { ADSTERRA_KEY } from '@/lib/adConfig';
 
 export type RewardType =
   | 'incognito_1h'
@@ -27,10 +26,9 @@ interface RewardedAdProps {
   reward: RewardType;
   onComplete: (reward: RewardType) => void;
   onSkip: () => void;
-  onClose?: () => void;
 }
 
-export default function RewardedAd({ reward, onComplete, onSkip, onClose }: RewardedAdProps) {
+export default function RewardedAd({ reward, onComplete, onSkip }: RewardedAdProps) {
   const [phase, setPhase] = useState<'intro' | 'watching' | 'done'>('intro');
   const [countdown, setCountdown] = useState(0);
   const [progress, setProgress] = useState(0);

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Crown, Zap, Star, Gem, CheckCircle2, Sparkles, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

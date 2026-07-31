@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, FileText, Scale, Database, UserCheck, ShieldCheck, Lock } from 'lucide-react';
+import { ChevronLeft, FileText, Scale, Database, UserCheck, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const GDPR = () => {

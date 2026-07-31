@@ -321,7 +321,7 @@ export default function ProfilePageV2() {
     return (
       <CompatibilityQuiz
         onClose={() => setActiveSection('main')}
-        onSave={(type, score) => {
+        onSave={() => {
           setActiveSection('main');
         }}
       />

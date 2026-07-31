@@ -829,7 +829,6 @@ function ChatView({ conv, onBack, setMatchState }: {
 
     const expiresAt = selectedTimer.seconds ? new Date(Date.now() + selectedTimer.seconds * 1000).toISOString() : null;
     const replyId = replyTo?.id ?? null;
-    const replyMsg = replyTo;
 
     const optimistic: LocalMessage = {
       id: `opt-${Date.now()}`,

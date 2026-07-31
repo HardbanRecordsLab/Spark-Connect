@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, X, Send, Zap } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { Star, X, Zap } from 'lucide-react';
 import type { Profile } from '@/store/appStore';
 import RewardedAd from '@/components/RewardedAd';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
 
 const SUPER_SWIPE_STARTERS = [
   'Wyróżniasz się spośród wszystkich 🌟',

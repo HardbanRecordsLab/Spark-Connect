@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const COLORS = ['#FF4D6D', '#FFB347', '#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF'];
 

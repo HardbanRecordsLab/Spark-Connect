@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Plus, Shield, CheckCircle2, TrendingUp, Sparkles, Flame } from 'lucide-react';
-import { useAppStore } from '@/store/appStore';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-
-const db = supabase as any;
 
 interface Post {
   id: string;
@@ -64,8 +59,6 @@ const MOCK_POSTS: Post[] = [
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'for_you' | 'nearby' | 'spicy'>('for_you');
 
   // Load posts from Supabase (placeholder for real query)

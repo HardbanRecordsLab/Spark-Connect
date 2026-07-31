@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, Eye, X, Check, Image as ImageIcon, Plus } from 'lucide-react';
+import { Lock, Unlock, Eye, X, Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload, getPrivatePhotoUrl } from '@/hooks/useR2Upload';
@@ -39,7 +39,6 @@ interface PrivatePhotoViewerProps {
 export function PrivatePhotoViewer({ ownerId, ownerName, ownerPhoto }: PrivatePhotoViewerProps) {
   const { user } = useAuth();
   const [status, setStatus] = useState<AccessStatus>('none');
-  const { upload: uploadToR2 } = useR2Upload();
   const [photos, setPhotos] = useState<PrivatePhoto[]>([]);
   const [count, setCount] = useState(0);
   const [sending, setSending] = useState(false);
@@ -245,7 +244,7 @@ export function MyPrivatePhotos({ userId }: MyPrivatePhotosProps) {
     setPhotos(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleRequest = async (reqId: string, requesterId: string, approve: boolean) => {
+  const handleRequest = async (reqId: string, _requesterId: string, approve: boolean) => {
     await db.from('private_photo_requests')
       .update({ status: approve ? 'granted' : 'rejected' })
       .eq('id', reqId);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Star, Users, Zap, Heart, Flame } from 'lucide-react';
+import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Zap, Flame } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { User } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
