@@ -6,9 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./components/AdminPanel";
-import ProfileDashboard from "./components/ProfileDashboard";
 import ProfilePage from "./components/ProfilePage";
-import ProfilePageV2 from "./components/ProfilePageV2";
 import PrivacyPolicy from "./pages/Privacy";
 import TermsOfService from "./pages/Terms";
 import AboutUs from "./pages/AboutUs";
@@ -28,9 +26,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/dashboard" element={<ProfileDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile-v2" element={<ProfilePageV2 />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/about" element={<AboutUs />} />

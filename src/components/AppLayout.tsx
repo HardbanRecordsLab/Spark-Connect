@@ -51,7 +51,7 @@ const NOTIFICATIONS = [
 
 export default function AppLayout() {
   const { activeTab, setActiveTab, showMatch, showVideoCall } = useAppStore();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   // Bug fix: useProfile expects the Supabase User object, not just its
   // id string — passing `user?.id` silently broke profile fetching
   // (the hook does `.eq('id', user.id)`, so a string here resolves to
@@ -197,9 +197,11 @@ export default function AppLayout() {
              <button onClick={() => setActiveTab('hotnot' as any)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500/80 hover:text-rose-500 transition-all whitespace-nowrap">
                <Flame className="w-3 h-3" /> Hot or Not
              </button>
-             <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/80 hover:text-blue-400 transition-all whitespace-nowrap ml-auto">
-               <LayoutDashboard className="w-3 h-3" /> Admin Dashboard
-             </button>
+             {isAdmin && (
+               <button onClick={() => navigate('/admin')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/80 hover:text-blue-400 transition-all whitespace-nowrap ml-auto">
+                 <LayoutDashboard className="w-3 h-3" /> Panel Admina
+               </button>
+             )}
           </div>
         </div>
       </header>
