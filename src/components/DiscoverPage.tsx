@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
 import { WhisperModal } from '@/components/WhisperMessage';
+import { SuperSwipeModal } from '@/components/SuperSwipe';
 import ReferralSystem from '@/components/ReferralSystem';
 import { Crown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -94,6 +95,8 @@ export default function DiscoverPage() {
   const [showWhisper, setShowWhisper] = useState(false);
   const [matching, setMatching] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [showSuperSwipe, setShowSuperSwipe] = useState(false);
+  const [superSwipeDailyUsed, setSuperSwipeDailyUsed] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
 
   useEffect(() => {
@@ -118,6 +121,33 @@ export default function DiscoverPage() {
     } else {
       toast.success(`Polubiono ${profile.displayName} 💚`);
     }
+  };
+
+  const SUPER_SWIPE_FREE_DAILY = 1;
+
+  const openSuperSwipe = async () => {
+    if (!user) return;
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const { count } = await db.from('super_swipes').select('id', { count: 'exact', head: true })
+      .eq('sender_id', user.id).gte('created_at', todayStart.toISOString());
+    setSuperSwipeDailyUsed((count ?? 0) >= SUPER_SWIPE_FREE_DAILY);
+    setShowSuperSwipe(true);
+  };
+
+  const handleSuperSwipeSend = async (profile: Profile, message: string) => {
+    if (!user) return;
+    await db.from('super_swipes').upsert(
+      { sender_id: user.id, receiver_id: profile.id, message },
+      { onConflict: 'sender_id,receiver_id' }
+    );
+    const { data } = await db.rpc('record_swipe', { p_swiped_id: profile.id, p_direction: 'super' });
+    markSwiped(profile.id);
+    const result = Array.isArray(data) ? data[0] : data;
+    setTimeout(() => {
+      setShowSuperSwipe(false);
+      setSelectedProfile(null);
+      if (result?.matched) triggerMatch(profile);
+    }, 1400);
   };
 
   const filteredProfiles = allProfiles.filter(p => {
@@ -304,7 +334,13 @@ export default function DiscoverPage() {
                     >
                       {matching ? '...' : 'Dopasuj 🔥'}
                     </button>
-                    <button 
+                    <button
+                      onClick={() => openSuperSwipe()}
+                      className="w-14 h-14 glass rounded-2xl flex items-center justify-center border border-accent/30"
+                    >
+                      <Star className="w-6 h-6 text-accent fill-accent" />
+                    </button>
+                    <button
                       onClick={() => setShowWhisper(true)}
                       className="w-14 h-14 glass rounded-2xl flex items-center justify-center border border-white/10"
                     >
@@ -325,6 +361,18 @@ export default function DiscoverPage() {
             targetProfile={selectedProfile}
             onClose={() => setShowWhisper(false)}
             onSent={() => { setShowWhisper(false); setSelectedProfile(null); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Super Swipe modal */}
+      <AnimatePresence>
+        {showSuperSwipe && selectedProfile && (
+          <SuperSwipeModal
+            profile={selectedProfile}
+            dailyUsed={superSwipeDailyUsed}
+            onSend={message => handleSuperSwipeSend(selectedProfile, message)}
+            onClose={() => setShowSuperSwipe(false)}
           />
         )}
       </AnimatePresence>
