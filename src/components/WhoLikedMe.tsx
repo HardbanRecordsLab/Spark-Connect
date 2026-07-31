@@ -1,33 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Eye, Lock, Heart } from 'lucide-react';
+import { ArrowLeft, Eye, Lock, Heart, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppStore, type Profile } from '@/store/appStore';
 import RewardedAd, { type RewardType } from '@/components/RewardedAd';
-import { mockProfiles } from '@/store/appStore';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock "who liked you" list — in production: query swipes WHERE swiped_id = me AND direction = right
-const WHO_LIKED: Profile[] = [...mockProfiles].map(p => ({ ...p, id: `wl-${p.id}` }));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
+interface LikedByRow {
+  id: string; display_name: string; age: number | null; city: string | null;
+  photos: string[] | null; avatar_url: string | null;
+}
+
+function toProfile(r: LikedByRow): Profile {
+  const photos = (r.photos ?? []).filter(p => !p.startsWith('video:'));
+  return {
+    id: r.id,
+    displayName: r.display_name || 'Ktoś',
+    age: r.age ?? 0,
+    city: r.city ?? '',
+    bio: '',
+    photos: photos.length ? photos : [r.avatar_url ?? 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80'],
+    interests: [],
+    relationshipType: 'both',
+    moodStatus: '',
+    distance: 0,
+    isVerified: false,
+    donorBadge: false,
+    chemistryScore: 0,
+    gender: '',
+    orientation: '',
+  };
+}
 
 interface WhoLikedMeProps {
   onClose: () => void;
 }
 
 export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
-  const { swipeRight } = useAppStore();
+  const { user } = useAuth();
+  const { triggerMatch } = useAppStore();
+  const [likedBy, setLikedBy] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
   const [showAd, setShowAd] = useState(false);
   const [matchedId, setMatchedId] = useState<string | null>(null);
+  const [liking, setLiking] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    db.rpc('get_who_liked_me').then(({ data, error }: { data: LikedByRow[] | null; error: unknown }) => {
+      if (!error && data) setLikedBy(data.map(toProfile));
+      setLoading(false);
+    });
+  }, [user]);
 
   const handleAdComplete = (_reward: RewardType) => {
     setShowAd(false);
     setUnlocked(true);
   };
 
-  const handleLike = (profile: Profile) => {
+  const handleLike = async (profile: Profile) => {
     if (!unlocked) { setShowAd(true); return; }
+    if (liking) return;
+    setLiking(true);
+    const { data, error } = await db.rpc('record_swipe', { p_swiped_id: profile.id, p_direction: 'right' });
+    setLiking(false);
+    if (error) { toast.error('Nie udało się zapisać polubienia.'); return; }
+    const result = Array.isArray(data) ? data[0] : data;
     setMatchedId(profile.id);
-    swipeRight();
-    setTimeout(() => setMatchedId(null), 2000);
+    setTimeout(() => {
+      setMatchedId(null);
+      setLikedBy(prev => prev.filter(p => p.id !== profile.id));
+      if (result?.matched) triggerMatch(profile);
+    }, 1200);
   };
 
   return (
@@ -45,7 +94,7 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
           </button>
           <div className="flex-1">
             <h2 className="font-bold">Kto mnie polubił</h2>
-            <p className="text-xs text-muted-foreground">{WHO_LIKED.length} osób czeka na Ciebie</p>
+            <p className="text-xs text-muted-foreground">{loading ? 'Ładowanie...' : `${likedBy.length} osób czeka na Ciebie`}</p>
           </div>
           {!unlocked && (
             <button onClick={() => setShowAd(true)}
@@ -64,7 +113,7 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
 
         {/* Unlock banner */}
         <AnimatePresence>
-          {!unlocked && (
+          {!unlocked && !loading && likedBy.length > 0 && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -88,8 +137,16 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
 
         {/* Grid */}
         <div className="flex-1 overflow-y-auto scrollbar-hidden p-4">
+          {loading ? (
+            <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : likedBy.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-50 text-center px-6">
+              <div className="text-4xl">💌</div>
+              <p className="text-sm text-muted-foreground">Nikt jeszcze Cię nie polubił. Wróć tu, gdy zaczniesz przeglądać profile w Discover!</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-2 gap-3">
-            {WHO_LIKED.map((profile, i) => (
+            {likedBy.map((profile, i) => (
               <motion.div
                 key={profile.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -153,6 +210,7 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
               </motion.div>
             ))}
           </div>
+          )}
         </div>
       </motion.div>
 
