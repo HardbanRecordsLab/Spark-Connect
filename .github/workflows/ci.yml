@@ -63,6 +63,12 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+          # Dedicated e2e-tester@hardbanrecordslab.online fixture account --
+          # see tests/authenticated/README.md. Authenticated specs are
+          # skipped by the "setup" project failing fast if these are unset,
+          # not silently.
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
 
       - uses: actions/upload-artifact@v4
         if: always()

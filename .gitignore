@@ -37,3 +37,6 @@ supabase/.temp
 # Test run artifacts — regenerate locally/in CI, not source
 playwright-report/
 test-results/
+
+# Saved Playwright auth session — contains a real access token, never commit
+tests/.auth/
