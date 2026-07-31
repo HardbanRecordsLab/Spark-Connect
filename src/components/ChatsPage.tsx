@@ -8,7 +8,7 @@ import {
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import type { Conversation } from '@/store/appStore';
-import { GiftPicker, GiftReveal, GiftBubble, type GiftItem } from '@/components/GiftSystem';
+import { GiftPicker, GiftReveal, GiftBubble, GIFTS, type GiftItem } from '@/components/GiftSystem';
 import AdBanner from '@/components/AdBanner';
 import EmojiPicker from '@/components/EmojiPicker';
 import ChatContextMenu from '@/components/ChatContextMenu';
@@ -600,7 +600,6 @@ function ChatView({ conv, onBack, setMatchState }: {
   const [text, setText] = useState('');
   const [showGiftPicker, setShowGiftPicker] = useState(false);
   const [revealGift, setRevealGift] = useState<GiftItem | null>(null);
-  const [giftMessages, setGiftMessages] = useState<{ id: string; gift: GiftItem }[]>([]);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [selectedTimer, setSelectedTimer] = useState<TimerOption>(TIMER_OPTIONS[0]);
   const [isAnonMode, setIsAnonMode] = useState(false);
@@ -636,7 +635,7 @@ function ChatView({ conv, onBack, setMatchState }: {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, giftMessages, peerIsTyping]);
+  }, [messages, peerIsTyping]);
 
   useEffect(() => {
     async function load() {
@@ -991,9 +990,22 @@ function ChatView({ conv, onBack, setMatchState }: {
     toast.success(conv.isMuted ? 'Powiadomienia włączone.' : 'Rozmowa wyciszona.');
   };
 
-  const handleGiftSent = (gift: GiftItem) => {
-    setGiftMessages(prev => [...prev, { id: `gift-${Date.now()}`, gift }]);
+  const handleGiftSent = async (gift: GiftItem) => {
+    // Coins are already deducted for real by GiftPicker (via
+    // adjust_coin_balance) before onSend fires -- this used to just
+    // push into local-only giftMessages state, so the recipient never
+    // actually received anything the sender paid coins for. Persist
+    // a real message instead, same pipeline as text/image/audio.
     setTimeout(() => setRevealGift(gift), 800);
+    if (conversationId && user) {
+      const { data, error } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content: gift.id,
+        type: 'gift',
+      }).select().single();
+      if (!error && data) setMessages(prev => [...prev, msgToLocal(data as DBMessage, myId)]);
+    }
   };
 
   // Helper: find quoted message for a given replyToId
@@ -1099,6 +1111,7 @@ function ChatView({ conv, onBack, setMatchState }: {
           const isMe = msg.senderId === 'me';
           const isMedia = msg.type === 'image' || msg.type === 'video';
           const isAudio = msg.type === 'audio';
+          const isGift = msg.type === 'gift';
           const quotedMsg = findQuotedMsg(msg.replyToId);
           const reactionGroups = getReactionGroups(msg.id);
           const isPopoverOpen = activePopoverMsgId === msg.id;
@@ -1144,7 +1157,12 @@ function ChatView({ conv, onBack, setMatchState }: {
                     </AnimatePresence>
 
                     {/* Message bubble */}
-                    {isAudio ? (
+                    {isGift ? (
+                      <GiftBubble
+                        gift={GIFTS.find(g => g.id === msg.content) ?? GIFTS[0]}
+                        senderName={isMe ? 'Ty' : conv.user.displayName}
+                      />
+                    ) : isAudio ? (
                       <div className="flex flex-col gap-1">
                         {quotedMsg && <QuotedBubble message={quotedMsg} isMe={isMe} />}
                         <AudioBubble url={msg.content} isMe={isMe} duration={msg.duration} />
@@ -1190,7 +1208,6 @@ function ChatView({ conv, onBack, setMatchState }: {
         <AnimatePresence>
           {peerIsTyping && <TypingBubble name={conv.user.displayName} />}
         </AnimatePresence>
-        {giftMessages.map(gm => <GiftBubble key={gm.id} gift={gm.gift} senderName="You" />)}
         <div ref={messagesEndRef} />
       </div>
 
