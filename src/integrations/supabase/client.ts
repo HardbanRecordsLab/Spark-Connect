@@ -29,8 +29,19 @@ export const supabase = createClient<Database>(
       // sprawiał, że sesja zapisana pod poprzednim kluczem stawała się
       // nieosiągalna i użytkownik był wylogowywany przy każdym odświeżeniu.
       storageKey: 'spark-connect-auth',
-      // Disable locking to prevent lock conflicts in React Strict Mode
-      lock: false as boolean | undefined,
+      // The `lock` option must be a real LockFunc, not a boolean --
+      // passing `false` here (an earlier attempt to sidestep a lock
+      // conflict seen under React StrictMode in dev) broke session
+      // restoration in production: reloading the page while logged in
+      // hung forever on the loading spinner, silently, no console
+      // error, because GoTrueClient's session-init path awaits this
+      // as a function. StrictMode's double-effect-invocation is a
+      // dev-only behavior anyway, so production never needed a
+      // workaround here. This no-op lock (run the callback
+      // immediately, no real serialization) keeps the type contract
+      // correct while still sidestepping the Navigator LockManager
+      // path that caused the original StrictMode issue.
+      lock: async <R,>(_name: string, _acquireTimeout: number, fn: () => Promise<R>): Promise<R> => fn(),
     },
   }
 );
