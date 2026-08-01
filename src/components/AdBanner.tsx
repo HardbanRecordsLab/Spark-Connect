@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
+import { getCookieConsent } from '@/components/CookieConsent';
 import {
   ACTIVE_AD_PLATFORM,
   ADSENSE_PUBLISHER_ID,
@@ -222,13 +223,24 @@ function isPlaceholderSlot(slotId: string): boolean {
 export default function AdBanner({ placement = 'discover', onClose }: AdBannerProps) {
   const { currentUser } = useAppStore();
   const [dismissed, setDismissed] = useState(false);
+  // Real ad-network units load third-party scripts that set tracking
+  // cookies -- only allowed once the user has actively consented.
+  // Without consent yet (or if they declined), fall back to the inert
+  // local mock ad instead of silently skipping monetization.
+  const [adsConsented, setAdsConsented] = useState(() => getCookieConsent() === 'all');
+
+  useEffect(() => {
+    const onChange = () => setAdsConsented(getCookieConsent() === 'all');
+    window.addEventListener('cookie-consent-changed', onChange);
+    return () => window.removeEventListener('cookie-consent-changed', onChange);
+  }, []);
 
   // Donors never see ads
   if (currentUser?.donorBadge || dismissed) return null;
 
   const handleDismiss = () => { setDismissed(true); onClose?.(); };
   const slotKey = placement === 'interstitial' ? 'interstitial' : `${placement}_${placement === 'live' || placement === 'chats' ? 'card' : 'strip'}`;
-  const isMock = ACTIVE_AD_PLATFORM === 'mock' || isPlaceholderSlot(getAdSlot(slotKey).slotId);
+  const isMock = !adsConsented || ACTIVE_AD_PLATFORM === 'mock' || isPlaceholderSlot(getAdSlot(slotKey).slotId);
 
   if (placement === 'interstitial') {
     return (

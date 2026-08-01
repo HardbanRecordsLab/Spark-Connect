@@ -116,7 +116,7 @@ const Privacy = () => {
           <section className="space-y-4">
             <h3 className="text-white font-bold text-lg uppercase tracking-wider">7. Pliki Cookies i Technologie Śledzące</h3>
             <p>
-              Stosujemy pliki Cookies w celu zapewnienia poprawnego działania sesji logowania, zapamiętywania preferencji oraz analizy ruchu w Portalu. Możesz zarządzać plikami Cookies w ustawieniach swojej przeglądarki, jednak ich całkowite zablokowanie może uniemożliwić korzystanie z kluczowych funkcji Portalu. Korzystamy również z tzw. "Local Storage" do przechowywania Twoich tymczasowych ustawień interfejsu.
+              Cookies niezbędne (sesja logowania, ustawienia interfejsu) są stosowane zawsze, ponieważ bez nich Portal nie może działać. Cookies reklamowe i analityczne są uruchamiane wyłącznie po wyrażeniu przez Ciebie zgody w bannerze cookies wyświetlanym przy pierwszej wizycie — możesz ją w każdej chwili wycofać, czyszcząc dane strony w ustawieniach przeglądarki. Korzystamy również z tzw. "Local Storage" do przechowywania Twoich tymczasowych ustawień interfejsu.
             </p>
             <p className="text-xs text-white/40 italic pt-8 border-t border-white/5">
               Polityka Prywatności zaktualizowana: 12 maja 2026 r. <br />

@@ -2,6 +2,7 @@ import { useAppStore } from '@/store/appStore';
 import AuthFlow from '@/components/AuthFlow';
 import AppLayout from '@/components/AppLayout';
 import AgeGate from '@/components/AgeGate';
+import CookieConsentBanner from '@/components/CookieConsent';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
@@ -30,6 +31,7 @@ const Index = () => {
     <div className="app-container min-h-screen">
       {view !== 'app' && <AgeGate />}
       {view === 'app' ? <AppLayout /> : <AuthFlow />}
+      <CookieConsentBanner />
     </div>
   );
 };
