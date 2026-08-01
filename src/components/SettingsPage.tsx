@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SettingsPageProps {
   onClose: () => void;
+  initialSection?: 'main' | 'notifications' | 'privacy' | 'gdpr';
 }
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
@@ -30,13 +31,13 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   );
 }
 
-export default function SettingsPage({ onClose }: SettingsPageProps) {
+export default function SettingsPage({ onClose, initialSection = 'main' }: SettingsPageProps) {
   const { setView } = useAppStore();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { permission, subscribed, subscribe, unsubscribe } = usePushNotifications(user?.id ?? null);
   const { settings, saving, updateSetting } = useUserSettings(user);
-  const [section, setSection] = useState<'main' | 'notifications' | 'privacy' | 'gdpr' | 'delete'>('main');
+  const [section, setSection] = useState<'main' | 'notifications' | 'privacy' | 'gdpr' | 'delete'>(initialSection);
 
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleted, setDeleted] = useState(false);

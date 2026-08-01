@@ -765,224 +765,29 @@ export default function ProfilePageV2() {
             </div>
           )}
 
-          {/* PRYWATNOŚĆ TAB */}
+          {/* USTAWIENIA TAB -- real, functional. Used to be three separate
+              sidebar tabs (Prywatność/Powiadomienia/Ustawienia) that were
+              100% decorative: every toggle and button (including the ones
+              promising GDPR data export and account deletion) had no
+              onClick handler at all. The real implementation already
+              existed as SettingsPage.tsx (used elsewhere via
+              setActiveSection('settings')), just never wired in here.
+              Consolidated to one real entry point instead of three fake
+              ones. */}
+
           {activeTab === 'prywatnosc' && (
-            <div className="space-y-4">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <h3 className="text-lg font-bold mb-4">🔐 Widoczność profilu</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: '🌍', label: 'Publiczny', selected: true },
-                    { icon: '🤝', label: 'Tylko dopasowania', selected: false },
-                    { icon: '👻', label: 'Tryb incognito', selected: false },
-                  ].map(option => (
-                    <button key={option.label} className={`p-3 rounded-lg border transition-all ${
-                      option.selected 
-                        ? 'bg-gradient-to-br from-[rgba(232,67,26,0.2)] to-transparent border-[#E8431A]' 
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}>
-                      <div className="text-2xl mb-1">{option.icon}</div>
-                      <div className="text-xs">{option.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <h3 className="text-lg font-bold mb-4">👁 Co widzą inni</h3>
-                <div className="space-y-3">
-                  {[
-                    { icon: '📍', label: 'Lokalizacja', desc: 'pokazuj w promieniu miast', enabled: true },
-                    { icon: '🎂', label: 'Dokładny wiek', desc: '', enabled: true },
-                    { icon: '💼', label: 'Zawód', desc: '', enabled: true },
-                    { icon: '🌈', label: 'Orientacja seksualna', desc: '', enabled: false },
-                    { icon: '📏', label: 'Wzrost', desc: '', enabled: true },
-                    { icon: '🟢', label: 'Status online', desc: '', enabled: true },
-                    { icon: '💋', label: 'Dane intymne 18+', desc: 'widoczne tylko dla dopasowań', enabled: true },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">{item.icon}</span>
-                        <div>
-                          <div className="text-sm font-medium">{item.label}</div>
-                          {item.desc && <div className="text-xs text-white/60">{item.desc}</div>}
-                        </div>
-                      </div>
-                      <button className={`w-11 h-6 rounded-full transition-all ${
-                        item.enabled ? 'bg-[#E8431A]' : 'bg-white/20'
-                      }`}>
-                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                          item.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                        }`}></div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-3">🚫 Blokady & Zgłoszenia</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Zablokowane osoby</span>
-                      <span className="font-medium">2</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Zgłoszenia</span>
-                      <span className="font-medium">0</span>
-                    </div>
-                  </div>
-                  <button className="w-full mt-3 text-sm text-white/60 hover:text-white transition-colors">Zarządzaj blokowaniem</button>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-3">📸 Ochrona zdjęć</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span>🛡</span>
-                        <span className="text-sm">Ostrzeżenie przed screenshotami</span>
-                      </div>
-                      <button className="w-11 h-6 rounded-full bg-[#E8431A]">
-                        <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span>💧</span>
-                        <span className="text-sm">Watermark na zdjęciach</span>
-                      </div>
-                      <button className="w-11 h-6 rounded-full bg-white/20">
-                        <div className="w-5 h-5 bg-white rounded-full translate-x-0.5"></div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="h-[80vh] -mx-4 -mb-4">
+              <SettingsPage initialSection="privacy" onClose={() => setActiveTab('profil')} />
             </div>
           )}
-
-          {/* POWIADOMIENIA TAB */}
           {activeTab === 'powiadomienia' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-4">🔔 Powiadomienia push</h3>
-                  <div className="space-y-3">
-                    {[
-                      { icon: '❤️', label: 'Nowe dopasowanie', enabled: true },
-                      { icon: '💌', label: 'Nowa wiadomość', enabled: true },
-                      { icon: '⚡', label: 'Ktoś Cię polubił', enabled: true },
-                      { icon: '👁', label: 'Ktoś wyświetlił profil', enabled: false },
-                      { icon: '⭐', label: 'Super Like od kogoś', enabled: true },
-                      { icon: '📊', label: 'Tygodniowy raport', enabled: true },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span>{item.icon}</span>
-                          <span className="text-sm">{item.label}</span>
-                        </div>
-                        <button className={`w-11 h-6 rounded-full transition-all ${
-                          item.enabled ? 'bg-[#E8431A]' : 'bg-white/20'
-                        }`}>
-                          <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                            item.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                          }`}></div>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-4">📧 Email & SMS</h3>
-                  <div className="space-y-3">
-                    {[
-                      { icon: '📧', label: 'Email: nowe dopasowania', enabled: true },
-                      { icon: '📱', label: 'SMS: ważne powiadomienia', enabled: false },
-                      { icon: '📰', label: 'Newsletter SparkConnect', enabled: false },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span>{item.icon}</span>
-                          <span className="text-sm">{item.label}</span>
-                        </div>
-                        <button className={`w-11 h-6 rounded-full transition-all ${
-                          item.enabled ? 'bg-[#E8431A]' : 'bg-white/20'
-                        }`}>
-                          <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                            item.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                          }`}></div>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="h-[80vh] -mx-4 -mb-4">
+              <SettingsPage initialSection="notifications" onClose={() => setActiveTab('profil')} />
             </div>
           )}
-
-          {/* USTAWIENIA TAB */}
           {activeTab === 'ustawienia' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-4">👤 Konto</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-xs text-white/60">Email</label>
-                      <input className="w-full bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm" value={user?.email || ''} readOnly />
-                    </div>
-                    <div>
-                      <label className="text-xs text-white/60">Numer telefonu</label>
-                      <input className="w-full bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm" value="+48 *** *** 789" readOnly />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <h3 className="text-lg font-bold mb-4">🔐 Bezpieczeństwo</h3>
-                  <div className="space-y-3">
-                    <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Zmień hasło</button>
-                    <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Weryfikacja 2FA</button>
-                    <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Aktywne sesje</button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <h3 className="text-lg font-bold mb-4">⚙️ Preferencje aplikacji</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Tryb ciemny</span>
-                    <button className="w-11 h-6 rounded-full bg-[#E8431A]">
-                      <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Dźwięki powiadomień</span>
-                    <button className="w-11 h-6 rounded-full bg-white/20">
-                      <div className="w-5 h-5 bg-white rounded-full translate-x-0.5"></div>
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Wibracje</span>
-                    <button className="w-11 h-6 rounded-full bg-[#E8431A]">
-                      <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <h3 className="text-lg font-bold mb-4">📊 Dane & Prywatność</h3>
-                <div className="space-y-3">
-                  <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Pobierz moje dane (GDPR)</button>
-                  <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Usuń konto</button>
-                  <button className="w-full text-left text-sm hover:text-white/80 transition-colors">Historia aktywności</button>
-                </div>
-              </div>
+            <div className="h-[80vh] -mx-4 -mb-4">
+              <SettingsPage onClose={() => setActiveTab('profil')} />
             </div>
           )}
         </div>
