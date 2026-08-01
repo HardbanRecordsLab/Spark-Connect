@@ -51,10 +51,10 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white overflow-x-hidden">
       {/* Background Image Wrapper */}
       <div className="fixed inset-0 z-0">
-        <img 
-          src="spark_connect_sensual_adult_bg_1778594594092.png" 
-          alt="" 
-          className="w-full h-full object-cover opacity-60" 
+        <img
+          src="/hero-couple-silhouette.jpg"
+          alt=""
+          className="w-full h-full object-cover opacity-60"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
