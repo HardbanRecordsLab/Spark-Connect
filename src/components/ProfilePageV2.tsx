@@ -842,7 +842,7 @@ export default function ProfilePageV2() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span>🛡</span>
-                        <span className="text-sm">Blokuj screenshoty</span>
+                        <span className="text-sm">Ostrzeżenie przed screenshotami</span>
                       </div>
                       <button className="w-11 h-6 rounded-full bg-[#E8431A]">
                         <div className="w-5 h-5 bg-white rounded-full translate-x-5"></div>

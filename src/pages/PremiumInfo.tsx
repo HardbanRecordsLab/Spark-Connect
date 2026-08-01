@@ -37,7 +37,7 @@ const PremiumInfo = () => {
               W Spark Connect wierzymy, że każdy zasługuje na wyjątkowe relacje, ale to od Ciebie zależy, jak szybko je odnajdziesz. Status Spark Premium to nie jest tylko pakiet dodatkowych funkcji – to Twoja przepustka do świata priorytetowych relacji i bezgranicznych możliwości, jakie oferuje portal Studio HRL Adult. W świecie, gdzie czas jest najcenniejszą walutą, Premium pozwala Ci go oszczędzać, dostarczając to, czego szukasz, prosto pod Twoje palce.
             </p>
             <p>
-              Przejście na poziom Elite Premium oznacza, że przestajesz być anonimowym użytkownikiem w tłumie. Twój profil zyskuje luksusową oprawę, a Ty otrzymujesz zestaw narzędzi, które sprawią, że Twoja widoczność wzrośnie o ponad 400%. To inwestycja w Twoje życie towarzyskie i emocjonalne, wspierana przez technologię HardbanRecords Lab.
+              Przejście na poziom Elite Premium oznacza, że przestajesz być anonimowym użytkownikiem w tłumie. Twój profil zyskuje luksusową oprawę, a Ty otrzymujesz zestaw narzędzi, które realnie zwiększają Twoją widoczność. To inwestycja w Twoje życie towarzyskie i emocjonalne, wspierana przez technologię HardbanRecords Lab.
             </p>
           </section>
 
@@ -103,11 +103,11 @@ const PremiumInfo = () => {
           </div>
 
           <div className="pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500 animate-pulse">
-                <Sparkles className="w-3 h-3" /> Polecane przez 94% użytkowników
+             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500">
+                <Sparkles className="w-3 h-3" /> Wkrótce dostępne
              </div>
             <button onClick={() => navigate('/')} className="gradient-fire px-10 py-4 rounded-full font-black uppercase tracking-widest text-sm shadow-[0_0_30px_rgba(255,26,78,0.3)] transition-all hover:scale-105 active:scale-95">
-              Odblokuj Premium Teraz
+              Wróć do Spark
             </button>
           </div>
         </motion.div>

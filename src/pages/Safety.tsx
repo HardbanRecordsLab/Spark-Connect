@@ -57,14 +57,14 @@ const Safety = () => {
               Wszelka komunikacja wideo w pokojach "Vibe Rooms" oraz rozmowy prywatne są przesyłane przy użyciu protokołów SSL/TLS najwyższej klasy. Oznacza to, że nikt – włącznie z pracownikami HardbanRecords Lab – nie ma wglądu w Twoje intymne rozmowy w czasie rzeczywistym. Twoje zdjęcia profilowe i prywatne są przechowywane na bezpiecznych, izolowanych serwerach z ograniczonym dostępem fizycznym i cyfrowym.
             </p>
             <p>
-              Wdrożyliśmy również system "Media Protect", który utrudnia robienie zrzutów ekranu oraz nagrywanie rozmów wideo na poziomie aplikacji. Choć żadna technologia nie daje 100% gwarancji przed zewnętrznym rejestrowaniem obrazu przez osoby trzecie (np. innym telefonem), robimy wszystko, co w naszej mocy, aby maksymalnie utrudnić nieautoryzowane kopiowanie Twoich treści.
+              Oferujemy również opcjonalne ostrzeżenie przed zrzutami ekranu w rozmowach — pamiętaj jednak, że żadna technologia webowa nie jest w stanie technicznie zablokować zrzutu ekranu ani nagrywania innym urządzeniem, więc zawsze zachowaj rozwagę w tym, czym się dzielisz.
             </p>
           </section>
 
           <section className="space-y-4">
             <h3 className="text-white font-bold text-lg uppercase tracking-wider italic text-green-400">4. Kultura Szacunku i Szybkie Zgłoszenia</h3>
             <p>
-              Bezpieczeństwo to także komfort psychiczny. Spark Connect posiada system błyskawicznego zgłaszania naruszeń (Report & Block). Każde zgłoszenie dotyczące nękania, nienawiści czy niechcianych treści jest analizowane przez nasz zespół moderacji w czasie krótszym niż 15 minut. Stosujemy zasadę "Zero Tolerancji" dla agresji i zachowań toksycznych.
+              Bezpieczeństwo to także komfort psychiczny. Spark Connect posiada system błyskawicznego zgłaszania naruszeń (Report & Block). Każde zgłoszenie dotyczące nękania, nienawiści czy niechcianych treści jest analizowane przez nasz zespół moderacji najszybciej, jak to możliwe. Stosujemy zasadę "Zero Tolerancji" dla agresji i zachowań toksycznych.
             </p>
             <p>
               Wierzymy, że społeczność oparta na szacunku to społeczność bezpieczna. Dlatego nagradzamy użytkowników, którzy dbają o dobrą atmosferę i pomagają nam eliminować osoby naruszające regulamin. Pamiętaj: Ty decydujesz, kto może do Ciebie pisać i kto ma dostęp do Twoich informacji. Funkcja "Ghost Mode" (tryb niewidoczny) pozwala Ci na przeglądanie portalu bez zostawiania śladów, co daje dodatkową warstwę prywatności.

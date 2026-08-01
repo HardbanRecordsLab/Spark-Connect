@@ -1,6 +1,7 @@
 import { useAppStore } from '@/store/appStore';
 import AuthFlow from '@/components/AuthFlow';
 import AppLayout from '@/components/AppLayout';
+import AgeGate from '@/components/AgeGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
@@ -27,6 +28,7 @@ const Index = () => {
 
   return (
     <div className="app-container min-h-screen">
+      {view !== 'app' && <AgeGate />}
       {view === 'app' ? <AppLayout /> : <AuthFlow />}
     </div>
   );

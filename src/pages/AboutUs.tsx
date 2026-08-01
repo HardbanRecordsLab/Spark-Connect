@@ -67,7 +67,7 @@ const AboutUs = () => {
               Nasz zespół składa się z ekspertów z dziedziny psychologii relacji, bezpieczeństwa sieciowego oraz pasjonatów designu. Każdy z nas wierzy w to, że technologia powinna zbliżać ludzi, a nie tworzyć między nimi bariery. Jako część HardbanRecords Lab, bierzemy pełną odpowiedzialność za jakość naszych usług i dbamy o to, aby Spark Connect był miejscem wolnym od toksyczności, spamu i nienawiści.
             </p>
             <p>
-              Zachęcamy naszych użytkowników do aktywnego kontaktu i zgłaszania wszelkich sugestii. Spark Connect jest tworzony dla Was i dzięki Wam. Jesteśmy dumni, że możemy dostarczać platformę, która codziennie pomaga setkom osób odnaleźć ich własną "iskrę".
+              Zachęcamy naszych użytkowników do aktywnego kontaktu i zgłaszania wszelkich sugestii. Spark Connect jest tworzony dla Was i dzięki Wam. Budujemy tę platformę od podstaw, krok po kroku, z myślą o tym, by pomagała każdemu odnaleźć jego własną "iskrę".
             </p>
           </section>
 
