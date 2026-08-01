@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Filter, MapPin, Shield, Ghost, Sparkles, Video, Clock } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
-import { StoriesBar, mockUserStories } from '@/components/StoriesSystem';
 import FilterPanel, { type DiscoverFilters, DEFAULT_FILTERS } from '@/components/FilterPanel';
 import { AvailableNowSection } from '@/components/AvailableNow';
 import { supabase } from '@/integrations/supabase/client';
@@ -201,11 +200,6 @@ export default function DiscoverPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden px-4 pt-4 pb-24">
-        {/* Stories */}
-        <div className="mb-6">
-          <StoriesBar userStories={mockUserStories} showAddButton={true} />
-        </div>
-
         {/* Available Now strip */}
         <div className="mb-6">
           <AvailableNowSection onSelectProfile={(id) => {
@@ -225,37 +219,21 @@ export default function DiscoverPage() {
         </div>
 
         {filteredProfiles.length < 10 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.button
+            onClick={() => setShowReferral(true)}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 relative group"
+            className="w-full mb-6 flex items-center gap-3 glass rounded-2xl border border-amber-500/20 px-4 py-3 text-left hover:border-amber-500/40 transition-colors"
           >
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-yellow-200 to-amber-500 rounded-[2rem] blur opacity-40 group-hover:opacity-70 transition duration-1000"></div>
-            <div className="relative glass-strong p-6 rounded-[2rem] border border-amber-500/20 overflow-hidden">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/40">
-                  <Crown className="text-amber-500 w-7 h-7" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-black text-amber-500 uppercase tracking-tighter">Bądź Pierwszy w Okolicy! 👑</h3>
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    Spark Connect to portal <strong>bez botów</strong>. Jeśli w Twojej okolicy jest jeszcze mało osób, zaproś kogoś i odblokuj elitarny status <strong>Ambassador Elite</strong>.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <button 
-                  onClick={() => setShowReferral(true)}
-                  className="flex-1 gradient-fire text-white font-black py-3 rounded-xl text-[10px] uppercase tracking-widest shadow-xl"
-                >
-                  Zostań Ambasadorem 🔥
-                </button>
-                <div className="px-4 glass rounded-xl flex items-center justify-center text-[10px] font-bold text-white/40 uppercase">
-                  No Bots Policy
-                </div>
-              </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+              <Crown className="text-amber-500 w-5 h-5" />
             </div>
-          </motion.div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-amber-500">Bądź pierwszy w okolicy</p>
+              <p className="text-xs text-white/50 truncate">Zero botów. Zaproś kogoś, odblokuj status Ambassador Elite.</p>
+            </div>
+            <span className="text-[10px] font-bold text-white/40 uppercase whitespace-nowrap flex-shrink-0">Zaproś →</span>
+          </motion.button>
         )}
 
         {loadingProfiles ? (
