@@ -1,8 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2, Users } from 'lucide-react';
+import { MessageCircle, User, Bell, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2, Users, Flame } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
-import { useState, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
 import DiscoverPage from './DiscoverPage';
 import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
@@ -23,6 +27,7 @@ const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
 const RoulettePage = lazy(() => import('./RoulettePage'));
 const SpeedDating = lazy(() => import('./SpeedDating'));
 import WhoLikedMe from './WhoLikedMe';
+import DailyStreak from './DailyStreak';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
@@ -60,10 +65,22 @@ export default function AppLayout() {
   const [showWhoLikedMe, setShowWhoLikedMe] = useState(false);
   const [showSpeedDating, setShowSpeedDating] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
+  const [showStreak, setShowStreak] = useState(false);
+  const [streak, setStreak] = useState<number | null>(null);
   const [notifsSeen, setNotifsSeen] = useState(false);
   useUserSettings(user);
   useIncomingCallListener(user?.id);
   usePresenceHeartbeat(user?.id);
+
+  // Records today's login once per mount and reads back the real
+  // streak count for the header badge -- record_daily_login() is
+  // idempotent per calendar day, so re-mounting doesn't inflate it.
+  useEffect(() => {
+    if (!user?.id) return;
+    db.rpc('record_daily_login').then(({ data }: { data: number | null }) => {
+      if (typeof data === 'number') setStreak(data);
+    });
+  }, [user?.id]);
 
   const unreadConvos = conversations.filter(c => c.unreadCount > 0);
   const unreadNotifs = notifsSeen ? 0 : unreadConvos.length;
@@ -119,6 +136,15 @@ export default function AppLayout() {
 
           {/* Actions Section (Right) */}
           <div className="flex items-center gap-2 md:gap-4 ml-auto lg:ml-0">
+            {/* Streak */}
+            <button
+              onClick={() => setShowStreak(true)}
+              className="hidden md:flex items-center gap-2 glass px-3 py-1.5 rounded-full border border-white/10 hover:border-primary/30 transition-colors"
+            >
+              <Flame className="w-4 h-4 text-primary" />
+              <span className="font-black text-sm text-primary">{streak ?? '—'}</span>
+            </button>
+
             {/* Coins */}
             <div className="hidden md:flex items-center gap-2 glass px-3 py-1.5 rounded-full border border-white/10">
               <span className="text-sm">💎</span>
@@ -265,6 +291,7 @@ export default function AppLayout() {
           </Suspense>
         )}
         {showWhoLikedMe && <WhoLikedMe onClose={() => setShowWhoLikedMe(false)} />}
+        {showStreak && <DailyStreak onClose={() => setShowStreak(false)} />}
         {showSpeedDating && (
           <Suspense fallback={<div className="fixed inset-0 z-40 bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
             <SpeedDating onClose={() => setShowSpeedDating(false)} />
