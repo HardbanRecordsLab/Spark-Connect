@@ -7,7 +7,7 @@ import DiscoverPage from './DiscoverPage';
 import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
 import LivePage from './LivePage';
-import ProfilePage from './ProfilePage';
+import ProfilePage from './ProfilePageV2';
 import GroupsPage from './GroupsPage';
 import MapPage from './MapPage';
 import VisitorsPage from './VisitorsPage';
