@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Zap, Flame } from 'lucide-react';
+import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Coins, UserCheck } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { User } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,13 +75,12 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
                 </div>
               )}
               <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
-                SPEŁNIJ <br />
-                <span className="gradient-text">FANTAZJE</span> <br />
-                BEZ LIMITU.
+                CONNECT. <br />
+                <span className="gradient-text">FUCK.</span> <br />
+                REPEAT.
               </h1>
               <p className="text-xl md:text-2xl text-white/80 max-w-md leading-tight font-medium">
-                Najodważniejszy portal 18+ w Polsce. <br />
-                <span className="text-primary font-bold italic">Zero tabu. Prawdziwe spotkania.</span>
+                <span className="text-primary font-bold italic">Dyskretnie. Szybko. Bez pytań.</span>
               </p>
             </motion.div>
 
@@ -92,8 +91,8 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               className="grid sm:grid-cols-3 gap-6"
             >
               {[
-                { icon: <Zap className="text-primary fill-primary w-5 h-5" />, label: 'Fast Sex', desc: 'Szybkie akcje' },
-                { icon: <Flame className="text-primary fill-primary w-5 h-5" />, label: 'No Limits', desc: 'Bez zahamowań' },
+                { icon: <Coins className="text-primary fill-primary w-5 h-5" />, label: 'Zero Opłat', desc: 'Reklama = Token. Bez karty.' },
+                { icon: <UserCheck className="text-primary w-5 h-5" />, label: 'Zero Botów', desc: 'Tylko realni, zdecydowani.' },
                 { icon: <Shield className="text-primary w-5 h-5" />, label: 'Dyskrecja', desc: '100% Prywatnie' },
               ].map((item, i) => (
                 <div key={i} className="space-y-2 p-4 glass rounded-2xl border border-white/5 hover:border-primary/30 transition-all">
