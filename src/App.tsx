@@ -14,6 +14,8 @@ import Safety from "./pages/Safety";
 import PremiumInfo from "./pages/PremiumInfo";
 import GDPR from "./pages/GDPR";
 import ResetPassword from "./pages/ResetPassword";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/premium-info" element={<PremiumInfo />} />
           <Route path="/gdpr" element={<GDPR />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

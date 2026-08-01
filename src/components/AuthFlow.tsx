@@ -239,6 +239,7 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Serwis</h4>
             <ul className="space-y-3 text-sm text-white/60">
               <li><button onClick={() => navigate('/about')} className="hover:text-primary transition-colors">O nas</button></li>
+              <li><button onClick={() => navigate('/blog')} className="hover:text-primary transition-colors">Blog</button></li>
               <li><button onClick={() => navigate('/safety')} className="hover:text-primary transition-colors">Bezpieczeństwo</button></li>
               <li><button onClick={() => navigate('/premium-info')} className="hover:text-primary transition-colors">Premium</button></li>
             </ul>

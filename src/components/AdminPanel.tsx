@@ -5,7 +5,8 @@ import {
   Users, Clock, RefreshCw, LogOut,
   Mail, Calendar, Image as ImageIcon, MessageSquare,
   TrendingUp, Settings,
-  Activity, Database, Loader2
+  Activity, Database, Loader2,
+  Newspaper, Plus, Pencil, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +17,7 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 const db = supabase as any;
 
 type VerifyStatus = 'pending' | 'approved' | 'rejected' | 'all';
-type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings' | 'blacklist' | 'verification';
+type AdminSection = 'users' | 'stats' | 'groups' | 'reports' | 'settings' | 'blacklist' | 'verification' | 'blog';
 
 interface VerificationRequest {
   id: string;
@@ -392,6 +393,172 @@ function GroupsSection() {
   );
 }
 
+// ── Blog Section ───────────────────────────────────────────────
+interface AdminBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  cover_image_url: string | null;
+  author: string;
+  published: boolean;
+  created_at: string;
+}
+
+const EMPTY_POST_DRAFT = { title: '', slug: '', excerpt: '', content: '', cover_image_url: '', author: 'Zespół Spark Connect', published: true };
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ł/g, 'l') // NFD doesn't decompose ł (not a precomposed accent), handle separately
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip remaining Polish diacritics
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function BlogSection() {
+  const [posts, setPosts] = useState<AdminBlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<AdminBlogPost | typeof EMPTY_POST_DRAFT | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await db.from('blog_posts').select('*').order('created_at', { ascending: false });
+    setPosts(data ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const startNew = () => { setEditing({ ...EMPTY_POST_DRAFT }); setIsNew(true); };
+  const startEdit = (post: AdminBlogPost) => { setEditing({ ...post }); setIsNew(false); };
+  const cancel = () => setEditing(null);
+
+  const handleSave = async () => {
+    if (!editing) return;
+    if (!editing.title.trim() || !editing.content.trim()) { toast.error('Tytuł i treść są wymagane.'); return; }
+    setSaving(true);
+    const slug = editing.slug.trim() || slugify(editing.title);
+    const payload = { ...editing, slug };
+
+    if (isNew) {
+      const { error } = await db.from('blog_posts').insert(payload);
+      if (error) { toast.error(error.code === '23505' ? 'Ten slug już istnieje.' : 'Nie udało się zapisać artykułu.'); setSaving(false); return; }
+      toast.success('Artykuł opublikowany.');
+    } else {
+      const id = (editing as AdminBlogPost).id;
+      const { error } = await db.from('blog_posts').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) { toast.error('Nie udało się zapisać zmian.'); setSaving(false); return; }
+      toast.success('Zapisano zmiany.');
+    }
+    setSaving(false);
+    setEditing(null);
+    load();
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Usunąć artykuł "${title}"?`)) return;
+    const { error } = await db.from('blog_posts').delete().eq('id', id);
+    if (error) { toast.error('Nie udało się usunąć artykułu.'); return; }
+    setPosts(prev => prev.filter(p => p.id !== id));
+  };
+
+  if (loading) return <div className="text-center py-10 opacity-50 text-sm">Ładowanie artykułów...</div>;
+
+  if (editing) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+          ✦ {isNew ? 'Nowy artykuł' : 'Edytuj artykuł'}
+        </h2>
+        <div className="space-y-3">
+          <input
+            value={editing.title}
+            onChange={e => setEditing({ ...editing, title: e.target.value })}
+            placeholder="Tytuł"
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none"
+          />
+          <input
+            value={editing.slug}
+            onChange={e => setEditing({ ...editing, slug: slugify(e.target.value) })}
+            placeholder={`slug (auto: ${slugify(editing.title) || 'wygeneruje-sie-z-tytulu'})`}
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none font-mono text-xs"
+          />
+          <input
+            value={editing.cover_image_url ?? ''}
+            onChange={e => setEditing({ ...editing, cover_image_url: e.target.value })}
+            placeholder="URL zdjęcia okładki (opcjonalnie)"
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none"
+          />
+          <textarea
+            value={editing.excerpt ?? ''}
+            onChange={e => setEditing({ ...editing, excerpt: e.target.value })}
+            placeholder="Krótki opis (widoczny na liście artykułów)"
+            rows={2}
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none resize-none"
+          />
+          <textarea
+            value={editing.content}
+            onChange={e => setEditing({ ...editing, content: e.target.value })}
+            placeholder="Treść artykułu (akapity oddziel pustą linią)"
+            rows={12}
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none resize-y"
+          />
+          <input
+            value={editing.author}
+            onChange={e => setEditing({ ...editing, author: e.target.value })}
+            placeholder="Autor"
+            className="w-full glass rounded-xl px-4 py-3 text-sm border border-border outline-none"
+          />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={editing.published} onChange={e => setEditing({ ...editing, published: e.target.checked })} />
+            Opublikowany (widoczny publicznie na /blog)
+          </label>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={cancel} className="flex-1 glass rounded-xl py-3 text-sm font-medium border border-border">Anuluj</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-bold disabled:opacity-50">
+            {saving ? 'Zapisywanie...' : 'Zapisz'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">✦ Blog</h2>
+        <button onClick={startNew} className="flex items-center gap-1 text-xs text-primary font-medium"><Plus className="w-3.5 h-3.5" /> Nowy artykuł</button>
+      </div>
+      {posts.length === 0 ? (
+        <p className="text-center py-10 text-sm text-muted-foreground">Brak artykułów. Dodaj pierwszy.</p>
+      ) : (
+        <div className="space-y-2">
+          {posts.map(p => (
+            <div key={p.id} className="glass rounded-xl p-3 flex items-center gap-3 border border-border">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-medium text-sm truncate">{p.title}</span>
+                  {!p.published && <span className="text-[9px] uppercase font-bold text-amber-500 glass px-1.5 py-0.5 rounded-full flex-shrink-0">Szkic</span>}
+                </div>
+                <div className="text-xs text-muted-foreground">{p.author} · {new Date(p.created_at).toLocaleDateString('pl-PL')}</div>
+              </div>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <button onClick={() => startEdit(p)} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => handleDelete(p.id, p.title)} className="w-7 h-7 glass rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Reports Section ────────────────────────────────────────────
 function ReportsSection() {
   const [reports, setReports] = useState<ReportItem[]>([]);
@@ -736,24 +903,34 @@ export default function AdminPanel() {
     e.preventDefault();
     setLoading(true); setLoginError('');
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
+
     if (error || !data.user) {
       setLoginError('Błąd logowania: ' + (error?.message || 'Nieznany błąd'));
       setLoading(false);
       return;
     }
 
-    // Wait for auth state to update and check admin status
-    setTimeout(() => {
-      if (isAdmin) {
-        setAuthed(true);
-        loadUsers();
-      } else {
-        setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
-        supabase.auth.signOut();
-      }
-      setLoading(false);
-    }, 500);
+    // Bug fix: this used to check the `isAdmin` value from useAuth()'s
+    // hook state inside a setTimeout -- but that's a closure captured
+    // at the moment handleLogin was called (before sign-in), so it was
+    // always stale/false regardless of how long the timeout waited.
+    // Net effect: the buggy `else` branch always ran and called
+    // signOut() ~500ms after every successful admin login, silently
+    // destroying the just-created session -- while a *different*
+    // effect (checkExistingSession, reacting to the real isAdmin
+    // update) had already flipped `authed` to true, so the dashboard
+    // kept rendering with a dead session underneath. Every write
+    // after that failed with 401. Query admin_users directly instead
+    // of trusting a reactive value that hasn't caught up yet.
+    const { data: adminRow } = await db.from('admin_users').select('user_id').eq('user_id', data.user.id).maybeSingle();
+    if (adminRow) {
+      setAuthed(true);
+      loadUsers();
+    } else {
+      setLoginError('Brak dostępu. Tylko administrator może zalogować się tutaj.');
+      await supabase.auth.signOut();
+    }
+    setLoading(false);
   };
 
   const [users, setUsers] = useState<PendingUser[]>([]);
@@ -910,6 +1087,7 @@ export default function AdminPanel() {
     { id: 'users', icon: <Users className="w-4 h-4" />, label: 'Użytkownicy', badge: stats.pending },
     { id: 'stats', icon: <TrendingUp className="w-4 h-4" />, label: 'Statystyki' },
     { id: 'groups', icon: <MessageSquare className="w-4 h-4" />, label: 'Grupy' },
+    { id: 'blog', icon: <Newspaper className="w-4 h-4" />, label: 'Blog' },
     { id: 'reports', icon: <AlertTriangle className="w-4 h-4" />, label: 'Zgłoszenia', badge: pendingReports },
     { id: 'blacklist', icon: <Ban className="w-4 h-4" />, label: 'Blacklista' },
     { id: 'verification', icon: <Shield className="w-4 h-4" />, label: 'Weryfikacja' },
@@ -1035,6 +1213,7 @@ export default function AdminPanel() {
 
         {section === 'stats' && <StatsSection />}
         {section === 'groups' && <GroupsSection />}
+        {section === 'blog' && <BlogSection />}
         {section === 'reports' && <ReportsSection />}
         {section === 'blacklist' && <BlacklistSection />}
         {section === 'verification' && <VerificationSection />}
