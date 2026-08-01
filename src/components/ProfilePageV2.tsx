@@ -740,50 +740,12 @@ export default function ProfilePageV2() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                   <h3 className="text-lg font-bold mb-3">🎯 Wskaźniki profilu</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Atrakcyjność profilu</span>
-                      <span className="text-[#D4A843] font-medium">⭐ 89/100</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Kompletność</span>
-                      <span className="text-[#FF6B35] font-medium">72%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Czas odpowiedzi</span>
-                      <span className="text-[#2ECC71] font-medium">~2h</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Wskaźnik odpisów</span>
-                      <span className="font-medium">85%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Popularność dzisiaj</span>
-                      <span className="text-[#FF6B35] font-medium">🔥 Top 15%</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-white/40">Statystyki pojawią się, gdy zbierzemy wystarczająco danych o Twoim profilu.</p>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                   <h3 className="text-lg font-bold mb-3">👥 Demografika oglądających</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Wiek 18–25</span>
-                      <span className="font-medium">28%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Wiek 26–32</span>
-                      <span className="font-medium">41%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Wiek 33–40</span>
-                      <span className="font-medium">22%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Wiek 40+</span>
-                      <span className="font-medium">9%</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-white/40">Zobaczysz to, gdy Twój profil zacznie zbierać odsłony.</p>
                 </div>
               </div>
 

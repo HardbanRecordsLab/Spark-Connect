@@ -84,7 +84,7 @@ function ProfileGridItem({ profile, onSelect }: { profile: Profile; onSelect: (p
 }
 
 export default function DiscoverPage() {
-  const { discoverProfiles: mockProfiles, triggerMatch } = useAppStore();
+  const { triggerMatch } = useAppStore();
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const { user } = useAuth();
@@ -99,12 +99,8 @@ export default function DiscoverPage() {
   const [showReferral, setShowReferral] = useState(false);
 
   useEffect(() => {
-    if (dbProfiles.length > 0) {
-      setAllProfiles(dbProfiles);
-    } else if (!loadingProfiles && mockProfiles.length > 0) {
-      setAllProfiles(mockProfiles);
-    }
-  }, [dbProfiles, loadingProfiles, mockProfiles]);
+    setAllProfiles(dbProfiles);
+  }, [dbProfiles]);
 
   const handleMatch = async (profile: Profile) => {
     if (!user || matching) return;

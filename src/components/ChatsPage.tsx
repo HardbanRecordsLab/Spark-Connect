@@ -1366,9 +1366,7 @@ function ChatView({ conv, onBack, setMatchState }: {
 
 export default function ChatsPage() {
   const { user } = useAuth();
-  const { conversations: realConvs, loading, setMatchState } = useConversations(user?.id ?? null);
-  const { conversations: mockConvs } = useAppStore();
-  const conversations = user ? realConvs : mockConvs;
+  const { conversations, loading, setMatchState } = useConversations(user?.id ?? null);
   const [activeConv, setActiveConv] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);

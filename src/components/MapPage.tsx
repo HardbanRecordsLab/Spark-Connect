@@ -2,21 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, MessageCircle } from 'lucide-react';
 
-const MAP_USERS = [
-  { name: 'Sofia', age: 24, dist: '350m', mood: '🔥 Szukam dziś', img: 49, top: '30%', left: '62%', ver: true },
-  { name: 'Mia', age: 22, dist: '820m', mood: '☕ Randka', img: 47, top: '58%', left: '34%', ver: false },
-  { name: 'Natalia', age: 27, dist: '1.2km', mood: '💬 Rozmowa', img: 45, top: '24%', left: '27%', ver: true },
-  { name: 'Zara', age: 23, dist: '1.5km', mood: '🔥 Szukam dziś', img: 44, top: '67%', left: '73%', ver: false },
-  { name: 'Julia', age: 25, dist: '2.1km', mood: '☕ Randka', img: 43, top: '42%', left: '79%', ver: true },
-  { name: 'Emma', age: 26, dist: '2.8km', mood: '💬 Rozmowa', img: 41, top: '72%', left: '20%', ver: false },
-];
+type MapUser = { name: string; age: number; dist: string; mood: string; img: number; top: string; left: string; ver: boolean };
+const MAP_USERS: MapUser[] = [];
 
 const MOODS = ['Wszyscy', '🔥 Szukam dziś', '☕ Randka', '💬 Rozmowa', '✦ Zweryfikowani'];
-const HOT_ZONES = [
-  { name: 'Śródmieście', count: 8, dist: '0.4km', pct: 80, color: 'var(--gradient-fire)' },
-  { name: 'Praga', count: 5, dist: '1.1km', pct: 50, color: 'linear-gradient(135deg,hsl(347 100% 65%),hsl(15 100% 60%))' },
-  { name: 'Mokotów', count: 4, dist: '2.3km', pct: 35, color: 'linear-gradient(135deg,hsl(15 100% 60%),hsl(35 100% 65%))' },
-];
+const HOT_ZONES: { name: string; count: number; dist: string; pct: number; color: string }[] = [];
 
 interface MapPageProps {
   onOpenChat: (name: string) => void;
@@ -26,7 +16,7 @@ interface MapPageProps {
 export default function MapPage({ onOpenChat, onSafety }: MapPageProps) {
   const [activeMood, setActiveMood] = useState('Wszyscy');
   const [vibeOn, setVibeOn] = useState(false);
-  const [tooltip, setTooltip] = useState<typeof MAP_USERS[0] | null>(null);
+  const [tooltip, setTooltip] = useState<MapUser | null>(null);
 
   const visible = activeMood === 'Wszyscy'
     ? MAP_USERS
@@ -97,6 +87,11 @@ export default function MapPage({ onOpenChat, onSafety }: MapPageProps) {
           <div className="font-bold text-lg leading-none" style={{ fontFamily: 'serif', color: '#c9a84c' }}>{visible.length}</div>
           <div className="text-xs" style={{ color: 'rgba(255,255,255,.4)', fontSize: 9 }}>aktywnych w pobliżu</div>
         </div>
+        {visible.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center px-8 text-center z-10">
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,.35)' }}>Jeszcze nikt aktywny w Twojej okolicy — budujemy społeczność od zera, bez botów.</p>
+          </div>
+        )}
         {/* Tooltip */}
         <AnimatePresence>
           {tooltip && (
@@ -133,6 +128,7 @@ export default function MapPage({ onOpenChat, onSafety }: MapPageProps) {
       </button>
 
       {/* Hot zones */}
+      {HOT_ZONES.length > 0 && (
       <div className="px-5 mb-2">
         <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Najaktywniejsze strefy</div>
         <div className="space-y-2">
@@ -152,6 +148,7 @@ export default function MapPage({ onOpenChat, onSafety }: MapPageProps) {
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

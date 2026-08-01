@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Flame, Zap, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2 } from 'lucide-react';
+import { MessageCircle, User, Bell, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2, Users } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,8 +10,6 @@ import LivePage from './LivePage';
 import ProfilePage from './ProfilePageV2';
 import GroupsPage from './GroupsPage';
 import MapPage from './MapPage';
-import VisitorsPage from './VisitorsPage';
-import HotOrNotPage from './HotOrNotPage';
 import SafetyCenter from './SafetyCenter';
 import MatchModal from './MatchModal';
 import IncomingCallModal from './IncomingCallModal';
@@ -24,15 +22,18 @@ import IncomingCallModal from './IncomingCallModal';
 const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
 const RoulettePage = lazy(() => import('./RoulettePage'));
 const SpeedDating = lazy(() => import('./SpeedDating'));
-import VibeRooms from './VibeRooms';
 import WhoLikedMe from './WhoLikedMe';
-import DailyStreak from './DailyStreak';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useIncomingCallListener } from '@/hooks/useCallSignaling';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
+
+const EXTRA_TAB_LABELS: Partial<Record<AppTab, string>> = {
+  groups: 'Grupy',
+};
 
 const tabs: { id: AppTab; label: string; emoji: string; icon: any; badge?: number }[] = [
   { id: 'discover', label: 'Odkryj', emoji: '🔍', icon: Search },
@@ -40,13 +41,6 @@ const tabs: { id: AppTab; label: string; emoji: string; icon: any; badge?: numbe
   { id: 'chats', label: 'Czaty', emoji: '💬', icon: MessageCircle },
   { id: 'map', label: 'Mapa', emoji: '📍', icon: Map },
   { id: 'profile', label: 'Profil', emoji: '👤', icon: User },
-];
-
-const NOTIFICATIONS = [
-  { id: 'n1', emoji: '💚', text: 'Sofia polubiła Cię!', time: '2 min temu', unread: true },
-  { id: 'n2', emoji: '🔥', text: 'To dopasowanie z Mią!', time: '15 min temu', unread: true },
-  { id: 'n3', emoji: '💬', text: 'Zara wysłała wiadomość', time: '1 godz. temu', unread: true },
-  { id: 'n4', emoji: '⭐', text: 'Alex cię Super Liknął!', time: '2 godz. temu', unread: false },
 ];
 
 export default function AppLayout() {
@@ -59,12 +53,11 @@ export default function AppLayout() {
   useProfile(user);
   const { conversations } = useConversations(user?.id ?? null);
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const { balance: coinBalance } = useCoinBalance(user?.id);
   const navigate = useNavigate();
 
   const [showNotifs, setShowNotifs] = useState(false);
-  const [showVibeRooms, setShowVibeRooms] = useState(false);
   const [showWhoLikedMe, setShowWhoLikedMe] = useState(false);
-  const [showStreak, setShowStreak] = useState(false);
   const [showSpeedDating, setShowSpeedDating] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
   const [notifsSeen, setNotifsSeen] = useState(false);
@@ -72,8 +65,8 @@ export default function AppLayout() {
   useIncomingCallListener(user?.id);
   usePresenceHeartbeat(user?.id);
 
-  const unreadNotifs = notifsSeen ? 0 : NOTIFICATIONS.filter(n => n.unread).length;
-  const currentStreak = 7;
+  const unreadConvos = conversations.filter(c => c.unreadCount > 0);
+  const unreadNotifs = notifsSeen ? 0 : unreadConvos.length;
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-background selection:bg-primary selection:text-white">
@@ -126,13 +119,10 @@ export default function AppLayout() {
 
           {/* Actions Section (Right) */}
           <div className="flex items-center gap-2 md:gap-4 ml-auto lg:ml-0">
-            {/* Streak & Coins */}
+            {/* Coins */}
             <div className="hidden md:flex items-center gap-2 glass px-3 py-1.5 rounded-full border border-white/10">
-              <span className="text-sm">🔥</span>
-              <span className="font-black text-sm text-primary">{currentStreak}</span>
-              <div className="w-[1px] h-3 bg-white/10 mx-1" />
               <span className="text-sm">💎</span>
-              <span className="font-black text-sm text-amber-500">1.2k</span>
+              <span className="font-black text-sm text-amber-500">{coinBalance ?? '—'}</span>
             </div>
 
             {/* Notifications */}
@@ -162,14 +152,20 @@ export default function AppLayout() {
                       <button onClick={() => setShowNotifs(false)} className="text-white/40 hover:text-white">✕</button>
                     </div>
                     <div className="max-h-[400px] overflow-y-auto">
-                      {NOTIFICATIONS.map(n => (
-                        <div key={n.id} className="p-4 border-b border-white/5 hover:bg-white/5 flex gap-4 items-center">
-                          <span className="text-2xl">{n.emoji}</span>
-                          <div className="flex-1">
-                            <p className="text-xs font-bold text-white">{n.text}</p>
-                            <p className="text-[10px] text-white/40 mt-0.5">{n.time}</p>
+                      {unreadConvos.length === 0 ? (
+                        <p className="p-6 text-center text-xs text-white/40">Brak nowych powiadomień</p>
+                      ) : unreadConvos.map(c => (
+                        <button
+                          key={c.id}
+                          onClick={() => { setActiveTab('chats'); setShowNotifs(false); }}
+                          className="w-full p-4 border-b border-white/5 hover:bg-white/5 flex gap-4 items-center text-left"
+                        >
+                          <span className="text-2xl">💬</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{c.user.displayName} wysłał(a) wiadomość</p>
+                            <p className="text-[10px] text-white/40 mt-0.5">{c.unreadCount} {c.unreadCount === 1 ? 'nowa wiadomość' : 'nowych wiadomości'}</p>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </motion.div>
@@ -187,14 +183,11 @@ export default function AppLayout() {
         {/* Sub-navigation Strip (Optional but premium) */}
         <div className="bg-white/[0.02] border-t border-white/5">
           <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4 overflow-x-auto scrollbar-hide">
-             <button onClick={() => setShowVibeRooms(true)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-all whitespace-nowrap">
-               <Zap className="w-3 h-3" /> Vibe Rooms
-             </button>
              <button onClick={() => setShowSpeedDating(true)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500/80 hover:text-amber-500 transition-all whitespace-nowrap">
                <Star className="w-3 h-3" /> Speed Dating
              </button>
-             <button onClick={() => setActiveTab('hotnot' as any)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500/80 hover:text-rose-500 transition-all whitespace-nowrap">
-               <Flame className="w-3 h-3" /> Hot or Not
+             <button onClick={() => setActiveTab('groups')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-violet-400/80 hover:text-violet-400 transition-all whitespace-nowrap">
+               <Users className="w-3 h-3" /> Grupy
              </button>
              {isAdmin && (
                <button onClick={() => navigate('/admin')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/80 hover:text-blue-400 transition-all whitespace-nowrap ml-auto">
@@ -211,7 +204,7 @@ export default function AppLayout() {
         <div className="flex items-center gap-2 mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
           <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => setActiveTab('discover')}>Spark</span>
           <span className="text-white/10">/</span>
-          <span className="text-primary/80">{tabs.find(t => t.id === activeTab)?.label || activeTab}</span>
+          <span className="text-primary/80">{tabs.find(t => t.id === activeTab)?.label ?? EXTRA_TAB_LABELS[activeTab] ?? activeTab}</span>
         </div>
 
         <AnimatePresence mode="wait">
@@ -235,8 +228,6 @@ export default function AppLayout() {
             {activeTab === 'profile' && <ProfilePage />}
             {activeTab === 'groups' && <GroupsPage />}
             {activeTab === 'map' && <MapPage onOpenChat={() => setActiveTab('chats')} onSafety={() => {}} />}
-            {activeTab === 'visitors' && <VisitorsPage onOpenChat={() => setActiveTab('chats')} />}
-            {activeTab === ('hotnot' as any) && <HotOrNotPage />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -273,9 +264,7 @@ export default function AppLayout() {
             <VideoCallOverlay />
           </Suspense>
         )}
-        {showVibeRooms && <VibeRooms onClose={() => setShowVibeRooms(false)} />}
         {showWhoLikedMe && <WhoLikedMe onClose={() => setShowWhoLikedMe(false)} />}
-        {showStreak && <DailyStreak currentStreak={currentStreak} onClose={() => setShowStreak(false)} />}
         {showSpeedDating && (
           <Suspense fallback={<div className="fixed inset-0 z-40 bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
             <SpeedDating onClose={() => setShowSpeedDating(false)} />
