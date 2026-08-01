@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Coins, UserCheck } from 'lucide-react';
+import { Check, Eye, EyeOff, Loader2, AlertCircle, Shield, Coins, UserCheck, Mail } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { User } from '@/store/appStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,20 +19,34 @@ function ErrorAlert({ msg }: { msg: string }) {
   );
 }
 
-// ── LANDING VIEW (SEX DATING PORTAL STYLE) ─────────────────────────
-function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin: () => void }) {
-  const [onlineCount, setOnlineCount] = useState<number | null>(null);
+// ── LANDING VIEW (PRE-LAUNCH WAITLIST) ─────────────────────────
+function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void }) {
   const navigate = useNavigate();
+  const waitlistRef = useRef<HTMLDivElement>(null);
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [waitlistError, setWaitlistError] = useState('');
 
-  useEffect(() => {
-    let cancelled = false;
+  const scrollToWaitlist = () => waitlistRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ageConfirmed || !consentGiven) { setWaitlistError('Zaznacz oba potwierdzenia poniżej.'); return; }
+    setSubmitting(true); setWaitlistError('');
     const db = supabase as any;
-    db.rpc('get_online_users_count').then(({ data }: { data: number | null }) => {
-      if (!cancelled && typeof data === 'number') setOnlineCount(data);
-    });
-    return () => { cancelled = true; };
-  }, []);
-  
+    const { error } = await db.from('waitlist').insert({ nickname, email, age_confirmed: ageConfirmed });
+    setSubmitting(false);
+    if (error) {
+      setWaitlistError(error.code === '23505' ? 'Ten email już jest na liście!' : 'Coś poszło nie tak. Spróbuj ponownie.');
+      return;
+    }
+    setSubmitted(true);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white overflow-x-hidden">
       {/* Background Image Wrapper */}
@@ -54,7 +68,7 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
         </div>
         <div className="flex items-center gap-4">
           <button onClick={onLogin} className="text-sm font-bold hover:text-primary transition-colors hidden sm:block">Zaloguj się</button>
-          <button onClick={onRegister} className="gradient-fire px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl">Dołącz bezpłatnie</button>
+          <button onClick={scrollToWaitlist} className="gradient-fire px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl">Zapisz się</button>
         </div>
       </header>
 
@@ -68,19 +82,17 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
               animate={{ opacity: 1, x: 0 }}
               className="space-y-4"
             >
-              {onlineCount !== null && onlineCount > 0 && (
-                <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(255,26,78,0.3)]">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-red-400">{onlineCount} {onlineCount === 1 ? 'OSOBA' : 'OSÓB'} ONLINE TERAZ</span>
-                </div>
-              )}
+              <div className="inline-flex items-center gap-2 glass px-3 py-1 rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(255,26,78,0.3)]">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-red-400">Premiera wkrótce</span>
+              </div>
               <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
-                CONNECT. <br />
-                <span className="gradient-text">FUCK.</span> <br />
-                REPEAT.
+                TYLKO SEKS. <br />
+                <span className="gradient-text">ZERO MIŁOŚCI.</span>
               </h1>
               <p className="text-xl md:text-2xl text-white/80 max-w-md leading-tight font-medium">
-                <span className="text-primary font-bold italic">Dyskretnie. Szybko. Bez pytań.</span>
+                Nowa platforma dla dojrzałych, którzy szukają wrażeń i odskoczni od monotonii. <br />
+                <span className="text-primary font-bold italic">Zapisz się, zanim ruszymy.</span>
               </p>
             </motion.div>
 
@@ -104,42 +116,69 @@ function LandingView({ onRegister, onLogin }: { onRegister: () => void; onLogin:
             </motion.div>
           </div>
 
-          {/* Right Side: Quick Action Card */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            animate={{ opacity: 1, scale: 1 }} 
+          {/* Right Side: Waitlist Form */}
+          <motion.div
+            ref={waitlistRef}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
             className="lg:ml-auto w-full max-w-md"
           >
             <div className="glass-strong p-10 rounded-[3rem] border border-primary/30 shadow-[0_0_50px_rgba(255,26,78,0.2)] relative overflow-hidden">
               <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 blur-[60px] rounded-full" />
-              
-              <div className="flex items-center gap-2 mb-6">
-                <span className="text-xs font-black text-white/40 uppercase tracking-widest">Wchodzisz na własną odpowiedzialność</span>
-                <div className="h-[1px] flex-1 bg-white/10" />
-              </div>
 
-              <h2 className="text-4xl font-black mb-8 italic uppercase tracking-tighter text-white">Gotowy na <br /><span className="text-primary">Ogień? 🔥</span></h2>
-              
-              <div className="space-y-5">
-                <button 
-                  onClick={onRegister}
-                  className="w-full gradient-fire text-white font-black py-6 rounded-2xl text-xl uppercase tracking-widest shadow-[0_10px_40px_rgba(255,26,78,0.4)] transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-4"
-                >
-                  WEJDŹ TERAZ <ArrowRight className="w-6 h-6" />
-                </button>
-                
-                <button 
-                  onClick={onLogin}
-                  className="w-full glass py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] border border-white/10 hover:bg-white/5 transition-all text-white/60"
-                >
-                  MAM JUŻ KONTO
-                </button>
-              </div>
+              {submitted ? (
+                <div className="text-center py-6">
+                  <div className="text-5xl mb-4">🔥</div>
+                  <h2 className="text-2xl font-black mb-3 italic uppercase tracking-tighter text-white">Jesteś na liście!</h2>
+                  <p className="text-sm text-white/60">Odezwiemy się mailem, gdy ruszamy. Bez spamu.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-6">
+                    <span className="text-xs font-black text-white/40 uppercase tracking-widest">Pierwsi zapisani wchodzą jako pierwsi</span>
+                    <div className="h-[1px] flex-1 bg-white/10" />
+                  </div>
 
-              <p className="mt-8 text-center text-[9px] text-white/30 font-black uppercase tracking-widest leading-relaxed">
-                Wchodząc potwierdzasz ukończenie 18 lat <br /> i akceptujesz zmysłowy charakter portalu.
-              </p>
+                  <h2 className="text-4xl font-black mb-8 italic uppercase tracking-tighter text-white">Zapisz się <br /><span className="text-primary">na listę 🔥</span></h2>
+
+                  <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+                    <input
+                      value={nickname} onChange={e => setNickname(e.target.value)} required
+                      placeholder="Planowany nick"
+                      className="w-full glass rounded-2xl px-6 py-4 text-sm border border-white/5 focus:border-primary outline-none transition-all"
+                    />
+                    <input
+                      value={email} onChange={e => setEmail(e.target.value)} required type="email"
+                      placeholder="twoj@email.com"
+                      className="w-full glass rounded-2xl px-6 py-4 text-sm border border-white/5 focus:border-primary outline-none transition-all"
+                    />
+
+                    <label className="flex items-start gap-3 text-xs text-white/50 cursor-pointer">
+                      <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} className="mt-0.5 w-4 h-4 accent-primary flex-shrink-0" />
+                      Potwierdzam, że mam ukończone 18 lat.
+                    </label>
+                    <label className="flex items-start gap-3 text-xs text-white/50 cursor-pointer">
+                      <input type="checkbox" checked={consentGiven} onChange={e => setConsentGiven(e.target.checked)} className="mt-0.5 w-4 h-4 accent-primary flex-shrink-0" />
+                      Akceptuję <button type="button" onClick={() => navigate('/privacy')} className="text-primary underline">Politykę Prywatności</button> i zgadzam się na kontakt e-mail w sprawie premiery.
+                    </label>
+
+                    {waitlistError && <ErrorAlert msg={waitlistError} />}
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full gradient-fire text-white font-black py-6 rounded-2xl text-xl uppercase tracking-widest shadow-[0_10px_40px_rgba(255,26,78,0.4)] transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-4 disabled:opacity-60 disabled:hover:scale-100"
+                    >
+                      {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <>DOŁĄCZ DO LISTY <Mail className="w-5 h-5" /></>}
+                    </button>
+                  </form>
+
+                  <p className="mt-6 text-center text-[10px] text-white/30 font-bold">
+                    Masz już konto? <button onClick={onLogin} className="text-primary hover:underline">Zaloguj się</button>
+                  </p>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
