@@ -276,11 +276,15 @@ function RegisterView({ onSuccess, onLogin }: { onSuccess: () => void; onLogin: 
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
+      {/* Background Photo */}
+      <div className="fixed inset-0 z-0">
+        <img src="/hero-couple-ferry.jpg" alt="" className="w-full h-full object-cover opacity-40" />
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
       <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-primary/20 blur-[160px] -z-10 rounded-full" />
       <div className="absolute bottom-0 left-0 w-[550px] h-[550px] bg-amber-500/10 blur-[160px] -z-10 rounded-full" />
 
-      <div className="max-w-xl w-full">
+      <div className="max-w-xl w-full relative z-10">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <img src="/spark-connect-logo.png" alt="" className="w-10 h-10 object-contain" />
@@ -365,11 +369,15 @@ function LoginView({ onSuccess, onRegister }: { onSuccess: () => void; onRegiste
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
+      {/* Background Photo */}
+      <div className="fixed inset-0 z-0">
+        <img src="/hero-couple-lamppost.jpg" alt="" className="w-full h-full object-cover opacity-40" />
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
       <div className="absolute top-0 right-0 w-[550px] h-[550px] bg-primary/20 blur-[160px] -z-10 rounded-full" />
       <div className="absolute bottom-0 left-0 w-[550px] h-[550px] bg-amber-500/10 blur-[160px] -z-10 rounded-full" />
 
-      <div className="max-w-md w-full">
+      <div className="max-w-md w-full relative z-10">
         <div className="flex flex-col items-center mb-10">
           <img src="/spark-connect-logo.png" alt="" className="w-16 h-16 mb-4 drop-shadow-[0_0_20px_rgba(255,26,78,0.6)]" />
           <h1 className="text-3xl font-black gradient-text uppercase italic tracking-tighter">Witaj w klubie</h1>
