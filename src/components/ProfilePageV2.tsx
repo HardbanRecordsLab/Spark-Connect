@@ -333,7 +333,7 @@ export default function ProfilePageV2() {
   }
 
   return (
-    <div className="h-screen flex bg-[#0D0B14] text-[#F2EEE8] font-['DM_Sans'] overflow-hidden">
+    <div className="h-full flex bg-[#0D0B14] text-[#F2EEE8] font-['DM_Sans'] overflow-hidden">
       {/* BACKGROUND MESH */}
       <div className="fixed inset-0 opacity-60 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[rgba(232,67,26,0.1)] via-transparent to-[rgba(212,168,67,0.05)]"></div>
@@ -341,21 +341,6 @@ export default function ProfilePageV2() {
 
       {/* SIDEBAR */}
       <div className="w-64 bg-[#16121F] border-r border-[rgba(255,255,255,0.09)] flex flex-col relative z-10">
-        {/* Logo */}
-        <div className="p-5 border-b border-[rgba(255,255,255,0.09)]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9.5 h-9.5 bg-gradient-to-br from-[#E8431A] to-[#D4A843] rounded-lg flex items-center justify-center text-lg font-bold shadow-lg">
-              🔥
-            </div>
-            <div>
-              <div className="font-['Playfair_Display'] font-bold text-lg">Spark<span className="text-[#FF6B35]">Connect</span></div>
-              <div className="font-['JetBrains_Mono'] text-[9px] text-[#FF6B35] font-medium tracking-wider border border-[rgba(255,107,53,0.3)] px-1.5 py-0.5 rounded inline-block">
-                PREMIUM
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Profile Completion */}
         <div className="mx-3 my-3 bg-gradient-to-br from-[rgba(232,67,26,0.12)] to-[rgba(212,168,67,0.08)] border border-[rgba(232,67,26,0.2)] rounded-lg p-3">
           <div className="flex justify-between items-center mb-2">

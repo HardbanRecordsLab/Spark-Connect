@@ -87,7 +87,6 @@ export default function AppLayout() {
             </div>
             <div className="hidden sm:block">
               <h1 className="font-black text-xl gradient-text tracking-tighter uppercase leading-none">Spark</h1>
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Portal 2.0</span>
             </div>
           </div>
 
