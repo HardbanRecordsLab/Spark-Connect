@@ -14,6 +14,7 @@ import LivePage from './LivePage';
 import ProfilePage from './ProfilePageV2';
 import GroupsPage from './GroupsPage';
 import MapPage from './MapPage';
+import HotOrNotPage from './HotOrNotPage';
 import SafetyCenter from './SafetyCenter';
 import MatchModal from './MatchModal';
 import IncomingCallModal from './IncomingCallModal';
@@ -38,6 +39,7 @@ import { useCoinBalance } from '@/hooks/useCoinBalance';
 
 const EXTRA_TAB_LABELS: Partial<Record<AppTab, string>> = {
   groups: 'Grupy',
+  hotnot: 'Hot or Not',
 };
 
 const tabs: { id: AppTab; label: string; emoji: string; icon: any; badge?: number }[] = [
@@ -215,6 +217,9 @@ export default function AppLayout() {
              <button onClick={() => setActiveTab('groups')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-violet-400/80 hover:text-violet-400 transition-all whitespace-nowrap">
                <Users className="w-3 h-3" /> Grupy
              </button>
+             <button onClick={() => setActiveTab('hotnot')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500/80 hover:text-rose-500 transition-all whitespace-nowrap">
+               <Flame className="w-3 h-3" /> Hot or Not
+             </button>
              {isAdmin && (
                <button onClick={() => navigate('/admin')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/80 hover:text-blue-400 transition-all whitespace-nowrap ml-auto">
                  <LayoutDashboard className="w-3 h-3" /> Panel Admina
@@ -253,6 +258,7 @@ export default function AppLayout() {
             {activeTab === 'live' && <LivePage />}
             {activeTab === 'profile' && <ProfilePage />}
             {activeTab === 'groups' && <GroupsPage />}
+            {activeTab === 'hotnot' && <HotOrNotPage />}
             {activeTab === 'map' && <MapPage onOpenChat={() => setActiveTab('chats')} onSafety={() => {}} />}
           </motion.div>
         </AnimatePresence>
