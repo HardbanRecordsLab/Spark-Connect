@@ -30,6 +30,9 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [waitlistError, setWaitlistError] = useState('');
+  const [myReferralLink, setMyReferralLink] = useState('');
+  const [referralCount, setReferralCount] = useState<number | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const scrollToWaitlist = () => waitlistRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -38,13 +41,31 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
     if (!ageConfirmed || !consentGiven) { setWaitlistError('Zaznacz oba potwierdzenia poniżej.'); return; }
     setSubmitting(true); setWaitlistError('');
     const db = supabase as any;
-    const { error } = await db.from('waitlist').insert({ nickname, email, age_confirmed: ageConfirmed });
+    const referredBy = new URLSearchParams(window.location.search).get('ref');
+    const { data: code, error } = await db.rpc('join_waitlist', {
+      p_nickname: nickname,
+      p_email: email,
+      p_age_confirmed: ageConfirmed,
+      p_referred_by: referredBy || null,
+    });
     setSubmitting(false);
     if (error) {
       setWaitlistError(error.code === '23505' ? 'Ten email już jest na liście!' : 'Coś poszło nie tak. Spróbuj ponownie.');
       return;
     }
+    if (code) {
+      setMyReferralLink(`${window.location.origin}/?ref=${code}`);
+      db.rpc('get_referral_count', { p_code: code }).then(({ data: count }: { data: number | null }) => {
+        if (typeof count === 'number') setReferralCount(count);
+      });
+    }
     setSubmitted(true);
+  };
+
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(myReferralLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   return (
@@ -131,7 +152,25 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
                 <div className="text-center py-6">
                   <div className="text-5xl mb-4">🔥</div>
                   <h2 className="text-2xl font-black mb-3 italic uppercase tracking-tighter text-white">Jesteś na liście!</h2>
-                  <p className="text-sm text-white/60">Odezwiemy się mailem, gdy ruszamy. Bez spamu.</p>
+                  <p className="text-sm text-white/60 mb-6">Odezwiemy się mailem, gdy ruszamy. Bez spamu.</p>
+
+                  {myReferralLink && (
+                    <div className="text-left glass rounded-2xl p-5 border border-primary/20">
+                      <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Wejdź wcześniej</p>
+                      <p className="text-xs text-white/50 mb-4">Zaproś znajomych swoim linkiem — im więcej zaprosisz, tym wcześniej dostaniesz dostęp.</p>
+                      <div className="flex items-center gap-2">
+                        <input readOnly value={myReferralLink} className="flex-1 min-w-0 glass rounded-xl px-4 py-3 text-xs text-white/70 border border-white/5 outline-none" />
+                        <button onClick={copyReferralLink} className="flex-shrink-0 gradient-fire text-white font-black px-4 py-3 rounded-xl text-xs uppercase tracking-widest">
+                          {linkCopied ? 'Skopiowano ✓' : 'Kopiuj'}
+                        </button>
+                      </div>
+                      {referralCount !== null && (
+                        <p className="text-xs text-white/40 mt-3">
+                          {referralCount === 0 ? 'Nikt jeszcze nie dołączył z Twojego linku.' : `${referralCount} ${referralCount === 1 ? 'osoba dołączyła' : 'osób dołączyło'} z Twojego linku 🔥`}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
