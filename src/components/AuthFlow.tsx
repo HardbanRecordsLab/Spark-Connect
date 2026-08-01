@@ -108,8 +108,8 @@ function LandingView({ onLogin }: { onRegister: () => void; onLogin: () => void 
                 <span className="text-[10px] font-black uppercase tracking-widest text-red-400">Premiera wkrótce</span>
               </div>
               <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter uppercase italic">
-                TYLKO SEKS. <br />
-                <span className="gradient-text">ZERO MIŁOŚCI.</span>
+                NOWE WRAŻENIA. <br />
+                <span className="gradient-text">ZERO TABU.</span>
               </h1>
               <p className="text-xl md:text-2xl text-white/80 max-w-md leading-tight font-medium">
                 Nowa platforma dla dojrzałych, którzy szukają wrażeń i odskoczni od monotonii. <br />
