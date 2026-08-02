@@ -57,9 +57,9 @@ serve(async (req: Request) => {
   const { data: { user }, error: authErr } = await supabaseUser.auth.getUser();
   if (authErr || !user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: cors });
 
-  const { matchId, rouletteSessionId } = await req.json() as { matchId?: string; rouletteSessionId?: string };
-  if (!matchId && !rouletteSessionId) {
-    return new Response(JSON.stringify({ error: "matchId or rouletteSessionId required" }), { status: 400, headers: cors });
+  const { matchId, rouletteSessionId, vibeRoomId } = await req.json() as { matchId?: string; rouletteSessionId?: string; vibeRoomId?: string };
+  if (!matchId && !rouletteSessionId && !vibeRoomId) {
+    return new Response(JSON.stringify({ error: "matchId, rouletteSessionId or vibeRoomId required" }), { status: 400, headers: cors });
   }
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -71,7 +71,7 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Not authorized for this match" }), { status: 403, headers: cors });
     }
     roomName = `match-${match.id}`;
-  } else {
+  } else if (rouletteSessionId) {
     const { data: session } = await supabase
       .from("roulette_sessions")
       .select("id, user_a, user_b, status")
@@ -81,6 +81,17 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Not authorized for this session" }), { status: 403, headers: cors });
     }
     roomName = `roulette-${session.id}`;
+  } else {
+    // Vibe Rooms: authorized only if the caller is already a recorded
+    // participant (join_vibe_room must have run first, which itself
+    // enforces capacity and room-active checks server-side).
+    const { data: room } = await supabase.from("vibe_rooms").select("id, is_active").eq("id", vibeRoomId).maybeSingle();
+    const { data: participant } = await supabase
+      .from("vibe_room_participants").select("user_id").eq("room_id", vibeRoomId).eq("user_id", user.id).maybeSingle();
+    if (!room || !room.is_active || !participant) {
+      return new Response(JSON.stringify({ error: "Not authorized for this room" }), { status: 403, headers: cors });
+    }
+    roomName = `vibe-${room.id}`;
   }
 
   const apiKey = Deno.env.get("LIVEKIT_API_KEY");

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Bell, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2, Users, Flame } from 'lucide-react';
+import { MessageCircle, User, Bell, Map, Eye, LayoutDashboard, Search, Menu, Star, Loader2, Users, Flame, Video } from 'lucide-react';
 import { useAppStore, type AppTab } from '@/store/appStore';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,7 @@ import IncomingCallModal from './IncomingCallModal';
 const VideoCallOverlay = lazy(() => import('./VideoCallOverlay'));
 const RoulettePage = lazy(() => import('./RoulettePage'));
 const SpeedDating = lazy(() => import('./SpeedDating'));
+const VibeRooms = lazy(() => import('./VibeRooms'));
 import WhoLikedMe from './WhoLikedMe';
 import DailyStreak from './DailyStreak';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,6 +67,7 @@ export default function AppLayout() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showWhoLikedMe, setShowWhoLikedMe] = useState(false);
   const [showSpeedDating, setShowSpeedDating] = useState(false);
+  const [showVibeRooms, setShowVibeRooms] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
   const [streak, setStreak] = useState<number | null>(null);
@@ -217,6 +219,9 @@ export default function AppLayout() {
              <button onClick={() => setActiveTab('groups')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-violet-400/80 hover:text-violet-400 transition-all whitespace-nowrap">
                <Users className="w-3 h-3" /> Grupy
              </button>
+             <button onClick={() => setShowVibeRooms(true)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-fuchsia-400/80 hover:text-fuchsia-400 transition-all whitespace-nowrap">
+               <Video className="w-3 h-3" /> Vibe Rooms
+             </button>
              <button onClick={() => setActiveTab('hotnot')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500/80 hover:text-rose-500 transition-all whitespace-nowrap">
                <Flame className="w-3 h-3" /> Hot or Not
              </button>
@@ -301,6 +306,11 @@ export default function AppLayout() {
         {showSpeedDating && (
           <Suspense fallback={<div className="fixed inset-0 z-40 bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
             <SpeedDating onClose={() => setShowSpeedDating(false)} />
+          </Suspense>
+        )}
+        {showVibeRooms && (
+          <Suspense fallback={<div className="fixed inset-0 z-40 bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+            <VibeRooms onClose={() => setShowVibeRooms(false)} />
           </Suspense>
         )}
         {showSafety && <SafetyCenter onClose={() => setShowSafety(false)} />}
