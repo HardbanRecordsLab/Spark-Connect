@@ -5,6 +5,7 @@ import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
 import FilterPanel, { type DiscoverFilters, DEFAULT_FILTERS } from '@/components/FilterPanel';
 import { AvailableNowSection } from '@/components/AvailableNow';
+import { StoriesBar } from '@/components/StoriesSystem';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
@@ -196,6 +197,11 @@ export default function DiscoverPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden px-4 pt-4 pb-24">
+        {/* Stories strip */}
+        <div className="mb-4 -mx-1">
+          <StoriesBar />
+        </div>
+
         {/* Available Now strip */}
         <div className="mb-6">
           <AvailableNowSection onSelectProfile={(id) => {

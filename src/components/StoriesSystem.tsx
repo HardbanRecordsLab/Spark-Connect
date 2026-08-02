@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, ChevronLeft, ChevronRight, Eye, Send } from 'lucide-react';
+import { X, Plus, ChevronLeft, ChevronRight, Eye, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useR2Upload } from '@/hooks/useR2Upload';
+import { toast } from 'sonner';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -27,7 +29,6 @@ function StoryReactions({ storyId, ownerId, ownerName, onReact }: StoryReactions
     if (!user || sent) return;
     setSent(emoji);
     onReact();
-    // Save reaction and open a conversation/message to the story owner
     try {
       await db.from('story_reactions').insert({
         story_id: storyId,
@@ -35,7 +36,7 @@ function StoryReactions({ storyId, ownerId, ownerName, onReact }: StoryReactions
         owner_id: ownerId,
         emoji,
       });
-    } catch { /* table may not exist in all envs */ }
+    } catch { /* silent */ }
   };
 
   const sendMessage = async () => {
@@ -68,7 +69,6 @@ function StoryReactions({ storyId, ownerId, ownerName, onReact }: StoryReactions
 
   return (
     <div className="space-y-2">
-      {/* Emoji reactions row */}
       <div className="flex items-center justify-center gap-2">
         {REACTION_EMOJIS.map(emoji => (
           <motion.button
@@ -90,7 +90,6 @@ function StoryReactions({ storyId, ownerId, ownerName, onReact }: StoryReactions
         </motion.button>
       </div>
 
-      {/* Text input */}
       <AnimatePresence>
         {showInput && (
           <motion.div
@@ -118,7 +117,6 @@ function StoryReactions({ storyId, ownerId, ownerName, onReact }: StoryReactions
   );
 }
 
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface Story {
@@ -140,39 +138,88 @@ export interface UserStory {
   isCurrentUser?: boolean;
 }
 
-// ── Mock story data ───────────────────────────────────────────────────────────
+// ── Real stories fetch hook ─────────────────────────────────────────────────
 
-export const mockUserStories: UserStory[] = [
-  {
-    userId: '1', displayName: 'Sofia', avatarUrl: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
-    hasUnread: true,
-    stories: [
-      { id: 's1', mediaUrl: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80', type: 'image', expiresAt: new Date(Date.now() + 18 * 3600000), createdAt: new Date(Date.now() - 3 * 3600000), viewCount: 14, caption: 'Good morning Warsaw ☀️' },
-      { id: 's2', mediaUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=800&q=80', type: 'image', expiresAt: new Date(Date.now() + 20 * 3600000), createdAt: new Date(Date.now() - 1 * 3600000), viewCount: 6, caption: 'Coffee time ☕' },
-    ],
-  },
-  {
-    userId: '2', displayName: 'Mia', avatarUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=80',
-    hasUnread: true,
-    stories: [
-      { id: 's3', mediaUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80', type: 'image', expiresAt: new Date(Date.now() + 12 * 3600000), createdAt: new Date(Date.now() - 6 * 3600000), viewCount: 32, caption: 'Weekend vibes 🎉' },
-    ],
-  },
-  {
-    userId: '4', displayName: 'Zara', avatarUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80',
-    hasUnread: false,
-    stories: [
-      { id: 's4', mediaUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80', type: 'image', expiresAt: new Date(Date.now() + 5 * 3600000), createdAt: new Date(Date.now() - 8 * 3600000), viewCount: 21 },
-    ],
-  },
-  {
-    userId: '5', displayName: 'Alex', avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&q=80',
-    hasUnread: true,
-    stories: [
-      { id: 's5', mediaUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', type: 'image', expiresAt: new Date(Date.now() + 2 * 3600000), createdAt: new Date(Date.now() - 10 * 3600000), viewCount: 8, caption: 'New PB at the gym 💪' },
-    ],
-  },
-];
+export function useStories(userId: string | null) {
+  const [userStories, setUserStories] = useState<UserStory[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchStories = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const [{ data: blocksMade }, { data: blocksReceived }, { data: myViews }, { data: rows, error }] = await Promise.all([
+        db.from('user_blocks').select('blocked_id').eq('blocker_id', userId),
+        db.from('user_blocks').select('blocker_id').eq('blocked_id', userId),
+        db.from('story_views').select('story_id').eq('viewer_id', userId),
+        db.from('stories')
+          .select('id, user_id, media_url, media_type, caption, created_at, expires_at, profiles!user_id(display_name, avatar_url), story_views(count)')
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: true }),
+      ]);
+      if (error) throw error;
+
+      const blockedIds = new Set([
+        ...(blocksMade ?? []).map((r: { blocked_id: string }) => r.blocked_id),
+        ...(blocksReceived ?? []).map((r: { blocker_id: string }) => r.blocker_id),
+      ]);
+      const viewedIds = new Set((myViews ?? []).map((r: { story_id: string }) => r.story_id));
+
+      const byUser = new Map<string, UserStory>();
+      for (const r of (rows ?? [])) {
+        if (blockedIds.has(r.user_id)) continue;
+        const story: Story = {
+          id: r.id,
+          mediaUrl: r.media_url,
+          type: r.media_type === 'video' ? 'video' : 'image',
+          expiresAt: new Date(r.expires_at),
+          createdAt: new Date(r.created_at),
+          viewCount: r.story_views?.[0]?.count ?? 0,
+          caption: r.caption ?? undefined,
+        };
+        const existing = byUser.get(r.user_id);
+        if (existing) {
+          existing.stories.push(story);
+          if (!viewedIds.has(story.id)) existing.hasUnread = true;
+        } else {
+          byUser.set(r.user_id, {
+            userId: r.user_id,
+            displayName: r.profiles?.display_name ?? 'User',
+            avatarUrl: r.profiles?.avatar_url ?? 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
+            stories: [story],
+            hasUnread: !viewedIds.has(story.id),
+            isCurrentUser: r.user_id === userId,
+          });
+        }
+      }
+
+      // Own stories first, then unread, then read
+      const list = Array.from(byUser.values()).sort((a, b) => {
+        if (a.isCurrentUser !== b.isCurrentUser) return a.isCurrentUser ? -1 : 1;
+        if (a.hasUnread !== b.hasUnread) return a.hasUnread ? -1 : 1;
+        return 0;
+      });
+      setUserStories(list);
+    } catch (err) {
+      console.error('fetchStories error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => { fetchStories(); }, [fetchStories]);
+
+  return { userStories, loading, refetch: fetchStories };
+}
+
+async function recordStoryView(storyId: string, viewerId: string) {
+  try {
+    await db.from('story_views').upsert(
+      { story_id: storyId, viewer_id: viewerId },
+      { onConflict: 'story_id,viewer_id', ignoreDuplicates: true }
+    );
+  } catch { /* silent */ }
+}
 
 // ── Story Viewer ──────────────────────────────────────────────────────────────
 
@@ -183,6 +230,7 @@ interface StoryViewerProps {
 }
 
 export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerProps) {
+  const { user } = useAuth();
   const [userIdx, setUserIdx] = useState(startIndex);
   const [storyIdx, setStoryIdx] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -206,14 +254,20 @@ export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerPro
       });
     }, 100);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIdx, storyIdx, paused]);
 
+  useEffect(() => {
+    if (currentStory && user) recordStoryView(currentStory.id, user.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStory?.id, user?.id]);
+
   const advance = () => {
-    const user = userStories[userIdx];
-    if (storyIdx < user.stories.length - 1) {
+    const u = userStories[userIdx];
+    if (storyIdx < u.stories.length - 1) {
       setStoryIdx(s => s + 1);
     } else if (userIdx < userStories.length - 1) {
-      setUserIdx(u => u + 1);
+      setUserIdx(u2 => u2 + 1);
       setStoryIdx(0);
     } else {
       onClose();
@@ -232,7 +286,7 @@ export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerPro
 
   const timeLeft = () => {
     const diff = currentStory ? currentStory.expiresAt.getTime() - Date.now() : 0;
-    const h = Math.floor(diff / 3600000);
+    const h = Math.max(0, Math.floor(diff / 3600000));
     return `${h}h left`;
   };
 
@@ -246,22 +300,33 @@ export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerPro
       className="fixed inset-0 z-[90] bg-background flex items-center justify-center"
     >
       <div className="relative w-full max-w-sm h-full mx-auto">
-        {/* Background image */}
-        <motion.img
-          key={currentStory.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          src={currentStory.mediaUrl}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {currentStory.type === 'video' ? (
+          <motion.video
+            key={currentStory.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            src={currentStory.mediaUrl}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <motion.img
+            key={currentStory.id}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            src={currentStory.mediaUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
 
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/50" />
 
-        {/* Progress bars */}
-        <div className="absolute top-0 left-0 right-0 flex gap-1 px-3 pt-safe pt-3">
+        <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 px-3 pt-safe pt-3">
           {currentUser.stories.map((_, i) => (
             <div key={i} className="flex-1 h-0.5 bg-foreground/30 rounded-full overflow-hidden">
               <motion.div
@@ -272,8 +337,7 @@ export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerPro
           ))}
         </div>
 
-        {/* Header */}
-        <div className="absolute top-8 left-0 right-0 flex items-center justify-between px-4">
+        <div className="absolute top-8 left-0 right-0 z-20 flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <img src={currentUser.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-primary" />
             <div>
@@ -286,43 +350,40 @@ export function StoryViewer({ userStories, startIndex, onClose }: StoryViewerPro
           </button>
         </div>
 
-        {/* Caption */}
         {currentStory.caption && (
-          <div className="absolute bottom-28 left-0 right-0 px-5">
+          <div className="absolute bottom-28 left-0 right-0 z-20 px-5">
             <p className="text-foreground font-medium text-sm text-center drop-shadow-lg">{currentStory.caption}</p>
           </div>
         )}
 
-        {/* Reactions strip */}
-        <div className="absolute bottom-20 left-0 right-0 px-5">
-          <StoryReactions
-            storyId={currentStory.id}
-            ownerId={currentUser.id}
-            ownerName={currentUser.displayName}
-            onReact={() => setPaused(false)}
-          />
-        </div>
+        {!currentUser.isCurrentUser && (
+          <div className="absolute bottom-20 left-0 right-0 z-20 px-5">
+            <StoryReactions
+              storyId={currentStory.id}
+              ownerId={currentUser.userId}
+              ownerName={currentUser.displayName}
+              onReact={() => setPaused(false)}
+            />
+          </div>
+        )}
 
-        {/* View count */}
-        <div className="absolute bottom-16 right-4 flex items-center gap-1 glass px-2.5 py-1 rounded-full">
+        <div className="absolute bottom-16 right-4 z-20 flex items-center gap-1 glass px-2.5 py-1 rounded-full">
           <Eye className="w-3 h-3 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">{currentStory.viewCount}</span>
         </div>
 
-        {/* Tap zones */}
         <button
-          className="absolute left-0 top-0 w-1/3 h-full"
+          className="absolute left-0 top-0 z-10 w-1/3 h-full"
           onPointerDown={() => setPaused(true)}
           onPointerUp={() => { setPaused(false); retreat(); }}
         />
         <button
-          className="absolute right-0 top-0 w-1/3 h-full"
+          className="absolute right-0 top-0 z-10 w-1/3 h-full"
           onPointerDown={() => setPaused(true)}
           onPointerUp={() => { setPaused(false); advance(); }}
         />
 
-        {/* User navigation arrows */}
-        <div className="absolute bottom-6 left-0 right-0 flex items-center justify-between px-4">
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-between px-4">
           <button
             onClick={() => { if (userIdx > 0) { setUserIdx(u => u - 1); setStoryIdx(0); } }}
             className={`w-9 h-9 glass rounded-full flex items-center justify-center transition-opacity ${userIdx === 0 ? 'opacity-0 pointer-events-none' : ''}`}
@@ -383,14 +444,70 @@ export function StoryRing({ avatarUrl, displayName, hasUnread, size = 'md', onCl
   );
 }
 
-// ── Stories Bar (horizontal scrollable strip) ──────────────────────────────────
+// ── Add Story button (real upload) ─────────────────────────────────────────────
+
+function AddStoryButton({ hasOwnStory, onOpenOwn, onUploaded }: { hasOwnStory: boolean; onOpenOwn: () => void; onUploaded: () => void }) {
+  const { user } = useAuth();
+  const { upload } = useR2Upload();
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+    const isVideo = file.type.startsWith('video/');
+    setUploading(true);
+    try {
+      const { publicUrl } = await upload({ bucket: 'avatars', file });
+      const { error } = await db.from('stories').insert({
+        user_id: user.id,
+        media_url: publicUrl,
+        media_type: isVideo ? 'video' : 'image',
+      });
+      if (error) throw error;
+      toast.success('Twoja relacja jest już widoczna 🎉');
+      onUploaded();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Nie udało się dodać relacji');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={() => hasOwnStory ? onOpenOwn() : fileRef.current?.click()}
+      className="flex flex-col items-center gap-1.5 flex-shrink-0"
+    >
+      <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFile} />
+      <div className="relative w-16 h-16">
+        <div className="w-full h-full rounded-full glass border-2 border-dashed border-primary/40 flex items-center justify-center">
+          {uploading ? <Loader2 className="w-6 h-6 text-primary animate-spin" /> : <Plus className="w-6 h-6 text-primary" />}
+        </div>
+        {hasOwnStory && (
+          <button
+            onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}
+            className="absolute -bottom-0.5 -right-0.5 w-5 h-5 gradient-fire rounded-full flex items-center justify-center border-2 border-background"
+          >
+            <Plus className="w-3 h-3 text-primary-foreground" />
+          </button>
+        )}
+      </div>
+      <span className="text-xs text-muted-foreground">{hasOwnStory ? 'Twoja relacja' : 'Dodaj relację'}</span>
+    </button>
+  );
+}
+
+// ── Stories Bar (horizontal scrollable strip, real data) ───────────────────────
 
 interface StoriesBarProps {
-  userStories: UserStory[];
   showAddButton?: boolean;
 }
 
-export function StoriesBar({ userStories, showAddButton = true }: StoriesBarProps) {
+export function StoriesBar({ showAddButton = true }: StoriesBarProps) {
+  const { user } = useAuth();
+  const { userStories, loading, refetch } = useStories(user?.id ?? null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerStart, setViewerStart] = useState(0);
 
@@ -399,28 +516,29 @@ export function StoriesBar({ userStories, showAddButton = true }: StoriesBarProp
     setViewerOpen(true);
   };
 
+  const ownIdx = userStories.findIndex(us => us.isCurrentUser);
+  const others = userStories.filter(us => !us.isCurrentUser);
+
+  if (!loading && userStories.length === 0 && !showAddButton) return null;
+
   return (
     <>
       <div className="flex gap-3 overflow-x-auto scrollbar-hidden px-1 py-2">
-        {/* Add story button */}
         {showAddButton && (
-          <button className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className="relative w-16 h-16">
-              <div className="w-full h-full rounded-full glass border-2 border-dashed border-primary/40 flex items-center justify-center">
-                <Plus className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-            <span className="text-xs text-muted-foreground">Your story</span>
-          </button>
+          <AddStoryButton
+            hasOwnStory={ownIdx >= 0}
+            onOpenOwn={() => openStory(ownIdx)}
+            onUploaded={refetch}
+          />
         )}
 
-        {userStories.map((us, i) => (
+        {others.map((us) => (
           <StoryRing
             key={us.userId}
             avatarUrl={us.avatarUrl}
             displayName={us.displayName}
             hasUnread={us.hasUnread}
-            onClick={() => openStory(i)}
+            onClick={() => openStory(userStories.findIndex(u => u.userId === us.userId))}
           />
         ))}
       </div>
@@ -430,7 +548,7 @@ export function StoriesBar({ userStories, showAddButton = true }: StoriesBarProp
           <StoryViewer
             userStories={userStories}
             startIndex={viewerStart}
-            onClose={() => setViewerOpen(false)}
+            onClose={() => { setViewerOpen(false); refetch(); }}
           />
         )}
       </AnimatePresence>
