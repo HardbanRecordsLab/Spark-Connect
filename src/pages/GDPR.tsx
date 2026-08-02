@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, FileText, Scale, Database, UserCheck, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const GDPR = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'RODO / GDPR – Obowiązek Informacyjny',
+    description: 'Informacje o przetwarzaniu danych osobowych w Spark Connect zgodnie z RODO/GDPR: administrator danych, cele przetwarzania, Twoje prawa.',
+    path: '/gdpr',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">

@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Lock, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const Privacy = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'Polityka Prywatności',
+    description: 'Polityka prywatności Spark Connect: jakie dane zbieramy, jak je przetwarzamy i chronimy oraz jakie masz prawa jako użytkownik.',
+    path: '/privacy',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">

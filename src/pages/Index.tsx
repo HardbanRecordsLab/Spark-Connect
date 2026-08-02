@@ -6,6 +6,7 @@ import AgeGate from '@/components/AgeGate';
 import CookieConsentBanner from '@/components/CookieConsent';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useSeo } from '@/hooks/useSeo';
 
 // Captures ?ref=<referrer user id> on first landing and holds it until
 // ProfileWizard finishes real signup (which is when referred_by actually
@@ -33,6 +34,29 @@ const Index = () => {
   const { view } = useAppStore();
   const { isAdmin, loading: authLoading } = useAuth();
   const { flags, loading: flagsLoading } = useFeatureFlags();
+
+  useSeo({
+    title: 'Spark Connect – Randki 18+ 🔥',
+    description: 'Darmowa aplikacja randkowa 18+. Prawdziwi ludzie, speed dating, grupy tematyczne, mapa aktywnych, czaty wideo. Zero botów, zero paywall.',
+    path: '/',
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Spark Connect',
+        url: 'https://spark-connect.hardbanrecordslab.online',
+        logo: 'https://spark-connect.hardbanrecordslab.online/spark-connect-logo.png',
+        parentOrganization: { '@type': 'Organization', name: 'Studio HRL Adult' },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Spark Connect',
+        url: 'https://spark-connect.hardbanrecordslab.online',
+        inLanguage: 'pl-PL',
+      },
+    ],
+  });
 
   useEffect(() => { captureReferral(); }, []);
 

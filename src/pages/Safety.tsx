@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, ShieldCheck, Lock, EyeOff, UserCheck, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const Safety = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'Centrum Bezpieczeństwa',
+    description: 'Jak Spark Connect chroni użytkowników: weryfikacja profili, zgłoszenia, blacklista i detekcja botów. Zasady bezpiecznego randkowania.',
+    path: '/safety',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">

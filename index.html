@@ -40,8 +40,33 @@
     <meta name="twitter:description" content="Darmowa aplikacja randkowa 18+. Bez ukrytych opłat. Prawdziwi ludzie." />
     <meta name="twitter:image" content="/og-image.jpg" />
 
+    <!-- Google Search Console verification: paste the "HTML tag" code from
+         https://search.google.com/search-console (Add property -> URL prefix)
+         once that property exists, then uncomment: -->
+    <!-- <meta name="google-site-verification" content="PASTE_CODE_HERE" /> -->
+
+    <!-- Bing Webmaster Tools verification (search.bing.com/webmasters), same idea: -->
+    <!-- <meta name="msvalidate.01" content="PASTE_CODE_HERE" /> -->
+
+    <!-- GA4: no script tag needed here. Set VITE_GA_MEASUREMENT_ID in Vercel's
+         env vars and src/lib/analytics.ts loads gtag.js automatically -- only
+         for visitors who accepted full cookies in the consent banner. -->
+
     <!-- Analytics (uncomment after setup) -->
     <!-- <script defer src="https://cloud.umami.is/script.js" data-website-id="YOUR_ID"></script> -->
+
+    <!-- Structured data: identifies the site/publisher for search engines,
+         independent of the per-route JSON-LD that src/hooks/useSeo.ts injects. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Spark Connect",
+        "url": "https://spark-connect.hardbanrecordslab.online",
+        "logo": "https://spark-connect.hardbanrecordslab.online/spark-connect-logo.png",
+        "parentOrganization": { "@type": "Organization", "name": "Studio HRL Adult" }
+      }
+    </script>
 
     <!-- Google AdSense (Wyłączony - używamy Adsterra) -->
     <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9458765432109876" crossorigin="anonymous"></script> -->

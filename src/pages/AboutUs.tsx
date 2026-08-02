@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Users, Star, Target, Heart, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const AboutUs = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'O nas – Studio HRL Adult & Spark Connect',
+    description: 'Poznaj Studio HRL Adult, twórców Spark Connect – darmowej aplikacji randkowej 18+ bez botów i paywalli.',
+    path: '/about',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">
