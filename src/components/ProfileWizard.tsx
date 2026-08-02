@@ -218,9 +218,17 @@ const ProfileWizard: React.FC = () => {
         }
       }
 
+      // Real referred_by capture -- set once here at profile creation,
+      // never changeable afterward (guarded by trg_guard_profile_privileged_columns).
+      const pendingRef = localStorage.getItem('spark-connect-pending-ref');
+      const referredBy = pendingRef && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pendingRef) && pendingRef !== user.id
+        ? pendingRef
+        : null;
+
       const db = supabase as any;
       const { error } = await db.from('profiles').upsert({
         id: user.id,
+        referred_by: referredBy,
         // basic
         display_name: f.displayName,
         age: parseInt(f.age) || null,
@@ -310,6 +318,7 @@ const ProfileWizard: React.FC = () => {
       });
 
       if (error) throw error;
+      localStorage.removeItem('spark-connect-pending-ref');
       toast.success('🔥 Profil gotowy! SparkAI™ szuka dopasowań...');
       setView('app');
       navigate('/');

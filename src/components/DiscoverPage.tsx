@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Filter, MapPin, Shield, Ghost, Sparkles, Video, Clock } from 'lucide-react';
+import { Star, Filter, MapPin, Shield, Ghost, Sparkles, Video, Clock, Crown } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import type { Profile } from '@/store/appStore';
 import FilterPanel, { type DiscoverFilters, DEFAULT_FILTERS } from '@/components/FilterPanel';
@@ -12,7 +12,6 @@ import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
 import { WhisperModal } from '@/components/WhisperMessage';
 import { SuperSwipeModal } from '@/components/SuperSwipe';
 import ReferralSystem from '@/components/ReferralSystem';
-import { Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const db = supabase as any;
@@ -32,14 +31,16 @@ function ProfileGridItem({ profile, onSelect }: { profile: Profile; onSelect: (p
       animate={{ opacity: 1, scale: 1 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => onSelect(profile)}
-      className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 group cursor-pointer shadow-xl bg-muted"
+      className={`relative aspect-[3/4] rounded-2xl overflow-hidden group cursor-pointer shadow-xl bg-muted ${
+        profile.isAmbassador ? 'border-2 border-amber-500 shadow-[0_0_16px_rgba(245,158,11,0.35)]' : 'border border-white/5'
+      }`}
     >
-      <img 
-        src={profile.photos[0]} 
-        alt={profile.displayName} 
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+      <img
+        src={profile.photos[0]}
+        alt={profile.displayName}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
       />
-      
+
       {/* Top badges */}
       <div className="absolute top-2 left-2 flex flex-col gap-1">
         {profile.isVerified && (
@@ -50,6 +51,11 @@ function ProfileGridItem({ profile, onSelect }: { profile: Profile; onSelect: (p
         {profile.donorBadge && (
           <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-lg border border-white/10">
             <Star className="w-3 h-3 text-white" />
+          </div>
+        )}
+        {profile.isAmbassador && (
+          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border border-white/10" title="Ambassador Elite">
+            <Crown className="w-3 h-3 text-white" />
           </div>
         )}
       </div>

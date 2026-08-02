@@ -63,6 +63,7 @@ export interface Profile {
   distance: number | null;
   isVerified: boolean;
   donorBadge: boolean;
+  isAmbassador?: boolean;
   chemistryScore: number;
   gender: string;
   orientation: string;

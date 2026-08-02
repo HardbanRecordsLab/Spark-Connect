@@ -46,6 +46,7 @@ function mapRow(p: Record<string, unknown>, myLocation?: { lat: number; lng: num
     distance,
     isVerified: (p.is_verified as boolean) ?? false,
     donorBadge: (p.donor_badge as boolean) ?? (p.is_donor as boolean) ?? false,
+    isAmbassador: (p.is_ambassador as boolean) ?? ((p.referral_milestone_claimed as number) ?? 0) >= 3,
     chemistryScore: (p.chemistry_score as number) ?? Math.floor(Math.random() * 30) + 70,
     gender: (p.gender as string) ?? '',
     orientation: (p.orientation as string) ?? '',
@@ -159,7 +160,7 @@ export function useDiscoverProfiles(userId: string | null) {
             drinking, children, education, occupation, languages, looking_for,
             last_online_at, profile_views, total_likes, breast_size, pubic_hair,
             sexual_role, safe_sex, likes, dislikes, relationship_goal,
-            looking_for_gender, lifestyle_18, tattoos, piercing, created_at`)
+            looking_for_gender, lifestyle_18, tattoos, piercing, referral_milestone_claimed, created_at`)
           .eq('profile_complete', true)
           .eq('admin_approved', true)
           .order('created_at', { ascending: false })
