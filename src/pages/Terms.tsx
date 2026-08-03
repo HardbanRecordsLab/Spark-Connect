@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Scale, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const Terms = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'Regulamin Serwisu',
+    description: 'Regulamin Spark Connect: zasady korzystania z aplikacji randkowej, prawa i obowiązki użytkowników.',
+    path: '/terms',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">

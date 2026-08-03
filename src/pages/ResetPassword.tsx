@@ -3,8 +3,13 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 export default function ResetPassword() {
+  // noindex: this URL carries a one-time recovery token in the hash and must
+  // never be indexable, or a shared/leaked link could expose it in search results.
+  useSeo({ title: 'Reset hasła', description: 'Ustaw nowe hasło do Spark Connect.', noindex: true });
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

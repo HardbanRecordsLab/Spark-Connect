@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, Crown, Zap, Users, Gift, PlayCircle, CheckCircle2, Sparkles, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSeo } from '@/hooks/useSeo';
 
 const PremiumInfo = () => {
   const navigate = useNavigate();
+
+  useSeo({
+    title: 'Spark Premium – Zero opłat, zawsze',
+    description: 'Wszystkie funkcje Spark Connect są darmowe. Sprawdź, co oferuje Spark Premium i dlaczego nigdy nie wprowadzimy paywalla.',
+    path: '/premium-info',
+  });
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-white pb-20">

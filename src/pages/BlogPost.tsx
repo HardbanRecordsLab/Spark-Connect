@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useSeo } from '@/hooks/useSeo';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -17,12 +18,36 @@ interface BlogPostFull {
   created_at: string;
 }
 
+function excerptFromHtml(html: string, maxLen = 160): string {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > maxLen ? `${text.slice(0, maxLen - 1)}…` : text;
+}
+
 const BlogPost = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPostFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  useSeo({
+    title: post?.title ?? 'Blog',
+    description: post ? excerptFromHtml(post.content) : 'Blog Spark Connect: porady randkowe i bezpieczeństwo online.',
+    path: `/blog/${slug ?? ''}`,
+    image: post?.cover_image_url ?? undefined,
+    noindex: notFound,
+    jsonLd: post
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          image: post.cover_image_url ?? undefined,
+          author: { '@type': 'Person', name: post.author },
+          datePublished: post.created_at,
+          mainEntityOfPage: `https://spark-connect.hardbanrecordslab.online/blog/${post.slug}`,
+        }
+      : undefined,
+  });
 
   useEffect(() => {
     if (!slug) return;

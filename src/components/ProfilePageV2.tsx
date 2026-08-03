@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useSeo } from '@/hooks/useSeo';
 import SettingsPage from '@/components/SettingsPage';
 import FaceVerify from '@/components/FaceVerify';
 import ProfilePhotoGallery from '@/components/ProfilePhotoGallery';
@@ -247,6 +248,8 @@ function useProfileStats(userId?: string) {
 }
 
 export default function ProfilePageV2() {
+  useSeo({ title: 'Twój profil', description: 'Zarządzaj swoim profilem Spark Connect.', noindex: true });
+
   const { currentUser, setView } = useAppStore();
   const { user, isAdmin } = useAuth();
   const { profile, updateProfile, refetch } = useProfile(user);

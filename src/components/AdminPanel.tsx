@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useSeo } from '@/hooks/useSeo';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -878,6 +879,8 @@ function VerificationSection() {
 
 // ── Main AdminPanel ────────────────────────────────────────────
 export default function AdminPanel() {
+  useSeo({ title: 'Panel administracyjny', description: 'Panel administracyjny Spark Connect.', noindex: true });
+
   const { isAdmin, adminRole, user } = useAuth();
   const [authed, setAuthed] = useState(false);
   const [email, setEmail] = useState('');

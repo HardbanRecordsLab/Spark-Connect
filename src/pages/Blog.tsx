@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Newspaper, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useSeo } from '@/hooks/useSeo';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -21,6 +22,12 @@ const Blog = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSeo({
+    title: 'Blog',
+    description: 'Blog Spark Connect: porady randkowe, bezpieczeństwo online i nowości w darmowej aplikacji randkowej 18+.',
+    path: '/blog',
+  });
 
   useEffect(() => {
     db.from('blog_posts')
