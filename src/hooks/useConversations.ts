@@ -1,12 +1,19 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Conversation, Profile } from '@/store/appStore';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
-// Send push notification via Edge Function
-async function triggerPush(userId: string, title: string, body: string, url = '/') {
+// Send push notification via Edge Function. Call this from the actor who
+// just DID something (sent a message, completed a match) -- they're
+// guaranteed to be online right now. A push triggered from the
+// *recipient's* own realtime listener instead would only ever fire while
+// the recipient already has the app open, which defeats the point of a
+// push (reaching someone whose app is closed). The edge function itself
+// authorizes this: you may push to yourself, or to anyone you're matched
+// with.
+export async function triggerPush(userId: string, title: string, body: string, url = '/') {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
@@ -24,12 +31,6 @@ async function triggerPush(userId: string, title: string, body: string, url = '/
 export function useConversations(userId: string | null) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
-  // Track which conversation is currently open so we don't push for it
-  const activeConversationRef = useRef<string | null>(null);
-
-  const setActiveConversation = (id: string | null) => {
-    activeConversationRef.current = id;
-  };
 
   const fetchConversations = useCallback(async () => {
     if (!userId) return;
@@ -115,15 +116,19 @@ export function useConversations(userId: string | null) {
         fetchConversations();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, () => {
+        // The match-completing swiper triggers the push (see handleMatch
+        // callers of record_swipe) -- reliable regardless of whether we're
+        // online right now. This listener just keeps our own list fresh.
         fetchConversations();
-        // New match push notification
-        triggerPush(userId, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [userId, fetchConversations]);
 
-  // Realtime: push notification on new incoming message
+  // Realtime: keep the conversation list / unread badges fresh on new
+  // incoming messages. The push itself is triggered by the *sender*
+  // (see ChatsPage.tsx's handleSend) so it reaches us reliably even if
+  // this listener isn't running -- i.e. even if our app is closed.
   useEffect(() => {
     if (!userId) return;
 
@@ -132,48 +137,16 @@ export function useConversations(userId: string | null) {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
-        async (payload) => {
-          const msg = payload.new as { sender_id: string; conversation_id: string; content: string; type: string };
-
-          // Only push for messages FROM someone else, not from us
+        (payload) => {
+          const msg = payload.new as { sender_id: string; conversation_id: string };
           if (msg.sender_id === userId) return;
-
-          // Don't push if user is actively viewing this conversation
-          if (activeConversationRef.current === msg.conversation_id) return;
-
-          // Find sender name from conversations cache; skip push for muted chats
-          const senderConvo = conversations.find(c => c.id === msg.conversation_id);
-          if (senderConvo?.isMuted) { fetchConversations(); return; }
-          const senderName = senderConvo?.user.displayName ?? 'Nowa wiadomość';
-
-          const body = msg.type === 'audio'
-            ? '🎤 Wiadomość głosowa'
-            : msg.type === 'image'
-            ? '📷 Wysłał/a zdjęcie'
-            : msg.type === 'video'
-            ? '🎬 Wysłał/a wideo'
-            : msg.type === 'gift'
-            ? '🎁 Wysłał/a prezent!'
-            : msg.content.length > 60
-            ? msg.content.slice(0, 60) + '…'
-            : msg.content;
-
-          // Trigger push
-          await triggerPush(
-            userId,
-            `💋 ${senderName}`,
-            body,
-            '/?tab=chats'
-          );
-
-          // Refresh conversation list to update unread badge
           fetchConversations();
         }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(msgChannel); };
-  }, [userId, conversations, fetchConversations]);
+  }, [userId, fetchConversations]);
 
   const setMatchState = useCallback(async (matchId: string, updates: { archived?: boolean; muted?: boolean }) => {
     if (!userId) return { error: 'Not authenticated' };
@@ -186,5 +159,5 @@ export function useConversations(userId: string | null) {
     return { error };
   }, [userId, fetchConversations]);
 
-  return { conversations, loading, refetch: fetchConversations, setActiveConversation, setMatchState };
+  return { conversations, loading, refetch: fetchConversations, setMatchState };
 }

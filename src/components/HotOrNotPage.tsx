@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppStore } from '@/store/appStore';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
+import { triggerPush } from '@/hooks/useConversations';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -44,7 +45,10 @@ export default function HotOrNotPage() {
     setSessionStreak(s => v === 'hot' ? s + 1 : 0);
 
     const result = Array.isArray(data) ? data[0] : data;
-    if (result?.matched) triggerMatch(profile);
+    if (result?.matched) {
+      triggerMatch(profile);
+      triggerPush(profile.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
+    }
 
     setTimeout(() => {
       setIdx(i => i + 1);

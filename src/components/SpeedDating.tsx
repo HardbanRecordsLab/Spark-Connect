@@ -11,6 +11,7 @@ import { useAppStore } from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouletteMatch } from '@/hooks/useRouletteMatch';
 import { supabase } from '@/integrations/supabase/client';
+import { triggerPush } from '@/hooks/useConversations';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -224,6 +225,7 @@ function LiveSession({ event, onExit }: { event: SDEvent; onExit: (matchedNames:
     if (result?.matched) {
       matchedNamesRef.current = [...matchedNamesRef.current, peer.displayName];
       toast.success(`To dopasowanie z ${peer.displayName}! 🔥`);
+      triggerPush(peer.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
     } else {
       toast.success(`Polubiono ${peer.displayName} 💚`);
     }

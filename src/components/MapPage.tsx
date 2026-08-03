@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
+import { triggerPush } from '@/hooks/useConversations';
 import { useAvailability } from './AvailableNow';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -73,8 +74,12 @@ export default function MapPage({ onSafety }: MapPageProps) {
     const { data } = await db.rpc('record_swipe', { p_swiped_id: profile.id, p_direction: 'right' });
     const result = Array.isArray(data) ? data[0] : data;
     setTooltip(null);
-    if (result?.matched) triggerMatch(profile);
-    else toast.success(`Polubiono ${profile.displayName} 💚`);
+    if (result?.matched) {
+      triggerMatch(profile);
+      triggerPush(profile.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
+    } else {
+      toast.success(`Polubiono ${profile.displayName} 💚`);
+    }
   };
 
   return (

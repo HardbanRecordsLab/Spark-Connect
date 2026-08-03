@@ -17,8 +17,7 @@ import ReportUserModal from '@/components/ReportUserModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useR2Upload } from '@/hooks/useR2Upload';
 import { useAuth } from '@/hooks/useAuth';
-import { useConversations } from '@/hooks/useConversations';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useConversations, triggerPush } from '@/hooks/useConversations';
 
 // ─── Emoji reactions constants ────────────────────────────────────────────────
 const REACTION_EMOJIS = ['❤️', '🔥', '😂', '😮', '😢', '👎'] as const;
@@ -595,7 +594,17 @@ function ChatView({ conv, onBack, setMatchState }: {
 }) {
   const { user } = useAuth();
   const myId = user?.id ?? 'me';
-  const { notify } = usePushNotifications(user?.id ?? null);
+
+  // Own display name for the recipient's push notification title
+  // ("💋 {my name}") -- fetched once, not part of the conv/profile
+  // objects already in scope here.
+  const [myDisplayName, setMyDisplayName] = useState('Ktoś');
+  useEffect(() => {
+    if (!user) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      .then(({ data }: { data: { display_name: string } | null }) => { if (data?.display_name) setMyDisplayName(data.display_name); });
+  }, [user]);
 
   const [text, setText] = useState('');
   const [showGiftPicker, setShowGiftPicker] = useState(false);
@@ -855,8 +864,9 @@ function ChatView({ conv, onBack, setMatchState }: {
       }).select().single();
       if (!error && data) {
         setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), replyToId: replyId } : m));
-        // Local notification echo (in real app: server sends to recipient)
-        notify(`Nova wiadomość`, text.slice(0, 60));
+        // Push the recipient (not ourselves) -- triggered here, from the
+        // sender, so it fires reliably even if they're offline right now.
+        triggerPush(conv.user.id, `💋 ${myDisplayName}`, text.slice(0, 60), '/?tab=chats');
       }
     }
     setSending(false);
@@ -902,7 +912,10 @@ function ChatView({ conv, onBack, setMatchState }: {
         expires_at: expiresAt,
         reply_to_id: replyId,
       }).select().single();
-      if (!error && data) setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), replyToId: replyId } : m));
+      if (!error && data) {
+        setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), replyToId: replyId } : m));
+        triggerPush(conv.user.id, `💋 ${myDisplayName}`, isVideo ? '🎬 Wysłał/a wideo' : '📷 Wysłał/a zdjęcie', '/?tab=chats');
+      }
     } else {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...m, content: publicUrl } : m));
     }
@@ -949,7 +962,10 @@ function ChatView({ conv, onBack, setMatchState }: {
         expires_at: expiresAt,
         reply_to_id: replyId,
       }).select().single();
-      if (!error && data) setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), duration, replyToId: replyId } : m));
+      if (!error && data) {
+        setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...msgToLocal(data as DBMessage, myId), duration, replyToId: replyId } : m));
+        triggerPush(conv.user.id, `💋 ${myDisplayName}`, '🎤 Wiadomość głosowa', '/?tab=chats');
+      }
     } else {
       setMessages(prev => prev.map(m => m.id === optimistic.id ? { ...m, content: publicUrl } : m));
     }
@@ -1004,7 +1020,10 @@ function ChatView({ conv, onBack, setMatchState }: {
         content: gift.id,
         type: 'gift',
       }).select().single();
-      if (!error && data) setMessages(prev => [...prev, msgToLocal(data as DBMessage, myId)]);
+      if (!error && data) {
+        setMessages(prev => [...prev, msgToLocal(data as DBMessage, myId)]);
+        triggerPush(conv.user.id, `💋 ${myDisplayName}`, '🎁 Wysłał/a prezent!', '/?tab=chats');
+      }
     }
   };
 

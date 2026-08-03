@@ -9,6 +9,7 @@ import { StoriesBar } from '@/components/StoriesSystem';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoverProfiles } from '@/hooks/useDiscoverProfiles';
+import { triggerPush } from '@/hooks/useConversations';
 import { WhisperModal } from '@/components/WhisperMessage';
 import { SuperSwipeModal } from '@/components/SuperSwipe';
 import ReferralSystem from '@/components/ReferralSystem';
@@ -120,6 +121,7 @@ export default function DiscoverPage() {
     const result = Array.isArray(data) ? data[0] : data;
     if (result?.matched) {
       triggerMatch(profile);
+      triggerPush(profile.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
     } else {
       toast.success(`Polubiono ${profile.displayName} 💚`);
     }
@@ -148,7 +150,10 @@ export default function DiscoverPage() {
     setTimeout(() => {
       setShowSuperSwipe(false);
       setSelectedProfile(null);
-      if (result?.matched) triggerMatch(profile);
+      if (result?.matched) {
+        triggerMatch(profile);
+        triggerPush(profile.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
+      }
     }, 1400);
   };
 

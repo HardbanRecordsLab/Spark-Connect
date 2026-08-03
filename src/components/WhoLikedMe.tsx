@@ -6,6 +6,7 @@ import { useAppStore, type Profile } from '@/store/appStore';
 import RewardedAd, { type RewardType } from '@/components/RewardedAd';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { triggerPush } from '@/hooks/useConversations';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -75,7 +76,10 @@ export default function WhoLikedMe({ onClose }: WhoLikedMeProps) {
     setTimeout(() => {
       setMatchedId(null);
       setLikedBy(prev => prev.filter(p => p.id !== profile.id));
-      if (result?.matched) triggerMatch(profile);
+      if (result?.matched) {
+        triggerMatch(profile);
+        triggerPush(profile.id, 'Nowe dopasowanie 🔥', 'Masz nowe dopasowanie! Napisz pierwszy/a.', '/');
+      }
     }, 1200);
   };
 
