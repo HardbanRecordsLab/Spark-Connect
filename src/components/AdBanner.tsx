@@ -70,6 +70,34 @@ function PropellerUnit({ slotId }: { slotId: string }) {
   return <div ref={ref} id={`propeller-${slotId}`} />;
 }
 
+// ── ExoClick unit ────────────────────────────────────────────
+// ad-provider.js is shared across every zone on the page, so it's
+// only injected once (guarded by a data attribute); each zone then
+// just needs its own <ins class="{zone's unique class}" data-zoneid>
+// pushed onto the same AdProvider queue.
+function ExoClickUnit({ zoneId, className }: { zoneId: string; className: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    if (!document.querySelector('script[data-exoclick-provider]')) {
+      const script = document.createElement('script');
+      script.async = true;
+      script.type = 'application/javascript';
+      script.src = 'https://a.magsrv.com/ad-provider.js';
+      script.setAttribute('data-exoclick-provider', 'true');
+      document.head.appendChild(script);
+    }
+    const ins = document.createElement('ins');
+    ins.className = className;
+    ins.setAttribute('data-zoneid', zoneId);
+    ins.setAttribute('data-ex-av', 'name');
+    ref.current.appendChild(ins);
+    // @ts-ignore
+    (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+  }, [zoneId, className]);
+  return <div ref={ref} id={`exoclick-${zoneId}`} />;
+}
+
 // ── Yandex Direct unit ───────────────────────────────────────
 function YandexUnit({ slotId }: { slotId: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -206,6 +234,8 @@ function RealAdUnit({ placement, format }: { placement: string; format: 'strip' 
       return <PropellerUnit slotId={slot.slotId} />;
     case 'yandex':
       return <YandexUnit slotId={slot.slotId} />;
+    case 'exoclick':
+      return <ExoClickUnit zoneId={slot.slotId} className={slot.className ?? ''} />;
     default:
       return null;
   }

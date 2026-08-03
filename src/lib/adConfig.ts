@@ -6,7 +6,7 @@
 // Donors (donorBadge=true) never see any ads.
 // ============================================================
 
-export type AdPlatform = 'adsense' | 'adsterra' | 'propellerads' | 'yandex' | 'mock';
+export type AdPlatform = 'adsense' | 'adsterra' | 'propellerads' | 'yandex' | 'exoclick' | 'mock';
 
 export interface AdSlot {
   platform: AdPlatform;
@@ -14,11 +14,15 @@ export interface AdSlot {
   format: 'banner' | 'rectangle' | 'interstitial';
   width?: number;
   height?: number;
+  className?: string; // ExoClick: each zone ships its own unique <ins> class
 }
 
 // ── Active platform ───────────────────────────────────────────
 // Change this to switch which ad network is active globally.
-export const ACTIVE_AD_PLATFORM: AdPlatform = 'adsterra'; // → Włączono Adsterra dla monetyzacji
+// ExoClick is the leader for adult/dating traffic specifically (see
+// audit) and is the only platform with a real, non-placeholder zone
+// ID configured below.
+export const ACTIVE_AD_PLATFORM: AdPlatform = 'exoclick';
 
 // ── Google AdSense ────────────────────────────────────────────
 // NIE UŻYWAJ na tej apce: AdSense zakazuje treści dla dorosłych 18+ w
@@ -33,6 +37,18 @@ export const ADSENSE_SLOTS: Record<string, AdSlot> = {
   live_card:        { platform: 'adsense', slotId: '9458765432109878', format: 'rectangle',   width: 300, height: 100 },
   roulette_strip:   { platform: 'adsense', slotId: '9458765432109879', format: 'banner',      width: 320, height: 50  },
   interstitial:     { platform: 'adsense', slotId: '9458765432109880', format: 'interstitial' },
+};
+
+// ── ExoClick ─────────────────────────────────────────────────
+// Real zones only -- each one is created individually in the ExoClick
+// dashboard (Ad format + size), so unlike the other platforms this map
+// only has entries for placements that actually have a zone yet.
+// getAdSlot() below falls back to an empty slotId (not another
+// placement's zone) for anything not listed here, so a still-unconfigured
+// placement correctly stays on the mock ad instead of showing a
+// wrong-sized real ad borrowed from a different placement.
+export const EXOCLICK_SLOTS: Record<string, AdSlot> = {
+  discover_strip: { platform: 'exoclick', slotId: '5993372', className: 'eas6a97888e10', format: 'banner', width: 320, height: 50 },
 };
 
 // ── AdSterra ─────────────────────────────────────────────────
@@ -65,6 +81,7 @@ export function getAdSlot(placement: string): AdSlot {
     case 'adsterra':     return ADSTERRA_SLOTS[placement]     || ADSTERRA_SLOTS['discover_strip'];
     case 'propellerads': return PROPELLER_SLOTS[placement]    || PROPELLER_SLOTS['discover_strip'];
     case 'yandex':       return YANDEX_SLOTS[placement]       || YANDEX_SLOTS['discover_strip'];
+    case 'exoclick':     return EXOCLICK_SLOTS[placement]     || { platform: 'exoclick', slotId: '', format: 'banner' };
     default:             return { platform: 'mock', slotId: placement, format: 'banner' };
   }
 }
